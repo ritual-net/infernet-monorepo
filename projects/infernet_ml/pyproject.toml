@@ -22,7 +22,13 @@ requires-python = ">= 3.10"
 development = [
     "pre-commit>=3.7.0,<4.0.0",
     "pytest>=8.1.1,<9.0.0",
-    "mypy>=1.9.0,<2.0.0"
+    "mypy>=1.9.0,<2.0.0",
+    "torch>=2.1.2,<3.0.0",
+    "sk2torch>=1.2.0,<2.0.0",
+    "types-requests>=2.31.0.20240406,<3.0",
+    "types-retry>=0.9.9.4,<1.0",
+    "types-tqdm>=4.66.0.20240106,<5.0",
+    "web3>=6.16.0,<7.0.0"
 ]
 
 # torch inference dependencies

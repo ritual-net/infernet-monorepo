@@ -44,6 +44,14 @@ uv-install: get_index_url
 pip-install: get_index_url
 	pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(project)
 
+# utility to create, install & activate an environment
+activate-env:
+	uv venv && source .venv/bin/activate && uv pip install -r projects/$(project)/requirements.lock
+
+# updates the python lockfile of the specific project
+update-lockfile:
+	make -C projects/$(project) update-lockfile
+
 publish: get_index_url
 	rye publish --repository ritual-pypi \
 		--repository-url $(repository_url) \
