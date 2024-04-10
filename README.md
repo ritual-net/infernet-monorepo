@@ -165,5 +165,5 @@ make publish project=$(library_name)
 `library_name` here should match the directory name of the library under `projects/`.
 
 ### Troubleshooting Publishing Packages
-1. **Package Version**: You can't overwrite a version when publishing to the pypi repository. Either bump the minor 
+1. **Package Version**: You can't overwrite a version when publishing to the pypi repository. Either bump the minor
 version, or bump the `build tag`, that means following the version with a `-` and a digit i.e. `0.1.0-3`.

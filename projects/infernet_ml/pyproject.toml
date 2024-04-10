@@ -39,4 +39,3 @@ exclude = ['venv', '.venv']
 
 [tool.isort]
 profile = "black"
-
