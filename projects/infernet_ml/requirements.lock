@@ -9,7 +9,6 @@ fsspec==2024.3.1
 huggingface-hub==0.22.2
 identify==2.5.35
 idna==3.6
--e file:///Users/arshankhanifar/ritual/infernet-monorepo-internal/projects/infernet_ml
 iniconfig==2.0.0
 nodeenv==1.8.0
 packaging==24.0
