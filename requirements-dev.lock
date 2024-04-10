@@ -11,39 +11,81 @@
 -e file:projects/ritual_arweave
 annotated-types==0.6.0
     # via pydantic
+arrow==1.3.0
+    # via pyarweave
 certifi==2024.2.2
     # via requests
+cfgv==3.4.0
+    # via pre-commit
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via infernet-ml
     # via ritual-arweave
+distlib==0.3.8
+    # via virtualenv
+ecdsa==0.19.0
+    # via python-jose
+erlang-py==2.0.7
+    # via pyarweave
 filelock==3.13.3
     # via huggingface-hub
+    # via virtualenv
 fsspec==2024.3.1
     # via huggingface-hub
 huggingface-hub==0.22.2
     # via infernet-ml
+identify==2.5.35
+    # via pre-commit
 idna==3.6
     # via requests
+nodeenv==1.8.0
+    # via pre-commit
 packaging==24.0
     # via huggingface-hub
+platformdirs==4.2.0
+    # via virtualenv
+pre-commit==3.7.0
+pyarweave @ git+https://github.com/ritual-net/pyarweave.git@a402db4097859767a306a1454bcdf557a1c69548
+    # via ritual-arweave
+pyasn1==0.6.0
+    # via python-jose
+    # via rsa
+pycryptodome==3.20.0
+    # via pyarweave
 pydantic==2.6.4
     # via infernet-ml
 pydantic-core==2.16.3
     # via pydantic
+python-dateutil==2.9.0.post0
+    # via arrow
 python-dotenv==1.0.1
     # via infernet-ml
     # via ritual-arweave
+python-jose==3.3.0
+    # via pyarweave
 pyyaml==6.0.1
     # via huggingface-hub
+    # via pre-commit
 requests==2.31.0
     # via huggingface-hub
+    # via pyarweave
+rsa==4.9
+    # via python-jose
+setuptools==69.2.0
+    # via nodeenv
+six==1.16.0
+    # via ecdsa
+    # via python-dateutil
 tqdm==4.66.2
     # via huggingface-hub
+types-python-dateutil==2.9.0.20240316
+    # via arrow
 typing-extensions==4.10.0
     # via huggingface-hub
     # via pydantic
     # via pydantic-core
 urllib3==2.2.1
     # via requests
+virtualenv==20.25.1
+    # via pre-commit
