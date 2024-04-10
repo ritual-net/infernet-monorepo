@@ -64,6 +64,8 @@ requests==2.31.0
 retry2==0.9.5
 rlp==4.0.0
 rpds-py==0.18.0
+ruff==0.3.5
+safetensors==0.4.2
 scikit-learn==1.4.2
 scipy==1.13.0
 setuptools==69.2.0
@@ -71,9 +73,11 @@ sk2torch==1.2.0
 sympy==1.12
 text-generation==0.7.0
 threadpoolctl==3.4.0
+tokenizers==0.15.2
 toolz==0.12.1
 torch==2.2.2
 tqdm==4.66.2
+transformers==4.39.3
 types-requests==2.31.0.20240406
 types-retry==0.9.9.4
 types-tqdm==4.66.0.20240106

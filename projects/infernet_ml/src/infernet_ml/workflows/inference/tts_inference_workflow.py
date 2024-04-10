@@ -1,13 +1,14 @@
 """
 Module containing a TTS (text-to-speech) Inference Workflow object.
 """
+
 import logging
 from abc import abstractmethod
 from typing import Any
 
 import numpy as np
 import torch
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
@@ -19,10 +20,10 @@ class AudioInferenceResult(BaseModel):
     Base workflow object for text-to-speech inference.
     """
 
-    class Config:
-        """since audio_array is a numpy array, we need to allow arbitrary types."""
+    # since audio_array is a numpy array, we need to allow arbitrary types.
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-        arbitrary_types_allowed = True
+    # using ConfigDict
 
     """
     audio_array: numpy array containing the audio data. Most TTS models' output will be
