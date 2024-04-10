@@ -166,7 +166,11 @@ def test_do_run_model_summarization(
         parameters=summarization_config,  # type: ignore
     )
     output_data = summarization_workflow.do_run_model(input_data)
-    assert len(output_data.get("output").summary_text) > min_length_tokens  # type: ignore
+
+    assert (
+        len(output_data.get("output").summary_text) > min_length_tokens  # type: ignore
+    )
+
     assert len(output_data.get("output").summary_text) < len(input_text)  # type: ignore
 
 
