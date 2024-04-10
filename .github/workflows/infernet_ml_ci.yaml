@@ -39,3 +39,8 @@ jobs:
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run tests
+        env:
+          PYTHONPATH: projects/infernet_ml/src
+        run: pytest projects/infernet_ml/test
