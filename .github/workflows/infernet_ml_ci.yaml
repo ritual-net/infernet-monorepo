@@ -39,11 +39,3 @@ jobs:
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
-
-#      - name: Run tests (infernet_ml)
-#        working-directory: .
-#        env:
-#          HUGGING_FACE_HUB_TOKEN: ${{ secrets.HF_TOKEN }}
-#          MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
-#          PYTHONPATH: src
-#        run: pytest -vvv
