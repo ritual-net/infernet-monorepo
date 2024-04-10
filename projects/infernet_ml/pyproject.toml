@@ -5,14 +5,55 @@ description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
 ]
+
 dependencies = [
     "python-dotenv>=1.0.0,<2.0.0",
     "pydantic>=2.5.3,<3.0.0",
     "huggingface-hub>=0.17.3,<1.0.0",
     "click>=8.1.7,<9.0.0",
 ]
+
 readme = "README.md"
 requires-python = ">= 3.10"
+
+[project.optional-dependencies]
+
+# development dependencies
+development = [
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+]
+
+# torch inference dependencies
+torch_inference = [
+    "torch>=2.1.2,<3.0.0",
+    "sk2torch>=1.2.0,<2.0.0"
+]
+
+# bark inference service
+bark_inference = [
+    "torch>=2.1.2,<3.0.0",
+    "transformers>=4.37.2,<5.0.0",
+    "scipy>=1.11.4,<2.0.0",
+]
+
+# onnx inference dependencies
+onnx_inference = [
+    "torch>=2.1.2,<3.0.0",
+    "onnx>=1.15.0,<2.0.0",
+    "onnxruntime>=1.16.3,<2.0.0",
+]
+
+# llm inference dependencies
+tgi_inference = [
+    "text-generation>=0.6.1,<1.0.0",
+    "retry2>=0.9.5,<1.0.0",
+]
+
+css_inference = [
+    "text-generation>=0.6.1,<1.0.0",
+    "retry2>=0.9.5,<1.0.0",
+]
 
 [build-system]
 requires = ["hatchling"]
