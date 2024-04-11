@@ -64,10 +64,7 @@ jobs:
         run: echo '${{ secrets.GCP_SA_JSON }}' > pypi-deployer-key.json
 
       - name: Activate service account
-        run: make activate-service-account
-
-      - name: Generate UV env file
-        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+        run: make activate-service-account generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
         run: uv pip install -r projects/infernet_ml/requirements.lock
