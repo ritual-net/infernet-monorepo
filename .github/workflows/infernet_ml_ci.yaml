@@ -21,8 +21,11 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
+
+      # pull submodules manually since some are private
+      - run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
       - name: Set up Python
         uses: actions/setup-python@v5
