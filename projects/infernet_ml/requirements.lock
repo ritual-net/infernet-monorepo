@@ -55,6 +55,7 @@ pycryptodome==3.20.0
 pydantic==2.6.4
 pydantic-core==2.16.3
 pytest==8.1.1
+pytest-mock==3.14.0
 python-dotenv==1.0.1
 pyunormalize==15.1.0
 pyyaml==6.0.1
