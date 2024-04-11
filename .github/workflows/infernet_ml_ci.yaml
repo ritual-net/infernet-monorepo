@@ -19,6 +19,13 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -43,8 +50,11 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Generate UV env file
+        run: make generate-uv-env-file && cat uv.env
+
       - name: Install dependencies
-        run: uv pip install -r projects/infernet_ml/requirements.lock
+        run: source uv.env && uv pip install -r projects/infernet_ml/requirements.lock
 
       - name: Install ritual_pyarweave
         run: uv pip install -e projects/ritual_pyarweave

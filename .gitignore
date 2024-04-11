@@ -67,6 +67,9 @@ shared
 # pypi-server packages (testing installation of lib locally)
 packages
 
+
+# gcp secret files
 *-deployer-key.json
+*-deployer-key.json.b64
 
 playground

@@ -77,6 +77,9 @@ gcp-setup: activate-service-account get_index_url
 	@echo "\nexport UV_EXTRA_INDEX_URL=$(index_url)\n"
 	@echo "Or simply set that env var everytime you're installing from uv."
 
+generate-uv-env-file: get_index_url
+	@echo "\nexport UV_EXTRA_INDEX_URL=$(index_url)\n" >> uv.env
+
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
 else ifeq ($(findstring bash,$(shell echo $$SHELL)),bash)
@@ -117,3 +120,7 @@ get-auth-file:
 # to get the keyfile, first run get-auth-file
 activate-service-account:
 	gcloud auth activate-service-account --key-file=$(keyfile_name)
+
+# export auth file to base64
+export-auth-file:
+	base64 -i $(keyfile_name) -o $(keyfile_name).b64
