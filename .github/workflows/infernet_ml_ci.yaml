@@ -34,7 +34,7 @@ jobs:
         run: echo '${{ secrets.GCP_ENV }}' > gcp.env
 
       - name: 'Ensure file exists'
-        run: '[ -f gcp.env ] && echo "File exists" || { echo "File does not exist"; exit 1; }'
+        run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
 
       - name: Checkout
         uses: actions/checkout@v4
