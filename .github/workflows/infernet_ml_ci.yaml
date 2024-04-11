@@ -60,8 +60,17 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Create auth file
+        run: echo '${{ secrets.GCP_SA_JSON }}' > pypi-deployer-key.json
+
+      - name: Activate service account
+        run: make activate-service-account
+
       - name: Generate UV env file
         run: make generate-uv-env-file && cat uv.env
+
+      - name: Install dependencies
+        run: source uv.env && uv pip install -r projects/infernet_ml/requirements.lock
 
       - name: Install dependencies
         run: source uv.env && uv pip install -r projects/infernet_ml/requirements.lock
