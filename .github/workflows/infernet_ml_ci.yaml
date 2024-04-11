@@ -30,6 +30,9 @@ jobs:
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
 
+      - name: 'Get gcp env vars'
+        run: echo '${{ secrets.GCP_ENV }}' > gcp.env && cat gcp.env
+
       - name: Checkout
         uses: actions/checkout@v4
 
