@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Union, cast
 
 from huggingface_hub import hf_hub_download  # type: ignore
+from ritual_arweave.model_manager import download_model_file
 
 
 class ModelSource(Enum):
@@ -58,19 +59,10 @@ def load_model(model_source: ModelSource, **kwargs: Union[str, list[str]]) -> st
             logging.info(
                 f"Downloading model from Arweave {repo_id} with filename {filename}"
             )
-            try:
-                from infernet_ml.utils.arweave import download_model_file
-
-                return download_model_file(
-                    model_id=repo_id,
-                    model_file_name=filename,
-                    owners=owners,
-                )
-            except ImportError as e:
-                logger.error(
-                    f"Arweave is not installed: {e} please install it by "
-                    f'running `pip install "pyarweave @ git+https://github.com/ritual-net/pyarweave.git"`'
-                )
-                raise
+            return download_model_file(
+                model_id=repo_id,
+                model_file_name=filename,
+                owners=owners,
+            )
         case _:
             raise ValueError(f"Invalid model source {model_source}")

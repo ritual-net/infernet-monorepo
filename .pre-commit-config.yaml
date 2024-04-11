@@ -19,6 +19,15 @@ repos:
         language: system
         types: [python]
 
+  - repo: local
+    hooks:
+      - id: mypy ritual_arweave
+        name: mypy ritual_arweave
+        entry: mypy --strict
+        files: ^projects/ritual_arweave
+        language: system
+        types: [python]
+
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
