@@ -1,0 +1,30 @@
+[project]
+name = "ritual-pyarweave"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "arshan-ritual", email = "arshan@ritual.net" }
+]
+dependencies = [
+    "arrow", # used only in transaction_uploader.py for some timing thing
+    "python-jose", # for jwk parsing: note use of jwk is very simple, likely this is unneeded
+    "pycryptodome", # core crypto backend
+    "requests", # core network backend
+    "erlang_py", # for decoding some rare binary peer data
+]
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ritual_pyarweave"]

@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,6 +44,7 @@ jobs:
 
       - name: Run tests
         env:
-          PYTHONPATH: projects/infernet_ml/src
+          PYTHONPATH: projects/infernet_ml/src:projects/ritual_pyarweave/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
         run: pytest projects/infernet_ml/test

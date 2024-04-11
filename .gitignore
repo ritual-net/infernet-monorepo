@@ -62,6 +62,7 @@ shared
 
 # model files
 **/*.torch
+**/*.onnx
 
 # pypi-server packages (testing installation of lib locally)
 packages

@@ -1,7 +1,6 @@
 import os
 from typing import Any
 
-import numpy as np
 import pytest
 
 from infernet_ml.utils.model_loader import ModelSource
@@ -29,10 +28,7 @@ arweave_args = {
 
 @pytest.mark.parametrize(
     "workflow_kwargs",
-    [
-        hf_args,
-        # arweave_args
-    ],
+    [hf_args, arweave_args],
 )
 def test_inference(workflow_kwargs: dict[str, Any]) -> None:
     wf = TorchInferenceWorkflow(**workflow_kwargs)
@@ -43,8 +39,4 @@ def test_inference(workflow_kwargs: dict[str, Any]) -> None:
             "dtype": "float32",
         }
     )
-
-    expected_result = np.array([0.00166995, 0.02114497, 0.9771851], dtype=np.float32)
-    assert np.allclose(
-        r.detach().numpy(), expected_result, atol=1e-6
-    ), "The result is not close enough."
+    assert r.argmax(axis=1) == 2

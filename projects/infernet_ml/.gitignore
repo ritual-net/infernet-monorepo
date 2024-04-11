@@ -1,0 +1,3 @@
+# model files
+**/*.onnx
+**/*.torch
