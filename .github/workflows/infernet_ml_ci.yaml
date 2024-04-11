@@ -30,9 +30,6 @@ jobs:
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
 
-      - name: 'Get gcp env vars'
-        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -40,6 +37,9 @@ jobs:
       - run: |
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+
+      - name: 'Get gcp env vars'
+        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
 
       - name: 'Ensure file exists'
         run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
