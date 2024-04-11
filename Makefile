@@ -1,6 +1,6 @@
-SHELL := /bin/bash
-
 include gcp.env
+
+SHELL := /bin/bash
 
 # service account email
 sa_email := $(sa_name)@$(gcp_project).iam.gserviceaccount.com
