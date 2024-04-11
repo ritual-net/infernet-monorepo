@@ -46,6 +46,9 @@ jobs:
       - name: Install dependencies
         run: uv pip install -r projects/infernet_ml/requirements.lock
 
+      - name: Install ritual_pyarweave
+        run: uv pip install -e projects/ritual_pyarweave
+
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
 
