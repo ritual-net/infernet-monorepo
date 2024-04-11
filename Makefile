@@ -29,10 +29,13 @@ username := _token
 # Gets the service account's credentials & sets them
 get_index_url:
 	$(eval token := $(shell gcloud auth print-access-token))
-	$(eval index_url := "https://_token:$(token)@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo))/simple/")
+	$(eval index_url := "https://_token:$(token)@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple")
 
 show-token: get_index_url
 	@echo $(token)
+
+show-index-url: get_index_url
+	@echo $(index_url)
 
 # explicit install command to test uv installation
 uv-install: get_index_url
@@ -93,13 +96,18 @@ create-service-account:
 delete-service-account:
 	gcloud iam service-accounts delete $(sa_email) -q
 
-# grant the service account permissions to write to the artifact registry
-grant-permissions:
+# gives a specific role to the service account
+give-role:
 	gcloud artifacts repositories add-iam-policy-binding $(artifact_repo) \
 		--location=$(artifact_location) \
 		--project=$(gcp_project) \
 		--member=serviceAccount:$(sa_name)@$(gcp_project).iam.gserviceaccount.com \
-		--role=roles/artifactregistry.writer --role=roles/artifactregistry.reader
+		--role=$(role)
+
+# grant the service account permissions to read from & write to the artifact registry
+grant-permissions:
+	$(MAKE) give-role role=roles/artifactregistry.writer
+	$(MAKE) give-role role=roles/artifactregistry.reader
 
 # get service account auth file
 get-auth-file:
