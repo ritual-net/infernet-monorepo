@@ -19,6 +19,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # pull submodules manually since some are private
+      - run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
@@ -29,14 +37,6 @@ jobs:
 
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # pull submodules manually since some are private
-      - run: |
-          git submodule sync --recursive
-          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
       - name: 'Get gcp env vars'
         run: echo '${{ secrets.GCP_ENV }}' > gcp.env
