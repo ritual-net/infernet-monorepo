@@ -5,11 +5,6 @@ the model upload and download functions from the command line.
 """
 
 import click
-
-from ar import Peer  # type: ignore
-from ar.manifest import Manifest  # type: ignore
-from ar.utils.serialization import b64dec  # type: ignore
-from ar.utils.transaction_uploader import get_uploader  # type: ignore
 from ritual_arweave.model_manager import download_model, upload_model
 
 

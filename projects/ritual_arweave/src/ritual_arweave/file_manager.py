@@ -6,18 +6,17 @@ as check if a file exists on Arweave.
 import os
 from pathlib import Path
 
-from tqdm import tqdm
-
 from ar import Peer, Transaction  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
 from ritual_arweave.utils import (
-    logger,
     MAX_NODE_BYTES,
-    load_wallet,
-    get_tags_dict,
     get_sha256_digest,
+    get_tags_dict,
+    load_wallet,
+    logger,
 )
+from tqdm import tqdm
 
 
 def download(pathname: str, txid: str) -> str:

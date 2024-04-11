@@ -19,15 +19,10 @@ from pathlib import Path
 from typing import Any, Optional
 
 import click
-
-from ar import Transaction, Wallet, Peer  # type: ignore
+from ar import Peer, Transaction, Wallet  # type: ignore
 from ar.manifest import Manifest  # type: ignore
-from ritual_arweave.file_manager import download, upload, file_exists
-from ritual_arweave.utils import (
-    load_wallet,
-    get_sha256_digest,
-    edge_unix_ts,
-)
+from ritual_arweave.file_manager import download, file_exists, upload
+from ritual_arweave.utils import edge_unix_ts, get_sha256_digest, load_wallet
 
 logger = logging.getLogger(__name__)
 
