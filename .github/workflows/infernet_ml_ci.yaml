@@ -15,6 +15,10 @@ jobs:
       fail-fast: false
 
     steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
