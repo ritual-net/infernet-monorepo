@@ -67,16 +67,10 @@ jobs:
         run: make activate-service-account
 
       - name: Generate UV env file
-        run: make generate-uv-env-file && cat uv.env
+        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: source uv.env && uv pip install -r projects/infernet_ml/requirements.lock
-
-      - name: Install dependencies
-        run: source uv.env && uv pip install -r projects/infernet_ml/requirements.lock
-
-      - name: Install ritual_pyarweave
-        run: uv pip install -e projects/ritual_pyarweave
+        run: uv pip install -r projects/infernet_ml/requirements.lock
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
