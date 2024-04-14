@@ -5,9 +5,9 @@ Utility functions for the Arweave integration.
 import hashlib
 import logging
 import os
-from typing import Any
+from typing import Any, Optional
 
-from ar import Wallet  # type: ignore
+from ar import DEFAULT_API_URL, Wallet  # type: ignore
 
 # Old gateways support 10 MB,
 # new ones support 12 MB,
@@ -75,17 +75,27 @@ def get_sha256_digest(file_path: str) -> str:
     return h.hexdigest()
 
 
-def load_wallet() -> Wallet:
+def load_wallet(
+    file_path: Optional[str] = None, api_url: str = DEFAULT_API_URL
+) -> Wallet:
     """
-    Helper function to load the wallet from the ARWEAVE_WALLET_FILE_PATH environment
-    variable.
-    :return: Wallet object
+    Helper function to load a wallet from a file path. If a file path is provided
+    as an argument, it is used. Otherwise, the file path is read from the
+    ARWEAVE_WALLET_FILE_PATH environment variable.
+
+    Returns:
+        Wallet: an Arweave wallet object
     """
-    if not (wallet_file_path := os.getenv("ARWEAVE_WALLET_FILE_PATH")):
-        raise ValueError("ARWEAVE_WALLET_FILE_PATH environment variable not set")
+    if not (wallet_file_path := file_path or os.getenv("ARWEAVE_WALLET_FILE_PATH")):
+        raise ValueError(
+            "Could not find wallet file path. Please either set "
+            "ARWEAVE_WALLET_FILE_PATH or explicitly pass a file path."
+        )
+
+    print(f"checking wallet file path: {wallet_file_path}")
 
     if not os.path.exists(wallet_file_path):
         raise ValueError(f"Wallet file {wallet_file_path} does not exist.")
 
     # wallet used to pay for file upload
-    return Wallet(wallet_file_path)
+    return Wallet(wallet_file_path, api_url=api_url)

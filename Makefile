@@ -126,3 +126,7 @@ activate-service-account:
 # export auth file to base64
 export-auth-file:
 	base64 -i $(keyfile_name) -o $(keyfile_name).b64
+
+pre-commit:
+	pre-commit run --files $$(find projects/$(project) -type f | grep -v .venv)
+

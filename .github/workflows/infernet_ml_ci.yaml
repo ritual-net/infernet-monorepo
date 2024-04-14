@@ -35,9 +35,6 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      - name: 'Use gcloud CLI'
-        run: 'gcloud info'
-
       - name: 'Get gcp env vars'
         run: echo '${{ secrets.GCP_ENV }}' > gcp.env
 
@@ -59,12 +56,6 @@ jobs:
         run: |
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
-
-#      - name: Create auth file
-#        run: echo '${{ secrets.GCP_SA_JSON }}' > pypi-deployer-key.json
-
-#      - name: Activate service account
-#        run: make activate-service-account generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
