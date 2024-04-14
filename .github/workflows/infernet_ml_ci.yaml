@@ -23,6 +23,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup bun & install lsof # (needed for ritual_arweave)
+        if: matrix.project == "ritual_arweave"
+        uses: oven-sh/setup-bun@v1
+        run: sudo apt-get install -y lsof
+
       # pull submodules manually since some are private
       - run: |
           git submodule sync --recursive
