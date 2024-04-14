@@ -7,9 +7,7 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from tqdm import tqdm
-
-from ar import Peer, Transaction, DEFAULT_API_URL  # type: ignore
+from ar import DEFAULT_API_URL, Peer, Transaction  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
 from ritual_arweave.utils import (
@@ -19,6 +17,7 @@ from ritual_arweave.utils import (
     load_wallet,
 )
 from ritual_arweave.utils import logger as default_logger
+from tqdm import tqdm
 
 
 class FileManager:
