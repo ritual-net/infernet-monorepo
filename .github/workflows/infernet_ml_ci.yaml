@@ -83,4 +83,4 @@ jobs:
           PYTHONPATH: projects/${{ matrix.project }}/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
-        run: make test project=infernet_ml
+        run: make test project=${{ matrix.project }}
