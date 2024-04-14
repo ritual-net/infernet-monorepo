@@ -33,7 +33,7 @@ jobs:
         if: matrix.project == 'ritual_arweave'
         run: | 
           sudo apt-get install -y lsof 
-          sudo bun i -g arlocal
+          sudo -E bun i -g arlocal
 
       # pull submodules manually since some are private
       - run: |
