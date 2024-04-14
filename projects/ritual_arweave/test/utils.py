@@ -8,7 +8,7 @@ def get_test_wallet() -> Wallet:
     return load_wallet(wallet, api_url=api_url)
 
 
-@retry(tries=10, delay=0.1)
+@retry(tries=100, delay=0.1)
 def mint_ar() -> None:
     w = get_test_wallet()
     balance = 69 * 1e12  # arweave decimals

@@ -33,10 +33,6 @@ jobs:
         if: matrix.project == 'ritual_arweave'
         run: sudo $(which bun) i -g arlocal
 
-      - name: Run arlocal
-        if: matrix.project == 'ritual_arweave'
-        run: bunx arlocal
-
       # pull submodules manually since some are private
       - run: |
           git submodule sync --recursive
