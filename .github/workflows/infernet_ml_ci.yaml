@@ -29,11 +29,14 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       # needed for ritual_arweave
-      - name: Install lsof & arlocal
+      - name: Check bun
         if: matrix.project == 'ritual_arweave'
-        run: | 
-          sudo apt-get install -y lsof 
-          sudo -E bun i -g arlocal
+        run: which bun
+
+      # needed for ritual_arweave
+      - name: Install arlocal
+        if: matrix.project == 'ritual_arweave'
+        run: sudo $(which bun) i -g arlocal
 
       # pull submodules manually since some are private
       - run: |
