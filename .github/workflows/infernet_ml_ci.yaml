@@ -29,14 +29,13 @@ jobs:
         uses: oven-sh/setup-bun@v1
 
       # needed for ritual_arweave
-      - name: Check bun
-        if: matrix.project == 'ritual_arweave'
-        run: which bun
-
-      # needed for ritual_arweave
       - name: Install arlocal
         if: matrix.project == 'ritual_arweave'
         run: sudo $(which bun) i -g arlocal
+
+      - name: Run arlocal
+        if: matrix.project == 'ritual_arweave'
+        run: bunx arlocal
 
       # pull submodules manually since some are private
       - run: |
