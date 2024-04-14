@@ -65,11 +65,11 @@ jobs:
         run: uv pip install -r projects/infernet_ml/requirements.lock
 
       - name: Run pre-commit hooks
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: make pre-commit project=infernet_ml
 
       - name: Run tests
         env:
           PYTHONPATH: projects/infernet_ml/src:projects/ritual_pyarweave/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
-        run: pytest projects/infernet_ml/test
+        run: make test project=infernet_ml

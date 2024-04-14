@@ -1,6 +1,6 @@
 [project]
 name = "ritual-arweave"
-version = "0.1.0.10"
+version = "0.1.0.12"
 description = "Add your description here"
 authors = [
     { name = "arshan-ritual", email = "arshan@ritual.net" }
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 readme = "README.md"
-requires-python = ">= 3.11"
+requires-python = ">= 3.9"
 
 [project.optional-dependencies]
 development = [
