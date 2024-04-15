@@ -27,6 +27,20 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_JSON }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Get gcp env vars'
+        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
+
+      - name: 'Ensure file exists'
+        run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -43,11 +57,11 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Get UV env file
+        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+
       - name: Install dependencies
         run: uv pip install -r projects/infernet_ml/requirements.lock
-
-      - name: Install ritual_pyarweave
-        run: uv pip install -e projects/ritual_pyarweave
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure
