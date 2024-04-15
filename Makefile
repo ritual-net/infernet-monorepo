@@ -1,5 +1,7 @@
 include gcp.env
 
+SHELL := /bin/bash
+
 # service account email
 sa_email := $(sa_name)@$(gcp_project).iam.gserviceaccount.com
 # service account auth file name
@@ -77,6 +79,9 @@ gcp-setup: activate-service-account get_index_url
 	@echo "\nexport UV_EXTRA_INDEX_URL=$(index_url)\n"
 	@echo "Or simply set that env var everytime you're installing from uv."
 
+generate-uv-env-file: get_index_url
+	@echo "UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
+
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
 else ifeq ($(findstring bash,$(shell echo $$SHELL)),bash)
@@ -117,3 +122,13 @@ get-auth-file:
 # to get the keyfile, first run get-auth-file
 activate-service-account:
 	gcloud auth activate-service-account --key-file=$(keyfile_name)
+
+# export auth file to base64
+export-auth-file:
+	base64 -i $(keyfile_name) -o $(keyfile_name).b64
+
+pre-commit:
+	pre-commit run --files $$(git ls-files projects/$(project)) --show-diff-on-failure
+
+test:
+	PYTHONPATH=projects/$(project)/src pytest projects/$(project)
