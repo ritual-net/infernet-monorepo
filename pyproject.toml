@@ -18,9 +18,6 @@ build-backend = "hatchling.build"
 [tool.mypy]
 exclude = ['venv', '.venv']
 
-[tool.isort]
-profile = "black"
-
 [tool.rye]
 managed = true
 virtual = true
@@ -34,3 +31,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/infernet_monorepo"]
+
+[tool.isort]
+profile = "black"

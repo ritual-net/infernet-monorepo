@@ -19,11 +19,13 @@ repos:
         language: system
         types: [python]
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+  - repo: local
     hooks:
       - id: isort
         name: isort (python)
+        entry: isort .
+        language: system
+        types: [python]
 
   # Default pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks

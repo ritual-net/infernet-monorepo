@@ -4,7 +4,6 @@ simple test for a CSS Inference Workflow
 import os
 
 import pytest
-
 from infernet_ml.utils.service_models import (
     ConvoMessage,
     CSSCompletionParams,

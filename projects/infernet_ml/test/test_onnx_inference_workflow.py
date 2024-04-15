@@ -3,7 +3,6 @@ from typing import Any
 
 import numpy as np
 import pytest
-
 from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceWorkflow,
