@@ -4,7 +4,6 @@ from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
 
 from .error import APIError
-from .subscription import RPC, Subscription
 from .types import (
     ErrorResponse,
     HealthInfo,
@@ -15,6 +14,7 @@ from .types import (
     JobStatus,
     NodeInfo,
 )
+from .web3 import RPC, Subscription
 
 
 class NodeClient:
