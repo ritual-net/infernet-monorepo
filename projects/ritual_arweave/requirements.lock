@@ -27,7 +27,7 @@ python-jose==3.3.0
 pyyaml==6.0.1
 requests==2.31.0
 retry2==0.9.5
-ritual-pyarweave==0.1.0.6
+ritual-pyarweave==0.1.0.0
 rsa==4.9
 ruff==0.3.7
 setuptools==69.5.1
