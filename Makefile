@@ -128,7 +128,7 @@ export-auth-file:
 	base64 -i $(keyfile_name) -o $(keyfile_name).b64
 
 pre-commit:
-	pre-commit run --files $$(find projects/$(project) -type f | grep -v .venv) --show-diff-on-failure
+	pre-commit run --files $$(git ls-files projects/infernet_ml) --show-diff-on-failure
 
 test:
 	PYTHONPATH=projects/$(project)/src pytest projects/$(project)

@@ -34,4 +34,4 @@ packages = ["src/infernet_monorepo"]
 
 [tool.isort]
 profile = "black"
-skip = ["projects/ritual_pyarweave"]
+skip = ["projects/ritual_pyarweave", ".venv", "venv", ".gitignore"]
