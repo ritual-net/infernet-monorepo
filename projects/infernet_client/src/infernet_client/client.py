@@ -5,6 +5,7 @@ from eth_account import Account
 
 from .chain_utils import RPC, Subscription
 from .error import APIError
+from .subscription import RPC, Subscription
 from .types import (
     ErrorResponse,
     HealthInfo,
