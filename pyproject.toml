@@ -16,7 +16,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.mypy]
-exclude = ['venv', '.venv']
+exclude = ['**/venv', '**/.venv']
 
 [tool.rye]
 managed = true
