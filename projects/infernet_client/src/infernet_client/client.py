@@ -3,8 +3,16 @@ from typing import AsyncGenerator, Optional, Union, cast
 from aiohttp import ClientResponseError, ClientSession
 
 from .error import APIError
-from .types import (ErrorResponse, HealthInfo, JobID, JobRequest, JobResponse,
-                    JobResult, JobStatus, NodeInfo)
+from .types import (
+    ErrorResponse,
+    HealthInfo,
+    JobID,
+    JobRequest,
+    JobResponse,
+    JobResult,
+    JobStatus,
+    NodeInfo,
+)
 
 
 class NodeClient:
@@ -114,8 +122,8 @@ class NodeClient:
             jobs (list[JobRequest]): The list of job requests
 
         Returns:
-            list[Union[JobResponse, ErrorResponse]]: The list of job IDs or error responses
-                for each job request
+            list[Union[JobResponse, ErrorResponse]]: The list of job IDs or error
+            responses for each job request.
 
         Raises:
             aiohttp.ClientResponseError: If the request returns an error code
