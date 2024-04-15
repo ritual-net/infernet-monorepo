@@ -1,8 +1,10 @@
-from typing import AsyncGenerator, Optional, Union, cast
+from typing import Any, AsyncGenerator, Optional, Union, cast
 
 from aiohttp import ClientResponseError, ClientSession
+from eth_account import Account
 
 from .error import APIError
+from .subscription import RPC, Subscription
 from .types import (
     ErrorResponse,
     HealthInfo,
@@ -271,9 +273,9 @@ class NodeClient:
             Exception: If the job status cannot be recorded
         """
 
-        url = f"{self.base_url}/api/jobs/stream"
+        url = f"{self.base_url}/api/status"
         async with ClientSession() as session:
-            async with session.post(
+            async with session.put(
                 url,
                 json={
                     "id": id,
@@ -292,6 +294,62 @@ class NodeClient:
                         body.get("params", None),
                     ) from e
 
-    # TODO: async def request_delegated_subscription
+    async def request_delegated_subscription(
+        self,
+        subscription: Subscription,
+        rpc: RPC,
+        coordinator_address: str,
+        expiry: int,
+        private_key: str,
+        data: dict[str, Any],
+    ) -> None:
+        """Creates a new delegated subscription
 
-    # TODO: async def request_delegated_subscriptions
+        Args:
+            subscription (Subscription): The subscription object
+            rpc (RPC): The RPC client
+            coordinator_address (str): The address of the coordinator contract
+            expiry (int): The expiry of the subscription, in seconds (UNIX timestamp)
+            private_key (str): The private key of the subscriber
+            data (dict[str, Any]): The input data for the subscription
+
+        Raises:
+            APIError: If the request returns an error code
+        """
+
+        nonce = await rpc.get_nonce(rpc.get_checksum_address(subscription.owner))
+        chain_id = await rpc.get_chain_id()
+
+        typed_data = subscription.get_delegate_subscription_typed_data(
+            nonce,
+            expiry,
+            chain_id,
+            rpc.get_checksum_address(coordinator_address),
+        )
+        signed_message = Account.sign_message(typed_data, private_key)
+
+        url = f"{self.base_url}/api/jobs"
+        async with ClientSession() as session:
+            async with session.post(
+                url,
+                json={
+                    "signature": {
+                        "nonce": nonce,
+                        "expiry": expiry,
+                        "v": signed_message.v,
+                        "r": int(signed_message.r),
+                        "s": int(signed_message.s),
+                    },
+                    "subscription": subscription.serialized,
+                    "data": data,
+                },
+            ) as response:
+                body = await response.json()
+                try:
+                    response.raise_for_status()
+                except ClientResponseError as e:
+                    raise APIError(
+                        e.status,
+                        body.get("error", "Unknown error"),
+                        body.get("params", None),
+                    ) from e
