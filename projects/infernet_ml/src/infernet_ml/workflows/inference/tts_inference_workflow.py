@@ -7,11 +7,10 @@ from typing import Any
 
 import numpy as np
 import torch
-from pydantic import BaseModel, model_validator
-
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
+from pydantic import BaseModel, model_validator
 
 
 class AudioInferenceResult(BaseModel):
