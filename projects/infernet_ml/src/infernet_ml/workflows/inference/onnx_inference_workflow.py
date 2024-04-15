@@ -6,12 +6,11 @@ from typing import Any, Optional
 
 import onnx
 import torch
-from onnxruntime import InferenceSession  # type: ignore
-
 from infernet_ml.utils.model_loader import ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
+from onnxruntime import InferenceSession  # type: ignore
 
 logger: logging.Logger = logging.getLogger(__name__)
 

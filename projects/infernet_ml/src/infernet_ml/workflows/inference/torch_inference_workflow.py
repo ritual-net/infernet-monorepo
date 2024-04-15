@@ -11,7 +11,6 @@ from typing import Any, Optional, cast
 # noinspection PyUnresolvedReferences
 import torch
 import torch.jit
-
 from infernet_ml.utils.model_loader import ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
