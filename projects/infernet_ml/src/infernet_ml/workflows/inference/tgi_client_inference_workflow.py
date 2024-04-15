@@ -6,6 +6,10 @@ import json
 import os
 from typing import Any, Optional, Union, cast
 
+from infernet_ml.workflows.exceptions import ServiceException
+from infernet_ml.workflows.inference.base_inference_workflow import (
+    BaseInferenceWorkflow,
+)
 from pydantic import BaseModel
 from retry import retry
 from text_generation import Client  # type: ignore
@@ -21,11 +25,6 @@ from text_generation.errors import (
     ShardTimeoutError,
     UnknownError,
     ValidationError,
-)
-
-from infernet_ml.workflows.exceptions import ServiceException
-from infernet_ml.workflows.inference.base_inference_workflow import (
-    BaseInferenceWorkflow,
 )
 
 TGI_REQUEST_TRIES: int = json.loads(os.getenv("TGI_REQUEST_TRIES", "3"))
