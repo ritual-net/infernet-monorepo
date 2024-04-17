@@ -280,6 +280,9 @@ components:
       type: object
       description: Node information.
       properties:
+        version:
+          type: string
+          description: Node version.
         chain:
           $ref: '#/components/schemas/ChainInfo'
         containers:
