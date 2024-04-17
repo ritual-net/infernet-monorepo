@@ -156,7 +156,7 @@ def request_stream(url: str, container: str, input: IO[str], output: IO[str]) ->
     is_flag=True,
     help=(
         "Whether to get the intermediate results. "
-        "Only applicable when multiple containers are used.",
+        "Only applicable when multiple containers are used."
     ),
 )
 @output_option
@@ -279,3 +279,5 @@ def request_subscription(
             data,
         )
     )
+
+    click.echo("Success: Subscription created.")

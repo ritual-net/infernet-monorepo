@@ -40,7 +40,7 @@ def input_option(f: GenericCallable) -> GenericCallable:
         default="-",
         help=(
             "Input file to read the data from. "
-            "Must be a JSON file. Skip or use '-' for stdin.",
+            "Must be a JSON file. Skip or use '-' for stdin."
         ),
     )(f)
 

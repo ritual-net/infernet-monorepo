@@ -322,6 +322,7 @@ Options:
 ```bash
 infernet sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
     --params params.json --input input.json
+# Success: Subscription created.
 ```
 
 where `params.json`:
