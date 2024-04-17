@@ -18,6 +18,9 @@ requires-python = ">= 3.9"
 [project.scripts]
 "infernet-client" = "infernet_client:main"
 
+[project.scripts]
+"infernet" = "infernet_client:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
