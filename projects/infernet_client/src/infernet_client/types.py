@@ -80,7 +80,7 @@ class JobResult(TypedDict):
     id: str
     status: JobStatus
     result: Optional[ContainerResult]
-    intermediate: NotRequired[ContainerResult]
+    intermediate: NotRequired[list[ContainerResult]]
 
 
 class ErrorResponse(TypedDict):
