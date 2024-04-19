@@ -18,6 +18,16 @@ requires-python = ">= 3.9"
 [project.scripts]
 "infernet-client" = "infernet_client:main"
 
+[project.optional-dependencies]
+
+development = [
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "mypy>=1.9.0,<2.0.0",
+    "isort>=5.13.2,<6.0.0",
+    "web3>=6.16.0,<7.0.0",
+]
+
 [project.scripts]
 "infernet" = "infernet_client:main"
 

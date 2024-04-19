@@ -38,7 +38,7 @@ class NodeInfo(TypedDict):
     version: str
     chain: ChainInfo
     containers: list[Container]
-    pending_jobs: PendingJobInfo
+    pending: PendingJobInfo
 
 
 class ContainerOutput:

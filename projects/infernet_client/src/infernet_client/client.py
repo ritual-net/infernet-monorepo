@@ -1,3 +1,4 @@
+from asyncio import sleep
 from typing import Any, AsyncGenerator, Optional, Union, cast
 
 from aiohttp import ClientResponseError, ClientSession
@@ -151,6 +152,50 @@ class NodeClient:
                         body.get("error", "Unknown error"),
                         body.get("params", None),
                     ) from e
+
+    async def get_job_result_sync(
+        self, job_id: JobID, retries: int = 5, timeout: int = 5
+    ) -> Optional[JobResult]:
+        """Retrieves job result synchronously
+
+        Repeatedly polls the server for the job result until the job is no longer
+        running or the maximum number of retries is reached.
+
+        Args:
+            job_id (JobID): The job ID
+            retries (int, optional): The number of retries if the job is still running.
+                Defaults to 5.
+            timeout (int, optional): The timeout for the request. Defaults to 5.
+
+        Returns:
+            Optional[JobResult]: The job result, or None if the job is not found
+
+        Raises:
+            APIError: If the job status is "failed" or the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+            TimeoutError: If the job result is not available after the maximum number of
+                retries
+        """
+
+        status = "running"
+        for _ in range(retries):
+            job = await self.get_job_results([job_id], timeout=timeout)
+
+            # If the job is not found, return None
+            if len(job) == 0:
+                return None
+
+            status = job[0]["status"]
+            if status != "running":
+                break
+
+            # Wait for 1 second before polling again
+            await sleep(1)
+
+        if status == "running":
+            raise TimeoutError(f"Job result not available after {retries} retries")
+
+        return job[0]
 
     async def get_job_results(
         self, job_ids: list[JobID], intermediate: bool = False, timeout: int = 5

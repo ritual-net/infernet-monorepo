@@ -1,0 +1,42 @@
+# pre-commit workflow for Infernet Client
+
+name: Infernet Client CI
+
+on: [push]
+
+jobs:
+  infernet_client_ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.10", "3.11" ]
+      fail-fast: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install UV
+        run: python -m pip install uv
+
+      - name: Create virtual environment
+        run: uv venv
+
+      - name: Activate virtual environment
+        run: |
+          . .venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: uv pip install -r projects/infernet_client/requirements.lock
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run tests
+        run: pytest -v projects/infernet_client/tests

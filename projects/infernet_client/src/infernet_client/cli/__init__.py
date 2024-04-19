@@ -1,6 +1,5 @@
 import asyncio
 import json
-from time import sleep
 from typing import IO, Optional
 
 import click
@@ -87,18 +86,17 @@ def request_job(
 
     # If sync is enabled, wait for job to complete and return results instead
     if sync:
-        status = None
-        while not status or status == "running":
-            job = asyncio.run(client.get_job_results([jobID]))
-            status = job[0]["status"]
-            sleep(1)
+        job = asyncio.run(client.get_job_result_sync(jobID))
 
-        print(job[0])
-        if status == "failed":
-            result = job[0]["result"]["error"]
+        if not job:
+            click.echo("Job not found.")
+            return
+
+        if job["status"] == "failed":
+            result = job["result"]["error"]
         else:
             # status is "completed"
-            result = job[0]["result"]["output"]
+            result = job["result"]["output"]
 
     # Output result
     output_result(result, output)
