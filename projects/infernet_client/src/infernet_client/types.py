@@ -1,4 +1,6 @@
-from typing import Any, Literal, NotRequired, Optional, TypedDict
+from typing import Any, Literal, Optional, TypedDict
+
+from typing_extensions import NotRequired
 
 
 class HealthInfo(TypedDict):

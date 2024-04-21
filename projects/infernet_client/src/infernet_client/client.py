@@ -3,6 +3,7 @@ from typing import Any, AsyncGenerator, Optional, Union, cast
 from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
 
+from .chain_utils import RPC, Subscription
 from .error import APIError
 from .types import (
     ErrorResponse,
@@ -14,7 +15,6 @@ from .types import (
     JobStatus,
     NodeInfo,
 )
-from .web3 import RPC, Subscription
 
 
 class NodeClient:
