@@ -6,10 +6,10 @@ authors = [
     { name = "Stelios Rousoglou", email = "stelios@ritual.net" }
 ]
 dependencies = [
-    "aiohttp>=3.9.2",
+    "aiohttp>=3.9.2,<4.0.0",
 ]
 readme = "README.md"
-requires-python = ">= 3.11"
+requires-python = ">= 3.9"
 
 [build-system]
 requires = ["hatchling"]
