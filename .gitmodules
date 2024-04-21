@@ -1,0 +1,3 @@
+[submodule "projects/ritual_pyarweave/src"]
+	path = projects/ritual_pyarweave/src
+	url = git@github.com:ritual-net/pyarweave-internal.git

@@ -62,10 +62,20 @@ shared
 
 # model files
 **/*.torch
+**/*.onnx
 
 # pypi-server packages (testing installation of lib locally)
 packages
 
+# gcp secret files
 *-deployer-key.json
+*-deployer-key.json.b64
 
 playground
+
+# downloaded models when testing arlocal
+iris
+downloaded_models
+
+# arlocal logs
+logs
