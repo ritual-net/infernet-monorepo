@@ -1,3 +1,3 @@
-# infernet-ml
+# ritual-pyarweave
 
 Describe your project here.

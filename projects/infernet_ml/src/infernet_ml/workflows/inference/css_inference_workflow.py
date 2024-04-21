@@ -12,14 +12,13 @@ import logging
 import os
 from typing import Any, Optional, Union
 
-from retry import retry
-
 from infernet_ml.utils.css_mux import css_mux, validate
 from infernet_ml.utils.service_models import CSSRequest
 from infernet_ml.workflows.exceptions import RetryableException
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
+from retry import retry
 
 CSS_REQUEST_TRIES: int = json.loads(os.getenv("CSS_REQUEST_TRIES", "3"))
 CSS_REQUEST_DELAY: Union[int, float] = json.loads(os.getenv("CSS_REQUEST_DELAY", "3"))

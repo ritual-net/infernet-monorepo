@@ -12,7 +12,6 @@ import os
 from typing import Any, cast
 
 import requests
-
 from infernet_ml.utils.service_models import (
     CSSCompletionParams,
     CSSEmbeddingParams,

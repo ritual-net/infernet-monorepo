@@ -9,8 +9,6 @@ import logging
 from typing import Any, Optional
 
 from huggingface_hub import InferenceClient  # type: ignore[import-untyped]
-from pydantic import ValidationError
-
 from infernet_ml.utils.hf_types import (
     HFClassificationInferenceInput,
     HFInferenceInput,
@@ -20,6 +18,7 @@ from infernet_ml.utils.hf_types import (
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
+from pydantic import ValidationError
 
 # Dict of task_id to task_name grouped by domain based on https://huggingface.co/tasks
 AVAILABLE_DOMAIN_TASKS = {
