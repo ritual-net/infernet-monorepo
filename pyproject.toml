@@ -1,0 +1,37 @@
+[project]
+name = "infernet-monorepo"
+version = "0.1.0-1"
+description = "Add your description here"
+authors = [
+    { name = "arshan-ritual", email = "arshan@ritual.net" }
+]
+dependencies = [
+    "pre-commit>=3.7.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.mypy]
+exclude = ['**/venv', '**/.venv']
+
+[tool.rye]
+managed = true
+virtual = true
+dev-dependencies = []
+
+[tool.rye.workspace]
+members = ["projects/*"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/infernet_monorepo"]
+
+[tool.isort]
+profile = "black"
+skip = ["projects/ritual_pyarweave", ".venv", "venv", ".gitignore"]

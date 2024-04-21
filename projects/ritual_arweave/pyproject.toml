@@ -1,0 +1,46 @@
+[project]
+name = "ritual-arweave"
+version = "0.1.0.0"
+description = "Add your description here"
+authors = [
+    { name = "arshan-ritual", email = "arshan@ritual.net" }
+]
+dependencies = [
+    "ritual-pyarweave>=0.1.0,<0.2.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "click>=8.1.7,<9.0.0",
+    "tqdm>=4.65.1,<5.0.0",
+    "retry2>=0.9.5,<1.0.0",
+]
+
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[project.optional-dependencies]
+development = [
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "mypy>=1.9.0,<2.0.0",
+    "types-requests>=2.31.0.20240406,<3.0",
+    "types-retry>=0.9.9.4,<1.0",
+    "types-tqdm>=4.66.0.20240106,<5.0",
+    "isort>=5.13.2,<6.0.0",
+    "ruff>=0.3.5,<1.0.0",
+]
+
+[project.scripts]
+"ritual-arweave" = "ritual_arweave:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ritual_arweave"]
