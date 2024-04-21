@@ -13,12 +13,12 @@ Welcome to the Infernet Client, a lightweight Python library and CLI tool that s
 Install via [pip](https://pip.pypa.io/en/stable/):
 
 ```bash
-pip install infernet
+pip install infernet-client
 ```
 
 or [uv](https://pypi.org/project/uv/):
 ```bash
-uv pip install infernet
+uv pip install infernet-client
 ```
 
 ## CLI
@@ -26,8 +26,8 @@ uv pip install infernet
 You can view all options with `--help`:
 
 ```bash
-infernet --help
-# Usage: infernet [OPTIONS] COMMAND [ARGS]...
+infernet-client --help
+# Usage: infernet-client [OPTIONS] COMMAND [ARGS]...
 #
 # Options:
 #   --help  Show this message and exit.
@@ -52,7 +52,7 @@ export SERVER_URL=http://localhost:4000
 #### Health
 To check the health of the node server, you can use `health`:
 ```
-Usage: infernet health [OPTIONS]
+Usage: infernet-client health [OPTIONS]
 
   Health check
 
@@ -63,14 +63,14 @@ Options:
 
 **Example:**
 ```bash
-infernet health
+infernet-client health
 # healthy
 ```
 
 #### Info
 To get node information, such as containers running, pending jobs, and chain details, you can use `info`:
 ```
-Usage: infernet info [OPTIONS]
+Usage: infernet-client info [OPTIONS]
 
   Get node information.
 
@@ -83,7 +83,7 @@ Options:
 
 **Example:**
 ```bash
-infernet info
+infernet-client info
 # {
 #   "chain": {
 #     "address": "0x...........",
@@ -108,7 +108,7 @@ infernet info
 #### Request a Job
 To request an offchain job, you can use `job`:
 ```
-Usage: infernet job [OPTIONS]
+Usage: infernet-client job [OPTIONS]
 
   Request a job. Outputs a job ID, or results if sync is enabled.
 
@@ -127,7 +127,7 @@ Options:
 
 **Example:**
 ```bash
-infernet job -c openai-client-inference-0.0.1 -i input.json
+infernet-client job -c openai-client-inference-0.0.1 -i input.json
 # 29dd2f8b-05c3-4b1c-a103-370c04c6850f
 ```
 
@@ -140,7 +140,7 @@ To fetch results by `id`, see [Fetch Results](#fetch-results).
 
 Alternatively, you can specify `--sync`, which will wait until the results are available:
 ```bash
-infernet job -c openai-client-inference-0.0.1 -i input.json --sync
+infernet-client job -c openai-client-inference-0.0.1 -i input.json --sync
 # [
 #  -0.00045939715,
 #   0.035724517,
@@ -158,7 +158,7 @@ infernet job -c openai-client-inference-0.0.1 -i input.json --sync
 
 To request an offchain job that streams back results, you can use `stream`:
 ```
-Usage: infernet stream [OPTIONS]
+Usage: infernet-client stream [OPTIONS]
 
   Request a streamed job.
 
@@ -175,7 +175,7 @@ Options:
 
 **Example**:
 ```bash
-infernet stream -c inference-stream -i input.json
+infernet-client stream -c inference-stream -i input.json
 # Job ID: 785c9abd-0e25-4e8c-86e8-be5becba7cfa
 # 100 times faster than traditional machine learning
 
@@ -194,7 +194,7 @@ where `input.json`:
 #### Get Job IDs
 To get IDs of jobs requested by this client, you can use `ids`:
 ```
-Usage: infernet ids [OPTIONS]
+Usage: infernet-client ids [OPTIONS]
 
   Get job IDs for this client.
 
@@ -210,7 +210,7 @@ Options:
 
 **Example:**
 ```bash
-infernet ids
+infernet-client ids
 # [
 #   "09b9d8bb-d752-46aa-ab95-583304827030",
 #   "50f098a2-daf7-47a9-9eb8-caf9b7509101",
@@ -218,14 +218,14 @@ infernet ids
 #   "d77215c8-dd25-4843-89c4-788eef9ed324"
 # ]
 
-infernet ids --status completed
+infernet-client ids --status completed
 # [
 #   "09b9d8bb-d752-46aa-ab95-583304827030",
 #   "50f098a2-daf7-47a9-9eb8-caf9b7509101",
 #   "29dd2f8b-05c3-4b1c-a103-370c04c6850f",
 # ]
 
-infernet ids --status pending
+infernet-client ids --status pending
 # [
 #   "d77215c8-dd25-4843-89c4-788eef9ed324"
 # ]
@@ -235,7 +235,7 @@ infernet ids --status pending
 
 To fetch results asynchronously by `id`, you can use `results`:
 ```
-Usage: infernet results [OPTIONS]
+Usage: infernet-client results [OPTIONS]
 
   Fetch job results.
 
@@ -251,7 +251,7 @@ Options:
 
 **Example:**
 ```bash
-infernet results --id 29dd2f8b-05c3-4b1c-a103-370c04c6850f --id 09b9d8bb-d752-46aa-ab95-583304827030
+infernet-client results --id 29dd2f8b-05c3-4b1c-a103-370c04c6850f --id 09b9d8bb-d752-46aa-ab95-583304827030
 # [
 #   {
 #     "id": "29dd2f8b-05c3-4b1c-a103-370c04c6850f",
@@ -296,7 +296,7 @@ infernet results --id 29dd2f8b-05c3-4b1c-a103-370c04c6850f --id 09b9d8bb-d752-46
 
 To request a [Delegated Subscription](https://docs.ritual.net/infernet/sdk/patterns/delegator#creating-off-chain-subscriptions), you can use `sub`:
 ```
-Usage: infernet sub [OPTIONS]
+Usage: infernet-client sub [OPTIONS]
 
   Request a delegated subscription.
 
@@ -320,7 +320,7 @@ Options:
 
 **Example:**
 ```bash
-infernet sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
     --params params.json --input input.json
 # Success: Subscription created.
 ```

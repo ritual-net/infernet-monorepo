@@ -4,6 +4,7 @@ from time import sleep
 from typing import IO, Optional
 
 import click
+from infernet_client.chain_utils import RPC, Subscription
 from infernet_client.cli.options import (
     input_option,
     output_option,
@@ -12,7 +13,6 @@ from infernet_client.cli.options import (
 )
 from infernet_client.client import NodeClient
 from infernet_client.types import JobRequest
-from infernet_client.web3 import RPC, Subscription
 
 
 @click.group()

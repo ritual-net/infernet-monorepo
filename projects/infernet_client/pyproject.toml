@@ -16,7 +16,7 @@ readme = "README.md"
 requires-python = ">= 3.9"
 
 [project.scripts]
-"infernet" = "infernet_client:main"
+"infernet-client" = "infernet_client:main"
 
 [build-system]
 requires = ["hatchling"]
