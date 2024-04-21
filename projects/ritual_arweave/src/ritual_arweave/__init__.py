@@ -1,4 +1,4 @@
-from ritual_arweave.arweave import cli
+from ritual_arweave.cli import cli
 
 
 def main() -> int:

@@ -1,6 +1,6 @@
 [project]
 name = "ritual-pyarweave"
-version = "0.1.0.3"
+version = "0.1.0.0"
 description = "Add your description here"
 authors = [
     { name = "arshan-ritual", email = "arshan@ritual.net" }
@@ -27,4 +27,4 @@ dev-dependencies = []
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ritual_pyarweave"]
+packages = ["src/ar", "src/bundlr"]

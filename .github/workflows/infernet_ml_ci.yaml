@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        project: [ "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
@@ -21,6 +22,16 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      # needed for ritual_arweave
+      - name: Setup bun & install lsof
+        if: matrix.project == 'ritual_arweave'
+        uses: oven-sh/setup-bun@v1
+
+      # needed for ritual_arweave
+      - name: Install arlocal
+        if: matrix.project == 'ritual_arweave'
+        run: sudo $(which bun) i -g arlocal
 
       # pull submodules manually since some are private
       - run: |
@@ -60,15 +71,16 @@ jobs:
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
+
       - name: Install dependencies
-        run: uv pip install -r projects/infernet_ml/requirements.lock
+        run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
 
       - name: Run pre-commit hooks
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: make pre-commit project=${{ matrix.project }}
 
       - name: Run tests
         env:
-          PYTHONPATH: projects/infernet_ml/src:projects/ritual_pyarweave/src
+          PYTHONPATH: projects/${{ matrix.project }}/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
-        run: pytest projects/infernet_ml/test
+        run: make test project=${{ matrix.project }}
