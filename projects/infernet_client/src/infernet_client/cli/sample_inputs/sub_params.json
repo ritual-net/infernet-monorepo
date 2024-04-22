@@ -1,0 +1,11 @@
+{
+    "owner": "0x00Bd138aBD70e2F00903268F3Db08f2D25677C2B",
+    "active_at": 0,
+    "period": 3,
+    "frequency": 2,
+    "redundancy": 2,
+    "max_gas_price": 1000000000000,
+    "max_gas_limit": 3000000,
+    "container_id": "openai-client-inference-0.0.1",
+    "inputs": ""
+}

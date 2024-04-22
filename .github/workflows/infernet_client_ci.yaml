@@ -8,10 +8,7 @@ jobs:
   infernet_client_ci:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        python-version: [ "3.10", "3.11" ]
       fail-fast: true
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +30,10 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: uv pip install -r projects/infernet_client/requirements.lock
+        working-directory: projects/infernet_client
+        run: |
+          uv pip install -e ".[dependencies]" -r pyproject.toml
+          uv pip install -e ".[development]" -r pyproject.toml
 
       - name: Run pre-commit hooks
         run: pre-commit run --all-files --show-diff-on-failure

@@ -41,14 +41,14 @@ class NodeInfo(TypedDict):
     pending: PendingJobInfo
 
 
-class ContainerOutput:
+class ContainerOutput(TypedDict):
     """Container output."""
 
     container: str
     output: Any
 
 
-class ContainerError:
+class ContainerError(TypedDict):
     """Container error."""
 
     container: str

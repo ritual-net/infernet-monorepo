@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import IO, Optional
+from typing import IO, Optional, cast
 
 import click
 from infernet_client.chain_utils import RPC, Subscription
@@ -11,7 +11,7 @@ from infernet_client.cli.options import (
     url_option,
 )
 from infernet_client.client import NodeClient
-from infernet_client.types import JobRequest
+from infernet_client.types import ContainerError, ContainerOutput, JobRequest
 
 
 @click.group()
@@ -93,10 +93,10 @@ def request_job(
             return
 
         if job["status"] == "failed":
-            result = job["result"]["error"]
+            result = cast(ContainerError, job["result"])["error"]
         else:
             # status is "completed"
-            result = job["result"]["output"]
+            result = cast(ContainerOutput, job["result"])["output"]
 
     # Output result
     output_result(result, output)
@@ -260,8 +260,8 @@ def request_subscription(
     private_key = key.read().strip()
 
     # Load subscription parameters
-    params = json.load(params)
-    subscription = Subscription(**params)
+    subscription_params = json.load(params)
+    subscription = Subscription(**subscription_params)
 
     # Initialize the client and RPC
     client = NodeClient(url)
@@ -271,7 +271,7 @@ def request_subscription(
         client.request_delegated_subscription(
             subscription,
             rpc,
-            address,
+            rpc.get_checksum_address(address),
             expiry,
             private_key,
             data,

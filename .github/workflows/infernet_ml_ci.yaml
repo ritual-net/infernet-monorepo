@@ -1,13 +1,11 @@
-# pre-commit workflow
-#
-# Ensures the codebase passes the pre-commit stack.
+# pre-commit workflow for Infernet ML
 
-name: Python CI
+name: Infernet ML CI
 
 on: [push]
 
 jobs:
-  python_ci:
+  infernet_ml_ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -70,7 +68,6 @@ jobs:
 
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
-
 
       - name: Install dependencies
         run: uv pip install -r projects/${{ matrix.project }}/requirements.lock

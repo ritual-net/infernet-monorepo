@@ -18,9 +18,9 @@ job_request_nonexistent = JobRequest(
     data={},
 )
 
-job_request_malformed = JobRequest(
-    containers=["infernet-client-test"],
-)
+job_request_malformed = {
+    "containers": ["infernet-client-test"],
+}
 
 job_request_streamed = JobRequest(
     containers=["infernet-client-test"],
