@@ -76,7 +76,9 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
 
         return req_populated
 
-    def do_run_model(self, preprocessed_data: CSSRequest) -> Union[str, dict[str, Any]]:
+    def do_run_model(
+        self, preprocessed_data: CSSRequest
+    ) -> Union[str, list[Union[float, int]]]:
         """
         Inference implementation. Generally, you should not need to change this
         implementation directly, as the code already implements calling a closed source
@@ -93,7 +95,7 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         """
 
         @retry(**self.retry_params)
-        def _run():
+        def _run() -> Union[str, list[Union[float, int]]]:
             logging.info(
                 f"querying {preprocessed_data.provider} with {preprocessed_data.model_dump()}"  # noqa:E501
             )

@@ -116,7 +116,7 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         """
 
         @retry(**self.retry_params)
-        def _run():
+        def _run() -> str:
             return cast(
                 str,
                 self.client.generate(

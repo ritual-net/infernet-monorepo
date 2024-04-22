@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Type, Union
 
 from infernet_ml.workflows.exceptions import RetryableException
 from pydantic import BaseModel, ConfigDict
@@ -22,7 +22,7 @@ class RetryParams(BaseModel):
     max_delay: Optional[Union[int, float]] = DEFAULT_MAX_DELAY
     backoff: Optional[Union[int, float]] = DEFAULT_BACKOFF
     jitter: Optional[Union[tuple[float, float], float]] = DEFAULT_JITTER
-    exceptions: tuple[Exception] = (RetryableException,)
+    exceptions: tuple[Type[Exception]] = (RetryableException,)
 
 
 DEFAULT_RETRY_PARAMS = RetryParams(

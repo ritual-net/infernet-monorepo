@@ -85,7 +85,8 @@ def test_should_pass_api_key_with_request() -> None:
             Provider.GOOSEAI,
             "gpt-neo-125m",
             [ConvoMessage(role="user", content=completion_prompt)],
-            "",  # GooseAI's models hallucinate a lot, so we can't really predict the output
+            # GooseAI's models hallucinate a lot, so we can't really predict the output
+            "",
         ),
     ],
 )
@@ -109,7 +110,7 @@ def test_completion_inferences(
     assert expected_substr in res, "correct completion"
 
 
-def test_embedding_inference():
+def test_embedding_inference() -> None:
     endpoint = "embeddings"
     provider = Provider.OPENAI
     model = "text-embedding-3-small"

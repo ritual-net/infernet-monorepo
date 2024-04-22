@@ -10,7 +10,7 @@ from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
 )
 
 
-def test_inference():
+def test_inference() -> None:
     server_url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
     workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
         server_url,
