@@ -5,19 +5,73 @@ Currently, 3 APIs are supported: OPENAI, PERPLEXITYAI, and GOOSEAI.
 
 Depending on the API being used, the appropriate API key must be specified
 
-as an environment variable as "{provider}_API_KEY".
-
 """
-import os
-from typing import Any, cast
+
+import logging
+from enum import Enum
+from typing import Any, Dict, Optional, Union, cast
 
 import requests
-from infernet_ml.utils.service_models import (
-    CSSCompletionParams,
-    CSSEmbeddingParams,
-    CSSRequest,
+from infernet_ml.workflows.exceptions import (
+    APIKeyMissingException,
+    InfernetMLException,
+    RetryableException,
 )
-from infernet_ml.workflows.exceptions import RetryableException, ServiceException
+from pydantic import BaseModel
+
+
+class ConvoMessage(BaseModel):
+    """
+    A convo message is a part of a conversation.
+    """
+
+    # who the content is attributed to
+    role: str
+    # actual content of the convo message
+    content: str
+
+
+class CSSCompletionParams(BaseModel):
+    """
+    A CSS Completion param has a list of Convo message.
+    """
+
+    messages: list[ConvoMessage]
+
+
+class CSSEmbeddingParams(BaseModel):
+    """
+    A CSS Embedding Param has an input string param.
+    """
+
+    input: str
+
+
+class Provider(Enum):
+    OPENAI = "OPENAI"
+    PERPLEXITYAI = "PERPLEXITYAI"
+    GOOSEAI = "GOOSEAI"
+
+
+ApiKeys = Dict[Provider, Optional[str]]
+
+
+class CSSRequest(BaseModel):
+    """A CSSRequest, meant for querying closed source models."""
+
+    # provider and endpoint to query
+    provider: Provider
+    endpoint: str
+
+    # name of model to use. Valid values depends on the the CSS model provider
+    model: str
+
+    # api keys to use
+    api_keys: ApiKeys = {}
+
+    # parameters associated with the request. Can either be a Completion
+    # or an Embedding Request
+    params: Union[CSSCompletionParams, CSSEmbeddingParams]
 
 
 def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
@@ -37,7 +91,7 @@ def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
                 "input": input,
             }
         case _:
-            raise ServiceException(f"Unsupported request {req}")
+            raise InfernetMLException(f"Unsupported request {req}")
 
 
 def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
@@ -51,7 +105,7 @@ def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
                 "messages": [msg.model_dump() for msg in msgs],
             }
         case _:
-            raise ServiceException(f"Unsupported request {req}")
+            raise InfernetMLException(f"Unsupported request {req}")
 
 
 def goose_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
@@ -61,17 +115,17 @@ def goose_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
     match req:
         case CSSRequest(model=model_name, params=CSSCompletionParams(messages=msgs)):
             if len(msgs) != 1:
-                raise ServiceException(
+                raise InfernetMLException(
                     "GOOSE AI API only accepts one message from role user!"
                 )
             inp = msgs[0].content
             return f"https://api.goose.ai/v1/engines/{model_name}/", {"prompt": inp}
         case _:
-            raise ServiceException(f"Unsupported request {req}")
+            raise InfernetMLException(f"Unsupported request {req}")
 
 
-PROVIDERS: dict[str, Any] = {
-    "OPENAI": {
+PROVIDERS: dict[Provider, Any] = {
+    Provider.OPENAI: {
         "input_func": open_ai_helper,
         "endpoints": {
             "completions": {
@@ -84,7 +138,7 @@ PROVIDERS: dict[str, Any] = {
             },
         },
     },
-    "PERPLEXITYAI": {
+    Provider.PERPLEXITYAI: {
         "input_func": ppl_ai_helper,
         "endpoints": {
             "completions": {
@@ -93,7 +147,7 @@ PROVIDERS: dict[str, Any] = {
             }
         },
     },
-    "GOOSEAI": {
+    Provider.GOOSEAI: {
         "input_func": goose_ai_helper,
         "endpoints": {
             "completions": {
@@ -105,7 +159,7 @@ PROVIDERS: dict[str, Any] = {
 }
 
 
-def validate(provider: str, endpoint: str) -> None:
+def validate(req: CSSRequest) -> None:
     """helper function to validate provider and endpoint
 
     Args:
@@ -113,61 +167,56 @@ def validate(provider: str, endpoint: str) -> None:
         endpoint (str): end point used
 
     Raises:
-        ServiceException: if API Key not specified or an unsupported
+        InfernetMLException: if API Key not specified or an unsupported
         provider or endpoint specified.
     """
-    if (api_key := f"{provider}_API_KEY") not in os.environ:
-        raise ServiceException(f"Environment variable {api_key} not found!")
+    if req.provider not in PROVIDERS:
+        raise InfernetMLException("Provider not supported!")
 
-    if provider not in PROVIDERS:
-        raise ServiceException("Provider not supported!")
+    if req.api_keys.get(req.provider) is None:
+        raise APIKeyMissingException(f"{req.provider} API key not specified!")
 
-    if endpoint not in PROVIDERS[provider]["endpoints"]:
-        raise ServiceException("Endpoint not supported for your provider!")
+    if req.endpoint not in PROVIDERS[req.provider]["endpoints"]:
+        raise InfernetMLException("Endpoint not supported for your provider!")
 
 
-def css_mux(provider: str, req: CSSRequest) -> str:
+def css_mux(req: CSSRequest) -> str:
     """
+    By this point, we've already validated the request, so we can proceed
+    with the actual API call.
+
+
     Args:
-        provider: Closed AI provider
-        endpoint: options: ("completions", "embeddings")
         req: CSSRequest
     Returns:
         response: processed output from api
+
     """
-
-    if (api_key := f"{provider}_API_KEY") not in os.environ:
-        raise ServiceException(f"Environment variable {api_key} not found!")
-
-    if provider not in PROVIDERS:
-        raise ServiceException("Provider not supported!")
-
-    if req.params.endpoint not in PROVIDERS[provider]["endpoints"]:
-        raise ServiceException("Endpoint not supported for your provider!")
-
-    real_endpoint = PROVIDERS[provider]["endpoints"][req.params.endpoint][
-        "real_endpoint"
-    ]
+    provider = req.provider
+    api_key = req.api_keys[provider]
+    real_endpoint = PROVIDERS[provider]["endpoints"][req.endpoint]["real_endpoint"]
     base_url, proc_input = PROVIDERS[provider]["input_func"](req)
     url = f"{base_url}{real_endpoint}"
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.environ[api_key]}",
+        "Authorization": f"Bearer {api_key}",
     }
     result = requests.post(url, headers=headers, json=proc_input)
 
     if result.status_code != 200:
         match provider:
-            case "OPENAI" | "GOOSEAI":
+            case Provider.OPENAI | Provider.GOOSEAI:
                 # https://help.openai.com/en/articles/6891839-api-error-code-guidance
                 if result.status_code == 429 or result.status_code == 500:
                     raise RetryableException(result.text)
-            case "PERPLEXITYAI":
+            case Provider.PERPLEXITYAI:
                 if result.status_code == 429:
                     raise RetryableException(result.text)
             case _:
-                raise ServiceException(result.text)
+                raise InfernetMLException(result.text)
 
-    post_proc = PROVIDERS[provider]["endpoints"][req.params.endpoint]["proc"]
-    return cast(str, post_proc(result.json()))
+    response = result.json()
+    logging.info(f"css mux result: {response}")
+    post_proc = PROVIDERS[provider]["endpoints"][req.endpoint]["proc"]
+    return cast(str, post_proc(response))
