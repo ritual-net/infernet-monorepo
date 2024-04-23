@@ -1,15 +1,15 @@
-# pre-commit workflow for Infernet ML
+# pre-commit workflow for Infernet Monorepo
 
-name: Infernet ML CI
+name: Python CI
 
 on: [push]
 
 jobs:
-  infernet_ml_ci:
+  monorepo_ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml", "ritual_arweave" ]
+        project: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
