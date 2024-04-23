@@ -1,4 +1,6 @@
-from typing import Any, Literal, NotRequired, Optional, TypedDict
+from typing import Any, Literal, Optional, TypedDict
+
+from typing_extensions import NotRequired
 
 
 class HealthInfo(TypedDict):
@@ -33,6 +35,7 @@ class PendingJobInfo(TypedDict):
 class NodeInfo(TypedDict):
     """Node information."""
 
+    version: str
     chain: ChainInfo
     containers: list[Container]
     pending_jobs: PendingJobInfo
@@ -71,7 +74,7 @@ class JobResponse(TypedDict):
     id: JobID
 
 
-JobStatus = Literal["success", "failure", "running"]
+JobStatus = Literal["success", "failed", "running"]
 
 
 class JobResult(TypedDict):

@@ -86,20 +86,29 @@ paths:
 
     post:
       summary: Request a job
-      description: Request an asynchronous job, either onchain or offchain.
+      description: |
+        Request an asynchronous job, either onchain (via a DelegatedSubscriptionRequest) or
+        offchain (via a JobRequest).
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/JobRequest'
+              oneOf:
+                - $ref: '#/components/schemas/JobRequest'
+                - $ref: '#/components/schemas/DelegatedSubscriptionRequest'
       responses:
         '200':
           description: Job request initiated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/JobResponse'
+                  - $ref: '#/components/schemas/DelegatedSubscriptionResponse'
+                description: |
+                  The response is either a JobResponse or a DelegatedSubscriptionResponse,
+                  depending on the request type.
         '405':
           description: Guardian error
           content:
@@ -124,7 +133,10 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/JobRequest'
+                oneOf:
+                  - $ref: '#/components/schemas/JobRequest'
+                  - $ref: '#/components/schemas/DelegatedSubscriptionRequest'
+                description: Each item in the list is either a JobRequest or a DelegatedSubscriptionRequest.
       responses:
         '200':
           description: Batch job request initiated
@@ -135,8 +147,11 @@ paths:
                 items:
                   oneOf:
                     - $ref: '#/components/schemas/JobResponse'
+                    - $ref: '#/components/schemas/DelegatedSubscriptionResponse'
                     - $ref: '#/components/schemas/ErrorResponse'
-                description: Each item in the list is either a job response or an error response, in the same order as the input list.
+                description: |
+                  Each item in the list is either a JobResponse, a DelegatedSubscriptionResponse
+                  or an ErrorResponse, in the same order as the input list.
         '500':
           description: Error processing batch job request
           content:
@@ -265,6 +280,9 @@ components:
       type: object
       description: Node information.
       properties:
+        version:
+          type: string
+          description: Node version.
         chain:
           $ref: '#/components/schemas/ChainInfo'
         containers:
@@ -366,3 +384,72 @@ components:
           additionalProperties: true
           nullable: true
           description: Additional parameters to help understand the error.
+
+    Signature:
+      type: object
+      description: ECDSA signature object. See https://docs.ritual.net/infernet/sdk/reference/EIP712Coordinator for more information.
+      properties:
+        nonce:
+          type: integer
+          format: int64
+        expiry:
+          type: integer
+          format: int64
+        v:
+          type: integer
+          format: int64
+        r:
+          type: integer
+          format: int64
+        s:
+          type: integer
+          format: int64
+
+    Subscription:
+      type: object
+      description: An Infernet SDK subscription. See https://docs.ritual.net/infernet/sdk/architecture#subscriptions-in-definition for more information.
+      properties:
+        owner:
+          type: string
+        active_at:
+          type: integer
+          format: int64
+        period:
+          type: integer
+          format: int64
+        frequency:
+          type: integer
+          format: int64
+        redundancy:
+          type: integer
+          format: int16
+        max_gas_price:
+          type: integer
+          format: int64
+        max_gas_limit:
+          type: integer
+          format: int64
+        container_id:
+          type: string
+        inputs:
+          type: string
+          format: byte
+
+    DelegatedSubscriptionRequest:
+      type: object
+      description: A request to create a delegated subscription onchain.
+      properties:
+        signature:
+          $ref: '#/components/schemas/Signature'
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        data:
+          type: object
+          additionalProperties: true
+
+    DelegatedSubscriptionResponse:
+      type: object
+      description: |
+        Response to a delegated subscription request. Since results are obtained on-chain,
+        there is no offchain Job ID, thus this is empty.
+      additionalProperties: false
