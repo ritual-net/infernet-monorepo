@@ -71,7 +71,7 @@ class NodeClient:
                 response.raise_for_status()
                 return cast(NodeInfo, await response.json())
 
-    async def request_job(self, job: JobRequest, timeout: int = 1) -> JobID:
+    async def request_job(self, job: JobRequest, timeout: int = 5) -> JobID:
         """Requests an asynchronous job
 
         Returns the job ID if the request is successful. Otherwise, raises an exception.
@@ -79,7 +79,7 @@ class NodeClient:
 
         Args:
             job (JobRequest): The job request
-            timeout (int, optional): The timeout for the request. Defaults to 1.
+            timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Returns:
             JobID: The ID of the job
@@ -108,7 +108,7 @@ class NodeClient:
                     ) from e
 
     async def request_jobs(
-        self, jobs: list[JobRequest], timeout: int = 1
+        self, jobs: list[JobRequest], timeout: int = 10
     ) -> list[Union[JobResponse, ErrorResponse]]:
         """Requests asynchronous jobs in batch
 
@@ -122,6 +122,7 @@ class NodeClient:
 
         Args:
             jobs (list[JobRequest]): The list of job requests
+            timeout (int, optional): The timeout for the request. Defaults to 10.
 
         Returns:
             list[Union[JobResponse, ErrorResponse]]: The list of job IDs or error
@@ -151,7 +152,7 @@ class NodeClient:
                     ) from e
 
     async def get_job_results(
-        self, job_ids: list[JobID], intermediate: bool = False, timeout: int = 1
+        self, job_ids: list[JobID], intermediate: bool = False, timeout: int = 5
     ) -> list[JobResult]:
         """Retrieves job results
 
@@ -159,7 +160,7 @@ class NodeClient:
             job_ids (list[JobID]): The list of job IDs
             intermediate (bool, optional): Whether to return intermediate results (only
                 applicable for when multiple containers are chained). Defaults to False.
-            timeout (int, optional): The timeout for the request. Defaults to 1.
+            timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Returns:
             list[JobResult]: The list of job results
@@ -186,7 +187,7 @@ class NodeClient:
                     ) from e
 
     async def get_jobs(
-        self, pending: Optional[bool] = None, timeout: int = 1
+        self, pending: Optional[bool] = None, timeout: int = 5
     ) -> list[JobID]:
         """Retrieves a list of job IDs for this client
 
@@ -194,7 +195,7 @@ class NodeClient:
             pending (Optional[bool], optional): If True, only pending jobs are returned.
                 If False, only completed jobs are returned. By default, all jobs are
                 returned.
-            timeout (int, optional): The timeout for the request. Defaults to 1.
+            timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Returns:
             list[JobID]: The list of job IDs
@@ -212,7 +213,7 @@ class NodeClient:
                 response.raise_for_status()
                 return cast(list[JobID], await response.json())
 
-    async def stream_job(
+    async def request_stream(
         self, job: JobRequest, timeout: int = 180
     ) -> AsyncGenerator[Union[str, bytes], None]:
         """Requests a streaming job
@@ -258,7 +259,7 @@ class NodeClient:
                     ) from e
 
     async def record_status(
-        self, id: JobID, status: JobStatus, job: JobRequest, timeout: int = 1
+        self, id: JobID, status: JobStatus, job: JobRequest, timeout: int = 5
     ) -> None:
         """Manually records the status of a job with the node.
 
@@ -268,6 +269,7 @@ class NodeClient:
             id (JobID): The ID of the job
             status (JobStatus): The status of the job
             job (JobRequest): The job request
+            timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Raises:
             Exception: If the job status cannot be recorded
@@ -302,6 +304,7 @@ class NodeClient:
         expiry: int,
         private_key: str,
         data: dict[str, Any],
+        timeout: int = 5,
     ) -> None:
         """Creates a new delegated subscription
 
@@ -312,6 +315,7 @@ class NodeClient:
             expiry (int): The expiry of the subscription, in seconds (UNIX timestamp)
             private_key (str): The private key of the subscriber
             data (dict[str, Any]): The input data for the subscription
+            timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Raises:
             APIError: If the request returns an error code
@@ -343,6 +347,7 @@ class NodeClient:
                     "subscription": subscription.serialized,
                     "data": data,
                 },
+                timeout=timeout,
             ) as response:
                 body = await response.json()
                 try:
