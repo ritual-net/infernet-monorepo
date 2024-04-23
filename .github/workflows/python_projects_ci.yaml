@@ -46,11 +46,10 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      - name: 'Get gcp env vars'
-        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
-
-      - name: 'Ensure file exists'
-        run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
+      - name: 'Get env var files'
+        run: |
+          echo '${{ secrets.GCP_ENV }}' > gcp.env
+          echo '${{ secrets.TESTS_ENV }}' > .env
 
       - name: Set up Python
         uses: actions/setup-python@v5
