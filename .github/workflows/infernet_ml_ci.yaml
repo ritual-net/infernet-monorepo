@@ -11,12 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        project: [ "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
     steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      # needed for ritual_arweave
+      - name: Setup bun & install lsof
+        if: matrix.project == 'ritual_arweave'
+        uses: oven-sh/setup-bun@v1
+
+      # needed for ritual_arweave
+      - name: Install arlocal
+        if: matrix.project == 'ritual_arweave'
+        run: sudo $(which bun) i -g arlocal
+
+      # pull submodules manually since some are private
+      - run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_JSON }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Get gcp env vars'
+        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
+
+      - name: 'Ensure file exists'
+        run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,8 +68,19 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Get UV env file
+        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+
+
       - name: Install dependencies
-        run: uv pip install -r projects/infernet_ml/requirements.lock
+        run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
 
       - name: Run pre-commit hooks
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: make pre-commit project=${{ matrix.project }}
+
+      - name: Run tests
+        env:
+          PYTHONPATH: projects/${{ matrix.project }}/src
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
+        run: make test project=${{ matrix.project }}
