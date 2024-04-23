@@ -32,24 +32,6 @@ class TensorOutput(BaseModel):
 ONNXInferenceResult = List[TensorOutput]
 
 
-# class ONNXInferenceResult(BaseModel):
-#     """
-#     Pydantic model for the result of a torch inference workflow.
-#     """
-#
-#     model_config = ConfigDict(arbitrary_types_allowed=True)
-#
-#     dtype: str
-#     shape: Tuple[int, ...]
-#     outputs: Tensor
-#
-#     @field_validator("outputs")
-#     def check_is_tensor(cls, v):
-#         if not isinstance(v, torch.Tensor):
-#             raise ValueError("Outputs must be a torch.Tensor")
-#         return v
-
-
 class ONNXInferenceWorkflow(BaseInferenceWorkflow):
     """
     Inference workflow for ONNX models.
