@@ -7,11 +7,11 @@ from typing import Any, Dict, List, Tuple
 
 import onnx
 import torch
+from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
-from infernet_ml.workflows.inference.torch_inference_workflow import TensorInput
 from infernet_ml.workflows.utils.common_types import DTYPES
 from onnxruntime import InferenceSession  # type: ignore
 from pydantic import BaseModel

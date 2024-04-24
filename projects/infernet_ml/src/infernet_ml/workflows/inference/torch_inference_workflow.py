@@ -3,11 +3,12 @@ workflow  class for torch inference workflows.
 """
 
 import logging
-from typing import Any, Generator, List, Optional, Tuple, cast
+from typing import Any, Optional, Tuple, cast
 
 import sk2torch  # type: ignore
 import torch
 import torch.jit
+from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
@@ -37,53 +38,6 @@ class TorchInferenceResult(BaseModel):
     def check_is_tensor(cls, v: Tensor) -> Tensor:
         if not isinstance(v, torch.Tensor):
             raise ValueError("Outputs must be a torch.Tensor")
-        return v
-
-
-class TensorInput(BaseModel):
-    dtype: str
-    shape: Tuple[int, ...]
-    values: Any  # Flexible enough to initially accept any data structure.
-
-    @field_validator("values")
-    @classmethod
-    def check_values_match_shape(cls, v: Any, values: Any) -> Any:
-        # Recursive function to flatten nested lists
-        def flatten(lst: list[Any]) -> Generator[Any, None, None]:
-            if isinstance(lst, list):
-                for item in lst:
-                    yield from flatten(item)
-            else:
-                yield lst
-
-        flat_values = list(flatten(v))
-
-        # Compute expected size from the shape tuple
-        expected_size = 1
-        for dim in values.data["shape"]:
-            expected_size *= dim
-
-        if len(flat_values) != expected_size:
-            raise ValueError(
-                f"Expected number of elements {expected_size}, but got "
-                f"{len(flat_values)}"
-            )
-
-        # Check depth and shape match
-        def check_shape(lst: List[Any], shape: Tuple[int, ...]) -> None:
-            if len(shape) == 0:
-                if isinstance(lst, list):
-                    raise ValueError("Too many dimensions in input")
-                return
-            if not isinstance(lst, list) or len(lst) != shape[0]:
-                raise ValueError(
-                    f"Expected dimension {shape[0]} at this depth, but got "
-                    f"{len(lst) if isinstance(lst, list) else 'not a list'}"
-                )
-            for item in lst:
-                check_shape(item, shape[1:])
-
-        check_shape(v, values.data["shape"])
         return v
 
 

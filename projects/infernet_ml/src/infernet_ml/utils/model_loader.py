@@ -6,7 +6,7 @@ Hugging Face Hub, or Arweave.
 import logging
 import os
 from enum import Enum
-from typing import Optional, Union, cast
+from typing import Any, Optional, Union, cast
 
 from huggingface_hub import hf_hub_download  # type: ignore
 from pydantic import BaseModel
@@ -55,6 +55,37 @@ class LocalLoadArgs(BaseModel):
 
 
 LoadArgs = Union[HFLoadArgs, ArweaveLoadArgs, LocalLoadArgs]
+
+
+def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
+    """
+    Parse the load arguments based on the model source.
+
+    Args:
+        model_source (ModelSource): the source of the model
+        config (dict[str, str]): the configuration
+
+    Returns:
+        LoadArgs: the load arguments
+    """
+
+    match model_source:
+        # parse the load arguments for the local model
+        case ModelSource.LOCAL:
+            return LocalLoadArgs(model_path=config["model_path"])
+        # parse the load arguments for the model from Hugging Face Hub
+        case ModelSource.HUGGINGFACE_HUB:
+            return HFLoadArgs(repo_id=config["repo_id"], filename=config["filename"])
+        # parse the load arguments for the model from Arweave
+        case ModelSource.ARWEAVE:
+            return ArweaveLoadArgs(
+                repo_id=config["repo_id"],
+                filename=config["filename"],
+                owners=config["owners"],
+                wallet=config.get("wallet"),
+            )
+        case _:
+            raise ValueError(f"Invalid model source {model_source}")
 
 
 def load_model(

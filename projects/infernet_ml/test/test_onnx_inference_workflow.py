@@ -2,12 +2,12 @@ import os
 from typing import Any
 
 import pytest
+from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import ArweaveLoadArgs, HFLoadArgs, ModelSource
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceInput,
     ONNXInferenceWorkflow,
 )
-from infernet_ml.workflows.inference.torch_inference_workflow import TensorInput
 
 hf_args = {
     "model_source": ModelSource.HUGGINGFACE_HUB,
