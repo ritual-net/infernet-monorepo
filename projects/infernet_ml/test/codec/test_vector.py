@@ -2,7 +2,7 @@ from typing import Union
 
 import pytest
 import torch
-from infernet_ml.utils.encoding_utils import (
+from infernet_ml.utils.codec.vector import (
     TORCH_VALUE_LOOKUP,
     DataType,
     decode_vector,
