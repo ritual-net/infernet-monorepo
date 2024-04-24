@@ -7,7 +7,7 @@ from infernet_ml.utils.model_loader import (
 )
 
 
-def test_parse_load_args_hf_hub():
+def test_parse_load_args_hf_hub() -> None:
     model_source = ModelSource.HUGGINGFACE_HUB
     cfg = {
         "repo_id": "Ritual-Net/iris-classification",
@@ -18,7 +18,7 @@ def test_parse_load_args_hf_hub():
     )
 
 
-def test_parse_load_args_arweave():
+def test_parse_load_args_arweave() -> None:
     model_source = ModelSource.ARWEAVE
     cfg = {
         "repo_id": "Ritual-Net/iris-classification",
@@ -33,7 +33,7 @@ def test_parse_load_args_arweave():
     )
 
 
-def test_parse_load_args_local():
+def test_parse_load_args_local() -> None:
     model_source = ModelSource.LOCAL
     cfg = {
         "model_path": "/path/to/model",

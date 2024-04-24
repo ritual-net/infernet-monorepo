@@ -1,6 +1,6 @@
 import struct
 from enum import IntEnum
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Tuple, Union, cast
 
 import torch
 from eth_abi.abi import decode, encode
@@ -42,27 +42,27 @@ SOLIDITY_TYPE_LOOKUP = {
 
 def float_to_u32(value: float) -> int:
     packed = struct.pack("f", value)
-    return struct.unpack("I", packed)[0]
+    return cast(int, struct.unpack("I", packed)[0])
 
 
 def u32_to_float(value: int) -> float:
     packed = struct.pack("I", value)
-    return struct.unpack("f", packed)[0]
+    return cast(float, struct.unpack("f", packed)[0])
 
 
 def double_to_u64(value: float) -> int:
     packed = struct.pack("d", value)
-    return struct.unpack("Q", packed)[0]
+    return cast(int, struct.unpack("Q", packed)[0])
 
 
 def u64_to_double(value: int) -> float:
     packed = struct.pack("Q", value)
-    return struct.unpack("d", packed)[0]
+    return cast(float, struct.unpack("d", packed)[0])
 
 
 def cdouble_to_u128(value: complex) -> int:
     packed = struct.pack("dd", value.real, value.imag)
-    high, low = struct.unpack("QQ", packed)
+    high, low = cast(Tuple[int, int], struct.unpack("QQ", packed))
     return (high << 64) | low
 
 
@@ -79,7 +79,7 @@ def u128_to_cdouble(value: int) -> complex:
 
 def cfloat_to_u64(value: complex) -> int:
     packed = struct.pack("ff", value.real, value.imag)
-    return struct.unpack("Q", packed)[0]
+    return cast(int, struct.unpack("Q", packed)[0])
 
 
 def u64_to_cfloat(value: int) -> complex:
@@ -90,43 +90,43 @@ def u64_to_cfloat(value: int) -> complex:
 
 def half_to_u16(value: float) -> int:
     packed = struct.pack("e", value)
-    return struct.unpack("H", packed)[0]
+    return cast(int, struct.unpack("H", packed)[0])
 
 
 def u16_to_half(value: int) -> float:
     packed = struct.pack("H", value)
-    return struct.unpack("e", packed)[0]
+    return cast(float, struct.unpack("e", packed)[0])
 
 
 def bfloat16_to_u16(value: float) -> int:
     packed = struct.pack("e", value)
-    return struct.unpack("H", packed)[0]
+    return cast(int, struct.unpack("H", packed)[0])
 
 
 def u16_to_bfloat16(value: int) -> float:
     packed = struct.pack("H", value)
-    return struct.unpack("e", packed)[0]
+    return cast(float, struct.unpack("e", packed)[0])
 
 
 def short_to_i16(value: int) -> int:
     packed = struct.pack("h", value)
-    return struct.unpack("H", packed)[0]
+    return cast(int, struct.unpack("H", packed)[0])
 
 
 def int_to_i32(value: int) -> int:
     packed = struct.pack("i", value)
-    return struct.unpack("I", packed)[0]
+    return cast(int, struct.unpack("I", packed)[0])
 
 
 def long_to_i64(value: int) -> int:
     packed = struct.pack("q", value)
-    return struct.unpack("Q", packed)[0]
+    return cast(int, struct.unpack("Q", packed)[0])
 
 
 def _map(
     fn: Callable[[Union[float, complex, int]], Union[int, float, complex]],
     values: List[Union[float, complex, int]],
-):
+) -> List[Union[int, float, complex]]:
     return [fn(v) for v in values]
 
 

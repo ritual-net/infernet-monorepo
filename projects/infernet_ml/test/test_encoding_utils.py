@@ -1,3 +1,5 @@
+from typing import Union
+
 import pytest
 import torch
 from infernet_ml.utils.encoding_utils import (
@@ -51,7 +53,9 @@ parameterized test for encoding and decoding vectors in different datatypes
         (DataType.long, (3, 2), [[1e10, 2e10], [3e10, 4e10], [5e10, 6e10]]),
     ],
 )
-def test_encode_decode_vector(dtype, shape, values):
+def test_encode_decode_vector(
+    dtype: DataType, shape: tuple[int], values: list[Union[int, float, complex, bool]]
+) -> None:
     _values = torch.tensor(values, dtype=TORCH_VALUE_LOOKUP[dtype])
     encoded = encode_vector(dtype, shape, _values)
     (_dtype, _shape, __values) = decode_vector(encoded)
