@@ -49,5 +49,3 @@ def decode_css_completion_request(request: bytes) -> tuple[str, list[ConvoMessag
     messages = [ConvoMessage(role=msg[0], content=msg[1]) for msg in message_tuples]
 
     return model, messages
-
-
