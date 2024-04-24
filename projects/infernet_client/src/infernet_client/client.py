@@ -164,7 +164,7 @@ class NodeClient:
         Args:
             job_id (JobID): The job ID
             retries (int, optional): The number of retries if the job is still running.
-                Defaults to 5.
+                Each retry waits for 1 second before polling again. Defaults to 5.
             timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Returns:

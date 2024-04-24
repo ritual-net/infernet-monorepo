@@ -123,6 +123,8 @@ Options:
                          for stdout.
   --sync                 Whether to wait for the job to complete and return
                          the results.
+  --retries INTEGER      Number of 1 second retries to attempt to fetch job
+                         results. Defaults to 5.
 ```
 
 **Example:**

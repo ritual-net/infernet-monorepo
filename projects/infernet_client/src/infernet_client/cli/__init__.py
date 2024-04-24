@@ -48,6 +48,12 @@ def info(url: str, output: IO[str]) -> None:
 
 
 @click.option(
+    "--retries",
+    type=int,
+    default=5,
+    help="Number of 1 second retries to attempt to fetch job results. Defaults to 5.",
+)
+@click.option(
     "--sync",
     is_flag=True,
     help="Whether to wait for the job to complete and return the results.",
@@ -71,6 +77,7 @@ def request_job(
     input: IO[str],
     output: IO[str],
     sync: Optional[bool] = False,
+    retries: int = 5,
 ) -> None:
     """Request a job. Outputs a job ID, or results if sync is enabled."""
 
@@ -86,7 +93,7 @@ def request_job(
 
     # If sync is enabled, wait for job to complete and return results instead
     if sync:
-        job = asyncio.run(client.get_job_result_sync(jobID))
+        job = asyncio.run(client.get_job_result_sync(jobID, retries=retries))
 
         if not job:
             click.echo("Job not found.")
