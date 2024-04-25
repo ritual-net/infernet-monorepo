@@ -39,31 +39,33 @@ SOLIDITY_TYPE_LOOKUP = {
     DataType.bool: "bool",
 }
 
+ENDIANNESS = ">"  # Big-endian
+
 
 def float_to_u32(value: float) -> int:
-    packed = struct.pack("f", value)
-    return cast(int, struct.unpack("I", packed)[0])
+    packed = struct.pack(ENDIANNESS + "f", value)
+    return cast(int, struct.unpack(ENDIANNESS + "I", packed)[0])
 
 
 def u32_to_float(value: int) -> float:
-    packed = struct.pack("I", value)
-    return cast(float, struct.unpack("f", packed)[0])
+    packed = struct.pack(ENDIANNESS + "I", value)
+    return cast(float, struct.unpack(ENDIANNESS + "f", packed)[0])
 
 
 def double_to_u64(value: float) -> int:
-    packed = struct.pack("d", value)
-    return cast(int, struct.unpack("Q", packed)[0])
+    packed = struct.pack(ENDIANNESS + "d", value)
+    return cast(int, struct.unpack(ENDIANNESS + "Q", packed)[0])
 
 
 def u64_to_double(value: int) -> float:
-    packed = struct.pack("Q", value)
-    return cast(float, struct.unpack("d", packed)[0])
+    packed = struct.pack(ENDIANNESS + "Q", value)
+    return cast(float, struct.unpack(ENDIANNESS + "d", packed)[0])
 
 
 def cdouble_to_u128(value: complex) -> int:
-    packed = struct.pack("dd", value.real, value.imag)
-    high, low = cast(Tuple[int, int], struct.unpack("QQ", packed))
-    return (high << 64) | low
+    packed = struct.pack(ENDIANNESS + "dd", value.real, value.imag)
+    high, low = struct.unpack(ENDIANNESS + "QQ", packed)
+    return cast(int, (high << 64) | low)
 
 
 def u128_to_cdouble(value: int) -> complex:
@@ -71,56 +73,56 @@ def u128_to_cdouble(value: int) -> complex:
     low = value & ((1 << 64) - 1)  # Mask the low 64 bits
     high = value >> 64  # Right shift to get the high 64 bits
     # Pack these two integers back into bytes
-    packed = struct.pack("QQ", high, low)
+    packed = struct.pack(ENDIANNESS + "QQ", high, low)
     # Unpack the bytes into two double precision floats
-    real, imag = struct.unpack("dd", packed)
+    real, imag = struct.unpack(ENDIANNESS + "dd", packed)
     return complex(real, imag)
 
 
 def cfloat_to_u64(value: complex) -> int:
-    packed = struct.pack("ff", value.real, value.imag)
-    return cast(int, struct.unpack("Q", packed)[0])
+    packed = struct.pack(ENDIANNESS + "ff", value.real, value.imag)
+    return cast(int, struct.unpack(ENDIANNESS + "Q", packed)[0])
 
 
 def u64_to_cfloat(value: int) -> complex:
-    packed = struct.pack("Q", value)
-    (real, img) = struct.unpack("ff", packed)
+    packed = struct.pack(ENDIANNESS + "Q", value)
+    (real, img) = struct.unpack(ENDIANNESS + "ff", packed)
     return complex(real, img)
 
 
 def half_to_u16(value: float) -> int:
-    packed = struct.pack("e", value)
-    return cast(int, struct.unpack("H", packed)[0])
+    packed = struct.pack(ENDIANNESS + "e", value)
+    return cast(int, struct.unpack(ENDIANNESS + "H", packed)[0])
 
 
 def u16_to_half(value: int) -> float:
-    packed = struct.pack("H", value)
-    return cast(float, struct.unpack("e", packed)[0])
+    packed = struct.pack(ENDIANNESS + "H", value)
+    return cast(float, struct.unpack(ENDIANNESS + "e", packed)[0])
 
 
 def bfloat16_to_u16(value: float) -> int:
-    packed = struct.pack("e", value)
-    return cast(int, struct.unpack("H", packed)[0])
+    packed = struct.pack(ENDIANNESS + "e", value)
+    return cast(int, struct.unpack(ENDIANNESS + "H", packed)[0])
 
 
 def u16_to_bfloat16(value: int) -> float:
-    packed = struct.pack("H", value)
-    return cast(float, struct.unpack("e", packed)[0])
+    packed = struct.pack(ENDIANNESS + "H", value)
+    return cast(float, struct.unpack(ENDIANNESS + "e", packed)[0])
 
 
 def short_to_i16(value: int) -> int:
-    packed = struct.pack("h", value)
-    return cast(int, struct.unpack("H", packed)[0])
+    packed = struct.pack(ENDIANNESS + "h", value)
+    return cast(int, struct.unpack(ENDIANNESS + "H", packed)[0])
 
 
 def int_to_i32(value: int) -> int:
-    packed = struct.pack("i", value)
-    return cast(int, struct.unpack("I", packed)[0])
+    packed = struct.pack(ENDIANNESS + "i", value)
+    return cast(int, struct.unpack(ENDIANNESS + "I", packed)[0])
 
 
 def long_to_i64(value: int) -> int:
-    packed = struct.pack("q", value)
-    return cast(int, struct.unpack("Q", packed)[0])
+    packed = struct.pack(ENDIANNESS + "q", value)
+    return cast(int, struct.unpack(ENDIANNESS + "Q", packed)[0])
 
 
 def _map(
