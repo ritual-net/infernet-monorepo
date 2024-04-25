@@ -67,6 +67,9 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
 
     Returns:
         LoadArgs: the load arguments
+
+    Raises:
+        ValueError: if the model source is invalid
     """
 
     match model_source:
@@ -97,8 +100,10 @@ def load_model(
 
     Args:
         model_source (ModelSource): the source of the model
-        load_args (Union[HFLoadArgs, ArweaveLoadArgs, LocalLoadArgs]): the arguments
-            for loading the model
+        load_args (LoadArgs): the load arguments, options are:
+            - LocalLoadArgs
+            - HFLoadArgs
+            - ArweaveLoadArgs
 
     Returns:
         str: the path to the model
