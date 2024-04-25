@@ -3,8 +3,6 @@ Library containing functions for accessing closed source models.
 
 Currently, 3 APIs are supported: OPENAI, PERPLEXITYAI, and GOOSEAI.
 
-Depending on the API being used, the appropriate API key must be specified
-
 """
 
 import logging
@@ -57,7 +55,15 @@ ApiKeys = Dict[Provider, Optional[str]]
 
 
 class CSSRequest(BaseModel):
-    """A CSSRequest, meant for querying closed source models."""
+    """A CSSRequest, meant for querying closed source models.
+
+    Attributes:
+        provider: Provider
+        endpoint: str
+        model: str
+        api_keys: ApiKeys
+        params: Union[CSSCompletionParams, CSSEmbeddingParams]
+    """
 
     # provider and endpoint to query
     provider: Provider
@@ -75,8 +81,18 @@ class CSSRequest(BaseModel):
 
 
 def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
-    """
-    Returns base url, processed input.
+    """Returns base url & json input for OpenAI API.
+
+    Args:
+        req: a CSSRequest object, containing provider, endpoint, model,
+        api keys & params.
+
+    Returns:
+        base_url: str
+        processed input: dict[str, Any]
+
+    Raises:
+        InfernetMLException: if an unsupported model or params specified.
     """
     match req:
         case CSSRequest(model=model_name, params=CSSCompletionParams(messages=msgs)):
@@ -95,8 +111,18 @@ def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
 
 
 def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
-    """
-    Returns base url, processed input.
+    """Returns base url & json input for Perplexity AI API.
+
+    Args:
+        req: a CSSRequest object, containing provider, endpoint, model,
+        api keys & params.
+
+    Returns:
+        base_url: str
+        processed input: dict[str, Any]
+
+    Raises:
+        InfernetMLException: if an unsupported model or params specified.
     """
     match req:
         case CSSRequest(model=model_name, params=CSSCompletionParams(messages=msgs)):
@@ -110,7 +136,18 @@ def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
 
 def goose_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
     """
-    Returns base url, processed input.
+    Returns base url & json input for Goose AI API.
+
+    Args:
+        req: a CSSRequest object, containing provider, endpoint, model,
+        api keys & params.
+
+    Returns:
+        base_url: str
+        processed input: dict[str, Any]
+
+    Raises:
+        InfernetMLException: if an unsupported model or params specified.
     """
     match req:
         case CSSRequest(model=model_name, params=CSSCompletionParams(messages=msgs)):
@@ -163,8 +200,8 @@ def validate(req: CSSRequest) -> None:
     """helper function to validate provider and endpoint
 
     Args:
-        provider (str): provider used
-        endpoint (str): end point used
+        req: a CSSRequest object, containing provider, endpoint, model,
+        api keys & params.
 
     Raises:
         InfernetMLException: if API Key not specified or an unsupported
@@ -185,12 +222,10 @@ def css_mux(req: CSSRequest) -> str:
     By this point, we've already validated the request, so we can proceed
     with the actual API call.
 
-
     Args:
         req: CSSRequest
     Returns:
         response: processed output from api
-
     """
     provider = req.provider
     api_key = req.api_keys[provider]

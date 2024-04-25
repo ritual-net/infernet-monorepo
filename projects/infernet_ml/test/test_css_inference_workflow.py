@@ -7,6 +7,7 @@ import os
 from typing import Any
 
 import pytest
+from dotenv import load_dotenv
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     ConvoMessage,
@@ -24,10 +25,19 @@ api_keys: ApiKeys = {
     Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
 }
 
+load_dotenv()
 
-def test_should_error_if_no_api_key() -> None:
+
+@pytest.mark.parametrize(
+    "provider",
+    [
+        Provider.OPENAI,
+        Provider.PERPLEXITYAI,
+        Provider.GOOSEAI,
+    ],
+)
+def test_should_error_if_no_api_key(provider: Provider) -> None:
     endpoint = "completions"
-    provider = Provider.OPENAI
     model = "gpt-3.5-turbo-16k"
     params: CSSCompletionParams = CSSCompletionParams(
         messages=[ConvoMessage(role="user", content="hi how are you")]
@@ -45,10 +55,18 @@ completion_prompt = "what's 2 + 2?"
 expected_response = "4"
 
 
-def test_should_pass_api_key_with_request() -> None:
+@pytest.mark.parametrize(
+    "provider, model, response",
+    [
+        (Provider.OPENAI, "gpt-3.5-turbo-16k", expected_response),
+        (Provider.PERPLEXITYAI, "mistral-7b-instruct", expected_response),
+        (Provider.GOOSEAI, "gpt-neo-125m", ""),
+    ],
+)
+def test_should_pass_api_key_with_request(
+    provider: Provider, model: str, response: str
+) -> None:
     endpoint = "completions"
-    provider = Provider.OPENAI
-    model = "gpt-3.5-turbo-16k"
     params: CSSCompletionParams = CSSCompletionParams(
         messages=[ConvoMessage(role="user", content=completion_prompt)]
     )
@@ -63,7 +81,7 @@ def test_should_pass_api_key_with_request() -> None:
     workflow.setup()
     res: dict[str, Any] = workflow.inference(req)
     assert len(res), "non empty result"
-    assert expected_response in res, "correct completion"
+    assert response in res, "correct completion"
 
 
 @pytest.mark.parametrize(
