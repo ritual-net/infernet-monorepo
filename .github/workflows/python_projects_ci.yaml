@@ -79,6 +79,7 @@ jobs:
 
       - name: Run tests
         env:
+          # We need to list the env vars here again for them to get filtered out in logs
           PYTHONPATH: projects/${{ matrix.project }}/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
