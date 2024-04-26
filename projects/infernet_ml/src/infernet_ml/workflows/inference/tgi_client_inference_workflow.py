@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, cast
 
 from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.workflows.exceptions import InfernetMLException
@@ -83,25 +83,25 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         By default, returns the value associated with the text key in a dictionary.
 
         Args:
-            input_data (TgiInferenceRequest): raw user input
+            input_data (TgiInferenceRequest): user input
+
         Returns:
             str: transformed user input prompt
         """
         return input_data.text
 
-    def do_postprocessing(
-        self, input_data: dict[str, Any], gen_text: str
-    ) -> Union[Any, dict[str, Any]]:
+    def do_postprocessing(self, input_data: TgiInferenceRequest, gen_text: str) -> str:
         """
         Implement any postprocessing here. For example, you may need to return
         additional data. By default returns a dictionary with a single
         output key.
 
         Args:
-            input_data (Union[dict[str]]): raw input
-            gen_text (str): str result from LLM model
+            input_data (TgiInferenceRequest): user input
+            gen_text (str): generated text from the model.
+
         Returns:
-            Any: transformation to the gen_text
+            str: transformed llm output
         """
 
         return gen_text
