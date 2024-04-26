@@ -1,61 +1,146 @@
 """
 simple test for a CSS Inference Workflow
 """
+
+import logging
 import os
+from typing import Any
 
 import pytest
-from infernet_ml.utils.service_models import (
+from dotenv import load_dotenv
+from infernet_ml.utils.css_mux import (
+    ApiKeys,
     ConvoMessage,
     CSSCompletionParams,
+    CSSEmbeddingParams,
     CSSRequest,
+    Provider,
 )
+from infernet_ml.workflows.exceptions import APIKeyMissingException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 
+api_keys: ApiKeys = {
+    Provider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
+    Provider.OPENAI: os.getenv("OPENAI_API_KEY"),
+    Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
+}
+
+load_dotenv()
+
 
 @pytest.mark.parametrize(
-    "provider, endpoint",
+    "provider",
     [
-        ("OPENAI", "completions"),
-        ("OPENAI", "embeddings"),
-        ("PERPLEXITYAI", "completions"),
-        ("GOOSEAI", "completions"),
+        Provider.OPENAI,
+        Provider.PERPLEXITYAI,
+        Provider.GOOSEAI,
     ],
 )
-def test_init(provider: str, endpoint: str) -> None:
-    _environ = dict(os.environ)  # or os.environ.copy()
-    try:
-        os.environ[f"{provider}_API_KEY"] = "test_key"
-        _: CSSInferenceWorkflow = CSSInferenceWorkflow(provider, endpoint)
-    finally:
-        os.environ.clear()
-        os.environ.update(_environ)
+def test_should_error_if_no_api_key(provider: Provider) -> None:
+    endpoint = "completions"
+    model = "gpt-3.5-turbo-16k"
+    params: CSSCompletionParams = CSSCompletionParams(
+        messages=[ConvoMessage(role="user", content="hi how are you")]
+    )
+    req: CSSRequest = CSSRequest(
+        provider=provider, endpoint=endpoint, model=model, params=params
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
+    workflow.setup()
+    with pytest.raises(APIKeyMissingException):
+        workflow.inference(req)
+
+
+completion_prompt = "what's 2 + 2?"
+expected_response = "4"
 
 
 @pytest.mark.parametrize(
-    "provider, model, messages",
+    "provider, model, response",
+    [
+        (Provider.OPENAI, "gpt-3.5-turbo-16k", expected_response),
+        (Provider.PERPLEXITYAI, "mistral-7b-instruct", expected_response),
+        (Provider.GOOSEAI, "gpt-neo-125m", ""),
+    ],
+)
+def test_should_pass_api_key_with_request(
+    provider: Provider, model: str, response: str
+) -> None:
+    endpoint = "completions"
+    params: CSSCompletionParams = CSSCompletionParams(
+        messages=[ConvoMessage(role="user", content=completion_prompt)]
+    )
+    req: CSSRequest = CSSRequest(
+        provider=provider,
+        endpoint=endpoint,
+        model=model,
+        params=params,
+        api_keys=api_keys,
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
+    workflow.setup()
+    res: dict[str, Any] = workflow.inference(req)
+    assert len(res), "non empty result"
+    assert response in res, "correct completion"
+
+
+@pytest.mark.parametrize(
+    "provider, model, messages, expected_substr",
     [
         (
-            "OPENAI",
+            Provider.OPENAI,
             "gpt-3.5-turbo-16k",
-            [ConvoMessage(role="user", content="hi how are you")],
+            [ConvoMessage(role="user", content=completion_prompt)],
+            expected_response,
         ),
         (
-            "PERPLEXITYAI",
+            Provider.PERPLEXITYAI,
             "mistral-7b-instruct",
-            [ConvoMessage(role="user", content="hi how are you")],
+            [ConvoMessage(role="user", content=completion_prompt)],
+            expected_response,
         ),
-        ("GOOSEAI", "gpt-j-6b", [ConvoMessage(role="user", content="hi how are you")]),
+        (
+            Provider.GOOSEAI,
+            "gpt-neo-125m",
+            [ConvoMessage(role="user", content=completion_prompt)],
+            # GooseAI's models hallucinate a lot, so we can't really predict the output
+            "",
+        ),
     ],
 )
 def test_completion_inferences(
-    provider: str, model: str, messages: list[ConvoMessage]
+    provider: Provider, model: str, messages: list[ConvoMessage], expected_substr: str
 ) -> None:
-    if os.environ.get(f"{provider}_API_KEY"):
-        params: CSSCompletionParams = CSSCompletionParams(
-            endpoint="completions", messages=messages
-        )
-        req: CSSRequest = CSSRequest(model=model, params=params)
-        workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(provider, "completions")
-        workflow.setup()
-        res = workflow.inference(req.model_dump())
-        assert len(res)
+    logging.info(f"testing for {provider}")
+    endpoint = "completions"
+
+    params: CSSCompletionParams = CSSCompletionParams(messages=messages)
+    req: CSSRequest = CSSRequest(
+        provider=provider, endpoint=endpoint, model=model, params=params
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
+    workflow.setup()
+    res: dict[str, Any] = workflow.inference(req)
+
+    logging.info(res)
+
+    assert len(res), "non empty result"
+    assert expected_substr in res, "correct completion"
+
+
+def test_embedding_inference() -> None:
+    endpoint = "embeddings"
+    provider = Provider.OPENAI
+    model = "text-embedding-3-small"
+    params: CSSEmbeddingParams = CSSEmbeddingParams(input="hi how are you")
+    req: CSSRequest = CSSRequest(
+        provider=provider,
+        endpoint=endpoint,
+        model=model,
+        params=params,
+        api_keys=api_keys,
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
+    workflow.setup()
+    res: dict[str, Any] = workflow.inference(req)
+    assert len(res), "non empty result"

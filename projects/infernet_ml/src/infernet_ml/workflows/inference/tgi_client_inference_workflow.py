@@ -1,12 +1,7 @@
-"""
-Module containing a TGI Inference Workflow object.
-"""
+from typing import Any, Optional, cast
 
-import json
-import os
-from typing import Any, Optional, Union, cast
-
-from infernet_ml.workflows.exceptions import ServiceException
+from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
+from infernet_ml.workflows.exceptions import InfernetMLException
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
@@ -27,22 +22,6 @@ from text_generation.errors import (
     ValidationError,
 )
 
-TGI_REQUEST_TRIES: int = json.loads(os.getenv("TGI_REQUEST_TRIES", "3"))
-TGI_REQUEST_DELAY: Union[int, float] = json.loads(os.getenv("TGI_REQUEST_DELAY", "3"))
-TGI_REQUEST_MAX_DELAY: Optional[Union[int, float]] = json.loads(
-    os.getenv("TGI_REQUEST_MAX_DELAY", "null")
-)
-TGI_REQUEST_BACKOFF: Union[int, float] = json.loads(
-    os.getenv("TGI_REQUEST_BACKOFF", "2")
-)
-TGI_REQUEST_JITTER: Union[tuple[float, float], float] = (
-    jitter
-    if isinstance(
-        jitter := json.loads(os.getenv("TGI_REQUEST_JITTER", "[0.5,1.5]")), float
-    )
-    else tuple(jitter)
-)
-
 
 class TgiInferenceRequest(BaseModel):
     """
@@ -58,7 +37,13 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
     """
 
     def __init__(
-        self, server_url: str, timeout: int = 30, **inference_params: dict[str, Any]
+        self,
+        server_url: str,
+        timeout: int = 30,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
+        retry_params: Optional[RetryParams] = None,
+        **inference_params: dict[str, Any],
     ) -> None:
         """
         constructor. Any named arguments passed to LLM during inference.
@@ -67,60 +52,60 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
             server_url (str): url of inference server
         """
         super().__init__()
-        self.client: Client = Client(server_url, timeout=timeout)
+        self.client: Client = Client(
+            server_url, timeout=timeout, headers=headers, cookies=cookies
+        )
         self.inference_params: dict[str, Any] = inference_params
-        # dummy call to fail fast if client is misconfigured
-        self.client.generate("hello", **inference_params)
+
+        self.retry_params = {
+            **DEFAULT_RETRY_PARAMS.model_dump(),
+            "exceptions": (
+                ShardNotReadyError,
+                ShardTimeoutError,
+                RateLimitExceededError,
+                OverloadedError,
+            ),
+            **({} if retry_params is None else retry_params.model_dump()),
+        }
 
     def do_setup(self) -> bool:
         """
         no specific setup needed
         """
+        # dummy call to fail fast if client is misconfigured
+        self.client.generate("hello", **self.inference_params)
         return True
 
-    def do_preprocessing(self, input_data: dict[str, Any]) -> str:
+    def do_preprocessing(self, input_data: TgiInferenceRequest) -> str:
         """
         Implement any preprocessing of the raw input.
         For example, you may want to append additional context.
         By default, returns the value associated with the text key in a dictionary.
 
         Args:
-            input_data (Union[dict[str]]): raw input
+            input_data (TgiInferenceRequest): user input
+
         Returns:
             str: transformed user input prompt
         """
-        TgiInferenceRequest.model_validate(input_data)
-        return str(input_data["text"])
+        return input_data.text
 
-    def do_postprocessing(
-        self, input_data: dict[str, Any], gen_text: str
-    ) -> Union[str, dict[str, Any]]:
+    def do_postprocessing(self, input_data: TgiInferenceRequest, gen_text: str) -> str:
         """
         Implement any postprocessing here. For example, you may need to return
-        additional data.
+        additional data. By default returns a dictionary with a single
+        output key.
 
         Args:
-            input_data (Union[dict[str]]): raw input
-            gen_text (str): str result from LLM model
+            input_data (TgiInferenceRequest): user input
+            gen_text (str): generated text from the model.
+
         Returns:
-            Any: transformation to the gen_text
+            str: transformed llm output
         """
 
         return gen_text
 
-    @retry(
-        exceptions=(
-            ShardNotReadyError,
-            ShardTimeoutError,
-            RateLimitExceededError,
-            OverloadedError,
-        ),
-        tries=TGI_REQUEST_TRIES,
-        delay=TGI_REQUEST_DELAY,
-        max_delay=TGI_REQUEST_MAX_DELAY,
-        backoff=TGI_REQUEST_BACKOFF,
-        jitter=TGI_REQUEST_JITTER,
-    )
     def generate_inference(self, preprocessed_data: str) -> str:
         """use tgi client to generate inference.
         Args:
@@ -129,22 +114,21 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         Returns:
             str: output of tgi inference
         """
-        return cast(
-            str,
-            self.client.generate(
-                preprocessed_data, **self.inference_params
-            ).generated_text,
-        )
 
-    def do_run_model(self, preprocessed_data: str) -> str:
+        @retry(**self.retry_params)
+        def _run() -> str:
+            return cast(
+                str,
+                self.client.generate(
+                    preprocessed_data, **self.inference_params
+                ).generated_text,
+            )
+
+        return _run()
+
+    def do_run_model(self, prompt: str) -> str:
         """
-        Inference implementation. Generally,
-        you should not need to change this implementation
-        directly, as the code already implements calling
-        an LLM server.
-
-        Instead, you can perform any preprocessing or
-        post processing in the relevant abstract methods.
+        Run the model with the given prompt.
 
         Args:
             dict (str): user input
@@ -153,7 +137,7 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
             Any: result of inference
         """
         try:
-            return self.generate_inference(preprocessed_data)
+            return self.generate_inference(prompt)
         except (
             BadRequestError,
             GenerationError,
@@ -170,7 +154,7 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
             # we catch expected service exceptions and return ServiceException
             # this is so we can handle unexpected vs. expected exceptions
             # downstream
-            raise ServiceException(e) from e
+            raise InfernetMLException(e) from e
 
     def do_generate_proof(self) -> Any:
         """

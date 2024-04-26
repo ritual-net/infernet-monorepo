@@ -10,3 +10,15 @@ class ServiceException(Exception):
     """
 
     pass
+
+
+class InfernetMLException(Exception):
+    """Base exception for all infernet_ml exceptions"""
+
+    pass
+
+
+class APIKeyMissingException(InfernetMLException):
+    """Exception for when an API key is missing"""
+
+    pass

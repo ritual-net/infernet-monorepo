@@ -3,47 +3,48 @@ workflow  class for torch inference workflows.
 """
 
 import logging
-import os
-from typing import Any, Optional, cast
+from typing import Any, Optional, Tuple, cast
 
-# This noinspection is required otherwise IDE import optimizations would remove the
-# import statement, which would prevent scikit-learn models to be included in the scope.
-# noinspection PyUnresolvedReferences
+import sk2torch  # type: ignore
 import torch
 import torch.jit
-from infernet_ml.utils.model_loader import ModelSource, load_model
+from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.utils.model_loader import LoadArgs, ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
+from infernet_ml.workflows.utils.common_types import DTYPES
+from pydantic import BaseModel, ConfigDict, field_validator
+from torch import Tensor
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-# whether or not to use torch script
-USE_JIT = os.getenv("USE_JIT", "False").lower() in ("true", "1", "t")
-
 
 # dtypes we support for conversion to corresponding torch types.
-DTYPES = {
-    "float": torch.float,
-    "double": torch.double,
-    "cfloat": torch.cfloat,
-    "cdouble": torch.cdouble,
-    "half": torch.half,
-    "bfloat16": torch.bfloat16,
-    "uint8": torch.uint8,
-    "int8": torch.int8,
-    "short": torch.short,
-    "int": torch.int,
-    "long": torch.long,
-    "bool": torch.bool,
-}
+
+
+class TorchInferenceResult(BaseModel):
+    """
+    Pydantic model for the result of a torch inference workflow.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    dtype: str
+    shape: Tuple[int, ...]
+    outputs: Tensor
+
+    @field_validator("outputs")
+    def check_is_tensor(cls, v: Tensor) -> Tensor:
+        if not isinstance(v, torch.Tensor):
+            raise ValueError("Outputs must be a torch.Tensor")
+        return v
 
 
 class TorchInferenceWorkflow(BaseInferenceWorkflow):
     """
     Inference workflow for Torch based models. models are loaded using the default
-    torch pickling by default(i.e. torch.load). This can be changed to use torch script
-     (torch.jit) if the USE_JIT environment variable is enabled.
+    torch pickling by default(i.e. torch.load).
 
     By default, uses hugging face to download the model file, which requires
     HUGGING_FACE_HUB_TOKEN to be set in the env vars to access private models. if
@@ -53,18 +54,30 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
     def __init__(
         self,
-        model_source: ModelSource = ModelSource.LOCAL,
-        model_args: Optional[dict[str, Any]] = None,
+        model_source: ModelSource,
+        load_args: LoadArgs,
+        use_jit: bool = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.model: Optional[torch.nn.Module] = None
         self.model_source = model_source
-        self.model_args = model_args or {}
+        self.model_load_args = load_args
+        self.use_jit = use_jit
+
+    def inference(self, input_data: TensorInput) -> TorchInferenceResult:
+        """
+        Inference method for the torch workflow. Overridden to add type hints.
+        """
+        return cast(TorchInferenceResult, super().inference(input_data))
 
     def do_setup(self) -> Any:
         """set up here (if applicable)."""
+
+        # This is so that tools like `isort` don't exclude the sk2torch import. This is
+        # necessary for scikit-learn models to be present in pytorch's classpath.
+        logger.debug(sk2torch.__name__)
         return self.load_model()
 
     def load_model(self) -> bool:
@@ -75,9 +88,13 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
             bool: True on completion of loading model
         """
 
-        model_path = load_model(self.model_source, **self.model_args)
+        model_path = load_model(self.model_source, self.model_load_args)
 
-        self.model = torch.jit.load(model_path) if USE_JIT else torch.load(model_path)  # type: ignore  # noqa: E501
+        self.model = (
+            torch.jit.load(model_path)  # type: ignore
+            if self.use_jit
+            else torch.load(model_path)
+        )
 
         # turn on inference mode
         self.model.eval()  # type: ignore
@@ -86,17 +103,17 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
         return True
 
-    def do_preprocessing(self, input_data: dict[str, Any]) -> torch.Tensor:
-        # lookup dtype from str
-        dtype = DTYPES.get(input_data["dtype"], None)
-        values = input_data["values"]
-        return torch.tensor(values, dtype=dtype)
+    def do_preprocessing(self, input_data: TensorInput) -> Tensor:
+        return torch.tensor(input_data.values, dtype=DTYPES[input_data.dtype])
 
-    def do_run_model(self, preprocessed_data: torch.Tensor) -> torch.Tensor:
-        if self.model is None:
-            raise ValueError("Model not loaded, call setup() first")
-        model_result = cast(torch.Tensor, self.model(preprocessed_data))
-        return model_result
+    def do_run_model(self, preprocessed_data: Tensor) -> TorchInferenceResult:
+        model_result = self.model(preprocessed_data)  # type: ignore
+        dtype = str(model_result.dtype)
+        shape = tuple(model_result.shape)
+        model_result = model_result.flatten()
+        return TorchInferenceResult(dtype=dtype, shape=shape, outputs=model_result)
 
-    def do_postprocessing(self, input_data: Any, output_data: Any) -> Any:
+    def do_postprocessing(
+        self, input_data: TensorInput, output_data: TorchInferenceResult
+    ) -> TorchInferenceResult:
         return output_data
