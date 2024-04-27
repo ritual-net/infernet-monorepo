@@ -66,6 +66,33 @@ css_inference = [
     "retry2>=0.9.5,<1.0.0",
 ]
 
+# huggingface_hub inference service
+hf_inference = [
+    "huggingface-hub>=0.20.3,<1.0.0",
+    "pyarweave @ git+https://github.com/ritual-net/pyarweave.git",
+    "transformers>=4.38,<5.0.0",
+]
+
+# Diffusion model inference service
+diffusion_inference = [
+    "diffusers>=0.26.3,<0.27.0",
+    "accelerate>=0.27.2,<0.28.0",
+    "Pillow==10.2.0",
+    "pydantic==2.5.3",
+    "transformers>=4.0.0,<5.0.0",
+    "xformers>=0.0.20,<0.1.0",
+    "torch>=2.1.2,<2.2.0",
+]
+
+# HF Diffusion model inference service
+hf_diffusion_inference = [
+    "diffusers>=0.26,<0.27.0",
+    "Pillow==10.2.0",
+    "huggingface-hub>=0.20.3,<1.0.0",
+    "pyarweave @ git+https://github.com/ritual-net/pyarweave.git",
+    "transformers>=4.38,<5.0.0",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
