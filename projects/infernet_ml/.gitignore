@@ -1,3 +1,5 @@
 # model files
 **/*.onnx
 **/*.torch
+
+docs/infernet_ml

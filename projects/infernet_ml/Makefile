@@ -8,3 +8,4 @@ update-lockfile:
 	uv pip install -e ".[css_inference]" -r pyproject.toml && \
 	uv pip install -e ".[bark_inference]" -r pyproject.toml && \
 	uv pip freeze | grep -v infernet_ml > requirements.lock && rm -rf .venv
+

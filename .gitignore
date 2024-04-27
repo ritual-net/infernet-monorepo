@@ -79,3 +79,6 @@ downloaded_models
 
 # arlocal logs
 logs
+
+# docs
+**/site

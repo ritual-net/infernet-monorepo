@@ -21,23 +21,6 @@ repos:
         language: system
         types: [python]
 
-#  - repo: local
-#    hooks:
-#      - id: mypy infernet_ml
-#        name: mypy infernet_ml
-#        entry: mypy --strict
-#        files: ^projects/infernet_ml
-#        language: system
-#        types: [python]
-#
-#  - repo: local
-#    hooks:
-#      - id: mypy ritual_arweave
-#        name: mypy ritual_arweave
-#        entry: mypy --strict
-#        files: ^projects/ritual_arweave
-#        language: system
-#        types: [python]
 
   - repo: local
     hooks:

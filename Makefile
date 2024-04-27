@@ -17,6 +17,15 @@ else
     SED := sed
 endif
 
+generate-docs:
+	python tools/generate_docs.py $(project)
+
+serve-docs:
+	cd projects/$(project) && mkdocs serve
+
+build-docs:
+	cd projects/$(project) && mkdocs build
+
 set-version:
 	$(SED) -i 's/version = .*/version = "$(version)"/' projects/$(project)/pyproject.toml
 
