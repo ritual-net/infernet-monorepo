@@ -1,4 +1,6 @@
+ifneq ("$(wildcard gcp.env)","")
 include gcp.env
+endif
 
 SHELL := /bin/bash
 
