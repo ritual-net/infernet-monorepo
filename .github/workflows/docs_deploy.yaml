@@ -17,6 +17,11 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
           uv pip install -r pyproject.toml
 
+      - name: build docs
+        run: |
+          make generate-docs 
+          make build-docs
+
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
         with:
