@@ -22,25 +22,14 @@ jobs:
         run: |
           python -m pip install uv
           uv venv
-
-      - name: Activate virtual environment
-        run: |
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
+          uv pip install -r pyproject.toml
 
-      - name: Install dependencies
-        run: uv pip install -r pyproject.toml
-
-      - name: Add venv bin to PATH
-        run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
-
-      - name: Generate docs
-        run: make generate-docs project=${{ matrix.project }}
-
-      - name: Build docs
+      - name: Build & Generate docs
         env:
           PYTHONPATH: src
-        run: make build-docs project=${{ matrix.project }}
+        run: make build-docs generate-docs project=${{ matrix.project }}
 
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
