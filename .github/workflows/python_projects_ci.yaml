@@ -67,12 +67,8 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
-      - name: Add venv bin to PATH
-        run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
-
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
-
 
       - name: Install dependencies
         run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
