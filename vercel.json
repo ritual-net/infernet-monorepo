@@ -2,18 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "projects/infernet_ml/site/**/*.html",
+      "src": "projects/infernet_ml/site/**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "projects/infernet_ml/site/$1",
-      "continue": true
-    },
-    {
-      "handle": "filesystem"
+      "dest": "projects/infernet_ml/site/$1"
     }
   ]
 }
