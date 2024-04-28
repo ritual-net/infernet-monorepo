@@ -34,11 +34,13 @@ jobs:
       - name: Add venv bin to PATH
         run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
 
-      - name: build docs
+      - name: Generate docs
+        run: make generate-docs project=${{ matrix.project }}
+
+      - name: Build docs
         env:
           PYTHONPATH: ./projects/${{ matrix.project }}/src
-        run: |
-          make generate-docs build-docs project=${{ matrix.project }}
+        run: make build-docs project=${{ matrix.project }}
 
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
