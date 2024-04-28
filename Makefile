@@ -27,7 +27,7 @@ generate-docs:
 	$(PYTHON) tools/generate_docs.py $(project)
 
 serve-docs:
-	cd projects/$(project) && mkdocs serve
+	cd projects/$(project) && PYTHONPATH=src mkdocs serve
 
 build-docs:
 	cd projects/$(project) && mkdocs build
