@@ -35,7 +35,7 @@ jobs:
         run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
 
       - name: Get python runtime
-        run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
+        run: which python
 
       - name: build docs
         env:
