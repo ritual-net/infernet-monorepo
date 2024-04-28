@@ -4,6 +4,10 @@ endif
 
 SHELL := /bin/bash
 
+# if the .venv directory exists, use the python binary from there
+# otherwise use the system python
+PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
+
 # service account email
 sa_email := $(sa_name)@$(gcp_project).iam.gserviceaccount.com
 # service account auth file name
@@ -20,7 +24,7 @@ else
 endif
 
 generate-docs:
-	python tools/generate_docs.py $(project)
+	$(PYTHON) tools/generate_docs.py $(project)
 
 serve-docs:
 	cd projects/$(project) && mkdocs serve
