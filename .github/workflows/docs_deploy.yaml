@@ -39,7 +39,7 @@ jobs:
 
       - name: Build docs
         env:
-          PYTHONPATH: ./projects/${{ matrix.project }}/src
+          PYTHONPATH: src
         run: make build-docs project=${{ matrix.project }}
 
       - name: Vercel Deploy
