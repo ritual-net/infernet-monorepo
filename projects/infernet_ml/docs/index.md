@@ -1,17 +1,8 @@
-# Welcome to MkDocs
+# Infernet ML Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
-
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+Ritual provides easy-to-use abstractions for users to create AI/ML workflows that can be
+deployed on Infernet nodes. The infernet-ml library is a Python SDK that provides a set
+of tools and extendable classes for creating and deploying machine learning workflows.
+It is designed to be easy to use, and provides a consistent interface for data
+pre-processing, inference, and post-processing. pre-processing, inference, and
+post-processing of data.
