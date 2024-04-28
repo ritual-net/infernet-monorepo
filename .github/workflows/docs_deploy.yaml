@@ -34,12 +34,9 @@ jobs:
       - name: Add venv bin to PATH
         run: echo PATH=".venv/bin/:$PATH" >> $GITHUB_ENV
 
-      - name: Get python runtime
-        run: which python
-
       - name: build docs
         env:
-          PYTHONPATH: projects/${{ matrix.project }}/src
+          PYTHONPATH: ./projects/${{ matrix.project }}/src
         run: |
           make generate-docs build-docs project=${{ matrix.project }}
 
