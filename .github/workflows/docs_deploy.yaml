@@ -22,9 +22,14 @@ jobs:
         run: |
           python -m pip install uv
           uv venv
+
+      - name: Activate virtual environment
+        run: |
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
-          uv pip install -r pyproject.toml
+
+      - name: Install dependencies
+        run: uv pip install -r pyproject.toml
 
       - name: build docs
         env:
