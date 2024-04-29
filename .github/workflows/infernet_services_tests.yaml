@@ -108,5 +108,4 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
           service: ${{ matrix.service }}
-          service_dir: services
         run: make run-tests
