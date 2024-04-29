@@ -78,7 +78,7 @@ jobs:
         env:
           service: ${{ matrix.service }}
           CI: true
-        run: make build
+        run: make build-service
 
       - name: Install UV
         run: python -m pip install uv

@@ -39,15 +39,14 @@ run-tests: stop-node
 	kill $(lsof -i :3000 | tail -n 1  | awk '{print $2}') || true
 	pytest -vvv -s test/$(service)
 
-
-dev: build stop-node deploy-node
+dev: build-service stop-node deploy-node
 	sleep 5
 	$(MAKE) deploy-contract
 
 update-lock:
 	uv venv
-	uv pip install -r $(req_file).txt
-	uv pip freeze > $(req_file).lock
+	uv pip install -r $(toplevel_dir)/$(req_file).txt
+	uv pip freeze > $(toplevel_dir)/$(req_file).lock
 
 open-terminal:
 	osascript -e 'tell app "Terminal" to do script "$(command)"'
