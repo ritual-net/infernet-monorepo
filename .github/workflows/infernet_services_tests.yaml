@@ -27,8 +27,11 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
+
+      # pull submodules manually since some are private
+      - run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --recursive
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
