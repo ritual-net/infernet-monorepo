@@ -16,8 +16,8 @@ clean:
 pre-commit:
 	pre-commit run --files $$(git ls-files projects/$(project))
 
-services-pre-commit:
-	$(MAKE) -C ./infernet_services pre-commit
+pre-commit-services:
+	pre-commit run --files $$(git ls-files infernet_services)
 
 test:
 	PYTHONPATH=projects/$(project)/src pytest projects/$(project)
