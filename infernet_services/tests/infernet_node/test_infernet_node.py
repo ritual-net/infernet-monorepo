@@ -83,7 +83,8 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
         ),
         (
             ErrorId.IntervalCompleted,
-            "Interval completed. Redundancy has been already met for the current interval",
+            "Interval completed. Redundancy has been already met for the "
+            "current interval",
         ),
         (
             ErrorId.NodeRespondedAlready,
@@ -99,7 +100,8 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
         ),
         (
             ErrorId.SubscriptionCompleted,
-            "Subscription is already completed, another node has likely already delivered the response",
+            "Subscription is already completed, another node has likely already "
+            "delivered the response",
         ),
         (
             ErrorId.SubscriptionNotActive,
@@ -120,8 +122,9 @@ async def test_infernet_error_logs(error_id: ErrorId, expected_log: str) -> None
 
     found, logs = await collector.wait_for_line(expected_log, timeout=4)
 
-    assert (
-        found
-    ), f"Expected {expected_log} to exist in the output logs. Collected logs: {json.dumps(logs, indent=2)}"
+    assert found, (
+        f"Expected {expected_log} to exist in the output logs. Collected logs: "
+        f"{json.dumps(logs, indent=2)}"
+    )
 
     await collector.stop()

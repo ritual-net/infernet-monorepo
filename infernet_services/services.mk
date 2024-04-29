@@ -1,5 +1,6 @@
-service_dir ?= infernet_services/services
-deploy_dir ?= infernet_services/deploy
+toplevel_dir ?= infernet_services
+service_dir ?= $(toplevel_dir)/services
+deploy_dir ?= $(toplevel_dir)/deploy
 
 build-service: get_index_url
 	$(MAKE) build -C $(service_dir)/$(service) index_url=$(index_url)
@@ -13,7 +14,7 @@ contract ?= "GenericConsumerContract"
 service ?= hf_inference_client_service
 
 deploy-contract:
-	$(MAKE) deploy-contract -C consumer-contracts filename=$(filename) contract=$(contract)
+	$(MAKE) deploy-contract -C $(toplevel_dir)/consumer-contracts filename=$(filename) contract=$(contract)
 
 save-image:
 	docker save ritualnetwork/$(service):latest -o $(service).tar

@@ -5,6 +5,7 @@ import os
 import shlex
 import subprocess
 from asyncio import StreamReader
+from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, cast
 
 import aiohttp
@@ -16,6 +17,7 @@ from retry_async import retry  # type: ignore
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 FixtureType = Callable[[], Generator[None, None, None]]
+TOPLEVEL_DIR = Path(__file__).resolve().parents[1]
 
 
 class ContainerResult(BaseModel):
@@ -59,7 +61,8 @@ def deploy_smart_contracts(service: str, filename: str, contract: str) -> None:
     log.info(f"make deploy-contract filename={filename} contract={contract}")
     subprocess.run(
         shlex.split(
-            f"make deploy-contract service={service} filename={filename} contract={contract}"
+            f"make deploy-contract service={service} filename={filename} "
+            f"contract={contract}"
         )
     )
 
@@ -203,7 +206,9 @@ ABIType = List[Dict[str, Any]]
 
 
 def get_abi(filename: str, contract_name: str) -> ABIType:
-    with open(f"./consumer-contracts/out/{filename}/{contract_name}.json") as f:
+    with open(
+        f"{TOPLEVEL_DIR}/consumer-contracts/out/{filename}/{contract_name}.json"
+    ) as f:
         _abi: ABIType = json.load(f)["abi"]
         return _abi
 

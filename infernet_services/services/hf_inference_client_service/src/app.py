@@ -118,8 +118,9 @@ def create_app(
                                 input_data = {"prompt": input_text_decoded}
                             case _:
                                 raise Exception(
-                                    "Invalid task: expected one of text_classification, token_classification, "
-                                    "summarization, text_generation"
+                                    "Invalid task: expected one of text_classification"
+                                    ", token_classification, summarization, "
+                                    "text_generation"
                                 )
 
                         result = await run_sync(WORKFLOW.inference)(
@@ -148,7 +149,8 @@ def create_app(
 
                     case _:
                         raise PydValError(
-                            "Invalid InferentInput type: expected mapping for offchain input type"  # noqa: E501
+                            "Invalid InferentInput type: expected mapping for offchain "
+                            "input type"
                         )
 
             except ServiceException as e:
@@ -156,7 +158,7 @@ def create_app(
             except PydValError as e:
                 abort(400, e)
 
-        abort(400, "Invalid method or data: Only POST supported with json data")
+        abort(400, "Invalid method or data: Only POST supported with json " "data")
 
     @app.errorhandler(HTTPException)
     def handle_exception(e: Any) -> Any:

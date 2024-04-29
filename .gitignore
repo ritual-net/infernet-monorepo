@@ -83,3 +83,6 @@ logs
 # docs
 **/site
 .vercel
+
+# pytest logs
+**/pytest_logs.txt
