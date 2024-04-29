@@ -1,4 +1,4 @@
-include infernet_services/Services.mk
+include infernet_services/services.mk
 include scripts/docs.mk
 include scripts/gcp.mk
 include scripts/pypi.mk
