@@ -65,7 +65,7 @@ jobs:
 
       - name: Pull service images
         run: |
-          docker compose -f deploy/docker-compose.yaml pull
+          docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
 
       - uses: webfactory/ssh-agent@v0.9.0
