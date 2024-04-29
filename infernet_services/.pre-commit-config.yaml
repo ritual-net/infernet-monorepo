@@ -1,0 +1,93 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.289
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+
+  - repo: local
+    hooks:
+      - id: mypy_hf_inference_client_service
+        name: mypy hf_inference_client_service
+        entry: mypy --strict
+        files: ^services/hf_inference_client_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_css_inference_service
+        name: mypy css_inference_service
+        entry: mypy --strict
+        files: ^services/css_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_tgi_client_inference_service
+        name: mypy tgi_client_inference_service
+        entry: mypy --strict
+        files: ^services/tgi_client_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_onnx_inference_service
+        name: mypy onnx_inference_service
+        entry: mypy --strict
+        files: ^services/onnx_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_tests
+        name: mypy tests
+        entry: mypy --strict
+        files: ^test
+        exclude: ^test/services
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_torch_inference_service
+        name: mypy torch_inference_service
+        entry: mypy --strict
+        files: ^services/torch_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy echo service
+        name: mypy echo service
+        entry: mypy --strict
+        files: ^test/services/echo
+        language: system
+        types: [python]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+
+  # Default pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      # Ensure EOF exists
+      - id: end-of-file-fixer
+      # Prevent adding large files
+      - id: check-added-large-files
+        args: ["--maxkb=5000"]
+      # Newline at end of file
+      - id: trailing-whitespace
