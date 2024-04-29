@@ -11,6 +11,7 @@ dependencies = [
     "mkdocstrings>=0.24.3,<0.25.0",
     "mkdocstrings-python>=1.10.0,<2.0.0",
     "pyyaml>=6.0.1,<7.0.0",
+    "types-pyyaml>=6.0.12.20240311,<7.0.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

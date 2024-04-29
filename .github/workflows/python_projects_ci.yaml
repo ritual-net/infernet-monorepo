@@ -77,7 +77,7 @@ jobs:
         run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
 
       - name: Run pre-commit hooks
-        run: make pre-commit project=${{ matrix.project }}
+        run: make pre-commit-project project=${{ matrix.project }}
 
       - name: Run tests
         env:
