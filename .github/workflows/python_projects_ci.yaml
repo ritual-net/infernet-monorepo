@@ -74,7 +74,9 @@ jobs:
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
+        run: |
+          uv pip install -r projects/${{ matrix.project }}/requirements.lock
+          uv pip install -r pyproject.toml
 
       - name: Run pre-commit hooks
         run: make pre-commit-project project=${{ matrix.project }}
