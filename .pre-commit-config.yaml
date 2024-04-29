@@ -12,7 +12,6 @@ repos:
     hooks:
       - id: black
 
-
   - repo: local
     hooks:
       - id: mypy
@@ -20,7 +19,6 @@ repos:
         entry: mypy --strict
         language: system
         types: [python]
-
 
   - repo: local
     hooks:
