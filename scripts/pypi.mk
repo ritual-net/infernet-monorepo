@@ -1,4 +1,5 @@
 # Make commands for building python packages & publishing them to GCP's Artifact Registry
+SHELL := /bin/bash
 
 # Conditional assignment based on the operating system
 ifeq ($(shell uname -s),Darwin)

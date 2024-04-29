@@ -3,6 +3,7 @@
 # Artifact Registry. In summary, we create a service account, give it permissions
 # to read from and write to the Artifact Registry, and some utility commands to
 # get the service account auth file and export it to base64.
+SHELL := /bin/bash
 
 # service account email
 sa_email := $(sa_name)@$(gcp_project).iam.gserviceaccount.com

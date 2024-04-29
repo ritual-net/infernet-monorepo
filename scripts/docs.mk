@@ -2,6 +2,7 @@
 
 # if the .venv directory exists, use the python binary from there
 # otherwise use the system python
+SHELL := /bin/bash
 PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 
 generate-docs:
