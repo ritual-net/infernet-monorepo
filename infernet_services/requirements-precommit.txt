@@ -15,3 +15,4 @@ infernet-ml[torch_inference]>=1.0.0.8,<2.0.0
 infernet-ml[css_inference]>=1.0.0.8,<2.0.0
 infernet-ml[tgi_inference]>=1.0.0.8,<2.0.0
 matplotlib>=3.8.4,<4.0.0
+isort>=5.13.2,<6.0.0
