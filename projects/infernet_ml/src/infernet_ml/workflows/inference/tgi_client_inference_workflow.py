@@ -1,10 +1,5 @@
 from typing import Any, Optional, cast
 
-from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
-from infernet_ml.workflows.exceptions import InfernetMLException
-from infernet_ml.workflows.inference.base_inference_workflow import (
-    BaseInferenceWorkflow,
-)
 from pydantic import BaseModel
 from retry import retry
 from text_generation import Client  # type: ignore
@@ -20,6 +15,12 @@ from text_generation.errors import (
     ShardTimeoutError,
     UnknownError,
     ValidationError,
+)
+
+from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
+from infernet_ml.workflows.exceptions import InfernetMLException
+from infernet_ml.workflows.inference.base_inference_workflow import (
+    BaseInferenceWorkflow,
 )
 
 

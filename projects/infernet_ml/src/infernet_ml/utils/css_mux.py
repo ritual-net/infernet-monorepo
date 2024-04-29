@@ -10,12 +10,13 @@ from enum import Enum
 from typing import Any, Dict, Optional, Union, cast
 
 import requests
+from pydantic import BaseModel
+
 from infernet_ml.workflows.exceptions import (
     APIKeyMissingException,
     InfernetMLException,
     RetryableException,
 )
-from pydantic import BaseModel
 
 
 class ConvoMessage(BaseModel):

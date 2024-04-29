@@ -3,6 +3,7 @@ from typing import Union
 import pytest
 import torch
 from eth_abi.exceptions import EncodingTypeError
+
 from infernet_ml.utils.codec.vector import (
     TORCH_VALUE_LOOKUP,
     DataType,

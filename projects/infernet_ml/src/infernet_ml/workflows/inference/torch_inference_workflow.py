@@ -8,14 +8,15 @@ from typing import Any, Optional, Tuple, cast
 import sk2torch  # type: ignore
 import torch
 import torch.jit
+from pydantic import BaseModel, ConfigDict, field_validator
+from torch import Tensor
+
 from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource, load_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
 from infernet_ml.workflows.utils.common_types import DTYPES
-from pydantic import BaseModel, ConfigDict, field_validator
-from torch import Tensor
 
 logger: logging.Logger = logging.getLogger(__name__)
 
