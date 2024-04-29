@@ -43,7 +43,7 @@ def node_lifecycle() -> Generator[None, None, None]:
         skip_contract=False,
         filename=f"{contract_name}.sol",
         contract=contract_name,
-        deploy_env_vars={"service_dir": "test/services"},
+        deploy_env_vars={"service_dir": "infernet_services/test_services"},
     )
 
 
