@@ -9,7 +9,6 @@ endif
 
 SHELL := /bin/bash
 
-
 clean:
 	rm -rf dist
 
