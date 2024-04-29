@@ -4,7 +4,10 @@
 
 name: Python CI
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'projects/**'
 
 jobs:
   python_ci:
