@@ -64,6 +64,12 @@ def generate_docs(src_root, docs_root, nav_file_path):
     def write_nav_entries(nav_entries):
         """
         Recursively builds a nested list representing the navigation structure for MkDocs.
+    Args:
+        nav_entries (dict): A dictionary representing the navigation structure.
+
+    Returns:
+        list: A nested list representing the MkDocs navigation structure.
+    """
         """
         nav_list = []
         for key, value in nav_entries.items():
