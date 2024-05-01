@@ -7,6 +7,10 @@ def generate_docs(src_root, docs_root, nav_file_path):
     """
     Walks through the source directory, creates mirrored directories under docs root,
     and writes a Markdown file for each Python module with the mkdocstrings directive.
+    Args:
+        src_root (str): The root directory of the source files.
+        docs_root (str): The root directory where the generated documentation files will be stored.
+        nav_file_path (str): The path to the MkDocs navigation configuration file.
     """
 
     nav_entries = {}
