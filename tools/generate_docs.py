@@ -85,7 +85,10 @@ def generate_docs(src_root, docs_root, nav_file_path):
     def update_mkdocs_nav_file(nav_entries, config_path):
         """
         Updates the navigation section in the MkDocs configuration file.
-        """
+    Args:
+        nav_entries (dict): A dictionary representing the navigation structure.
+        config_path (str): The path to the MkDocs configuration file.
+    """
         with open(config_path, "r") as file:
             config = yaml.safe_load(file)  # Load existing config
 
