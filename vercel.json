@@ -2,11 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "docs-infernet_ml/**/*",
+      "src": "docs-infernet_ml/**",
       "use": "@vercel/static"
     },
     {
-      "src": "docs-ritual_arweave/**/*",
+      "src": "docs-ritual_arweave/**",
       "use": "@vercel/static"
     }
   ],
