@@ -8,6 +8,10 @@
     {
       "src": "docs-ritual_arweave/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [

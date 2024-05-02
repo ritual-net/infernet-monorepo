@@ -23,7 +23,7 @@ with doc:
         p("Welcome to the infernet monorepo internal docs index")
     with div(id="toc").add(ol()):
         for i in docs:
-            li(a(i.title(), href="/%s" % i))
+            li(a(i.title(), href="/%s/" % i))
 
 
 # write the doc to a file
