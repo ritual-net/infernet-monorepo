@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml" ]
+        project: [ "infernet_ml", "ritual_arweave" ]
       fail-fast: false
     steps:
       - name: Checkout code
