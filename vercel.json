@@ -4,12 +4,20 @@
     {
       "src": "projects/infernet_ml/site/**/*",
       "use": "@vercel/static"
+    },
+    {
+      "src": "projects/ritual_arweave/site/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/infernet_ml/(.*)",
       "dest": "projects/infernet_ml/site/$1"
+    },
+    {
+      "src": "/ritual_arweave/(.*)",
+      "dest": "projects/ritual_arweave/site/$1"
     }
   ]
 }
