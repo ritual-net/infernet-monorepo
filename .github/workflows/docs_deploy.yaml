@@ -34,6 +34,12 @@ jobs:
           PYTHONPATH: src
         run: make build-docs generate-docs project=${{ matrix.project }}
       
+      - name: Debug log output
+        run: |
+          ls -la
+          ls -la projects/${{ matrix.project }}/site
+          ls -la projects/${{ matrix.project }}/docs/${{ matrix.project }}
+
       - name: Upload docs as artifact
         uses: actions/upload-artifact@v2
         with:
