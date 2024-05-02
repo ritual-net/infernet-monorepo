@@ -32,8 +32,9 @@ jobs:
       - name: Build & Generate docs
         env:
           PYTHONPATH: src
-        run: make generate-docs build-docs project=${{ matrix.project }}
+        run: make generate-docs build-docs build-docs-index project=${{ matrix.project }}
       
+
       - name: Upload docs as artifact
         uses: actions/upload-artifact@v2
         with:

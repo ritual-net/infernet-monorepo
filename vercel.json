@@ -18,6 +18,10 @@
     {
       "src": "/ritual_arweave/(.*)",
       "dest": "docs-ritual_arweave/$1"
+    },
+    {
+      "src": "/",
+      "dest": "index.html"
     }
   ]
 }

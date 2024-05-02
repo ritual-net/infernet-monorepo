@@ -13,3 +13,6 @@ serve-docs:
 
 build-docs:
 	cd projects/$(project) && mkdocs build
+
+build-docs-index:
+	$(PYTHON) tools/build_docs_index.py
