@@ -6,7 +6,7 @@ on:
       - 'projects/**'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,11 +33,25 @@ jobs:
         env:
           PYTHONPATH: src
         run: make build-docs generate-docs project=${{ matrix.project }}
+      
+      - name: Upload docs as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs-${{ matrix.project }}
+          path: projects/${{ matrix.project }}/site
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download docs artifacts
+        uses: actions/download-artifact@v2
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}  # Vercel token
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}  # Vercel organization ID
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}  # Vercel project ID
-          vercel-args: '--prod'  # Additional Vercel CLI arguments
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
