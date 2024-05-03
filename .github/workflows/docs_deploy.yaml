@@ -33,7 +33,7 @@ jobs:
         env:
           PYTHONPATH: src
         run: make generate-docs build-docs project=${{ matrix.project }}
-      
+
 
       - name: Upload docs as artifact
         uses: actions/upload-artifact@v2
@@ -68,7 +68,7 @@ jobs:
         env:
           PYTHONPATH: src
         run: make build-docs-index
-      
+
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
         with:

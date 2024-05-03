@@ -1,8 +1,8 @@
 import glob
 import os
 
-import dominate
-from dominate.tags import *
+import dominate  # type: ignore
+from dominate.tags import a, attr, div, li, link, ol, p, script  # type: ignore
 
 doc = dominate.document(title="Dominate your HTML")
 

@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
 
-import yaml
+import yaml  # type: ignore
 
 
 def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
