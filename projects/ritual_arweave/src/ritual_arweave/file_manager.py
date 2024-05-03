@@ -10,6 +10,8 @@ from typing import Callable
 from ar import DEFAULT_API_URL, Peer, Transaction  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
+from tqdm import tqdm
+
 from ritual_arweave.utils import (
     MAX_NODE_BYTES,
     get_sha256_digest,
@@ -17,7 +19,6 @@ from ritual_arweave.utils import (
     load_wallet,
 )
 from ritual_arweave.utils import logger as default_logger
-from tqdm import tqdm
 
 
 class FileManager:
@@ -104,6 +105,13 @@ class FileManager:
     def upload(self, file_path: Path, tags_dict: dict[str, str]) -> Transaction:
         """
         Upload a file to Arweave with the given tags.
+
+        Args:
+            file_path (Path): local file path
+            tags_dict (dict[str, str]): tags to be added to the transaction
+
+        Returns:
+            Transaction: the transaction that was uploaded
         """
         wallet = load_wallet(self.wallet_path, api_url=self.api_url)
         with open(file_path, "rb", buffering=0) as file_handler:
@@ -135,6 +143,13 @@ class FileManager:
         - local file exists
         - local file's size matches transaction data size
         - local file's sha256 digest matches transaction digest
+
+        Args:
+            file_path (str): local file path
+            txid (str): transaction id
+
+        Returns:
+            bool: whether the file exists on Arweave
         """
         query_str = (
             """
