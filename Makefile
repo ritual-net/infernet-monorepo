@@ -32,6 +32,9 @@ serve-docs:
 build-docs:
 	cd projects/$(project) && mkdocs build
 
+deploy-docs:
+	vercel --prod
+
 set-version:
 	$(SED) -i 's/version = .*/version = "$(version)"/' projects/$(project)/pyproject.toml
 
