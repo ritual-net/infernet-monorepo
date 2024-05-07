@@ -31,7 +31,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      - name: 'Get env vars'
+      - name: Get env vars
         run: |
           echo '${{ secrets.GCP_ENV }}' > gcp.env
 

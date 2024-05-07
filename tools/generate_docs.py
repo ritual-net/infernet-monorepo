@@ -8,6 +8,11 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
     """
     Walks through the source directory, creates mirrored directories under docs root,
     and writes a Markdown file for each Python module with the mkdocstrings directive.
+
+    Args:
+        src_root (str): The root directory of the source files.
+        docs_root (str): The root directory where the generated documentation files will be stored.
+        nav_file_path (str): The path to the MkDocs navigation configuration file.
     """
 
     nav_entries: Dict[str, Any] = {}
@@ -63,6 +68,12 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
         """
         Recursively builds a nested list representing the navigation structure for
         MkDocs.
+
+        Args:
+            nav_entries (dict): A dictionary representing the navigation structure.
+
+        Returns:
+            list: A nested list representing the MkDocs navigation structure.
         """
         nav_list = []
         for key, value in nav_entries.items():
@@ -78,6 +89,10 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
     def update_mkdocs_nav_file(nav_entries: Dict[str, str], config_path: str) -> None:
         """
         Updates the navigation section in the MkDocs configuration file.
+
+        Args:
+            nav_entries (dict): A dictionary representing the navigation structure.
+            config_path (str): The path to the MkDocs configuration file.
         """
         with open(config_path, "r") as file:
             config = yaml.safe_load(file)  # Load existing config

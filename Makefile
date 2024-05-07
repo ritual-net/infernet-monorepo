@@ -15,8 +15,6 @@ clean:
 pre-commit-project:
 	# repo-wide checks: tools, scripts, etc.
 	pre-commit run --files $$(git ls-files | grep -vE '^projects/|^infernet_services/')
-	# project-specific checks
-	pre-commit run --files $$(git ls-files projects/$(project))
 
 pre-commit-services:
 	$(MAKE) pre-commit -C infernet_services
