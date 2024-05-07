@@ -13,3 +13,6 @@ serve-docs:
 
 build-docs:
 	cd projects/$(project) && mkdocs build
+
+deploy-docs:
+	vercel --prod
