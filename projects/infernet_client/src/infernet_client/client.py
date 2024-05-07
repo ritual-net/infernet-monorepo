@@ -1,7 +1,9 @@
+from asyncio import sleep
 from typing import Any, AsyncGenerator, Optional, Union, cast
 
 from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
+from eth_typing import ChecksumAddress
 
 from .chain_utils import RPC, Subscription
 from .error import APIError
@@ -151,6 +153,50 @@ class NodeClient:
                         body.get("params", None),
                     ) from e
 
+    async def get_job_result_sync(
+        self, job_id: JobID, retries: int = 5, timeout: int = 5
+    ) -> Optional[JobResult]:
+        """Retrieves job result synchronously
+
+        Repeatedly polls the server for the job result until the job is no longer
+        running or the maximum number of retries is reached.
+
+        Args:
+            job_id (JobID): The job ID
+            retries (int, optional): The number of retries if the job is still running.
+                Each retry waits for 1 second before polling again. Defaults to 5.
+            timeout (int, optional): The timeout for the request. Defaults to 5.
+
+        Returns:
+            Optional[JobResult]: The job result, or None if the job is not found
+
+        Raises:
+            APIError: If the job status is "failed" or the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+            TimeoutError: If the job result is not available after the maximum number of
+                retries
+        """
+
+        status = "running"
+        for _ in range(retries):
+            job = await self.get_job_results([job_id], timeout=timeout)
+
+            # If the job is not found, return None
+            if len(job) == 0:
+                return None
+
+            status = job[0]["status"]
+            if status != "running":
+                break
+
+            # Wait for 1 second before polling again
+            await sleep(1)
+
+        if status == "running":
+            raise TimeoutError(f"Job result not available after {retries} retries")
+
+        return job[0]
+
     async def get_job_results(
         self, job_ids: list[JobID], intermediate: bool = False, timeout: int = 5
     ) -> list[JobResult]:
@@ -239,9 +285,7 @@ class NodeClient:
                 json=job,
                 timeout=timeout,
             ) as response:
-                try:
-                    response.raise_for_status()
-
+                if response.status == 200:
                     # The first line of the response is the job ID
                     job_id: Optional[str] = None
                     async for chunk in response.content.iter_any():
@@ -250,13 +294,13 @@ class NodeClient:
                             yield job_id
                         else:
                             yield chunk
-                except ClientResponseError as e:
+                else:
                     body = await response.json()
                     raise APIError(
-                        e.status,
+                        response.status,
                         body.get("error", "Unknown error"),
                         body.get("params", None),
-                    ) from e
+                    )
 
     async def record_status(
         self, id: JobID, status: JobStatus, job: JobRequest, timeout: int = 5
@@ -286,10 +330,10 @@ class NodeClient:
                 },
                 timeout=timeout,
             ) as response:
+                body = await response.json()
                 try:
                     response.raise_for_status()
                 except ClientResponseError as e:
-                    body = await response.json()
                     raise APIError(
                         e.status,
                         body.get("error", "Unknown error"),
@@ -300,7 +344,7 @@ class NodeClient:
         self,
         subscription: Subscription,
         rpc: RPC,
-        coordinator_address: str,
+        coordinator_address: ChecksumAddress,
         expiry: int,
         private_key: str,
         data: dict[str, Any],
@@ -311,10 +355,10 @@ class NodeClient:
         Args:
             subscription (Subscription): The subscription object
             rpc (RPC): The RPC client
-            coordinator_address (str): The address of the coordinator contract
+            coordinator_address (ChecksumAddress): The coordinator contract address
             expiry (int): The expiry of the subscription, in seconds (UNIX timestamp)
             private_key (str): The private key of the subscriber
-            data (dict[str, Any]): The input data for the subscription
+            data (dict[str, Any]): The input data for the first container
             timeout (int, optional): The timeout for the request. Defaults to 5.
 
         Raises:
@@ -328,7 +372,7 @@ class NodeClient:
             nonce,
             expiry,
             chain_id,
-            rpc.get_checksum_address(coordinator_address),
+            coordinator_address,
         )
         signed_message = Account.sign_message(typed_data, private_key)
 

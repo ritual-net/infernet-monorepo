@@ -1,7 +1,6 @@
 import asyncio
 import json
-from time import sleep
-from typing import IO, Optional
+from typing import IO, Optional, cast
 
 import click
 from infernet_client.chain_utils import RPC, Subscription
@@ -12,7 +11,7 @@ from infernet_client.cli.options import (
     url_option,
 )
 from infernet_client.client import NodeClient
-from infernet_client.types import JobRequest
+from infernet_client.types import ContainerError, ContainerOutput, JobRequest
 
 
 @click.group()
@@ -49,6 +48,12 @@ def info(url: str, output: IO[str]) -> None:
 
 
 @click.option(
+    "--retries",
+    type=int,
+    default=5,
+    help="Number of 1 second retries to attempt to fetch job results. Defaults to 5.",
+)
+@click.option(
     "--sync",
     is_flag=True,
     help="Whether to wait for the job to complete and return the results.",
@@ -72,6 +77,7 @@ def request_job(
     input: IO[str],
     output: IO[str],
     sync: Optional[bool] = False,
+    retries: int = 5,
 ) -> None:
     """Request a job. Outputs a job ID, or results if sync is enabled."""
 
@@ -87,18 +93,17 @@ def request_job(
 
     # If sync is enabled, wait for job to complete and return results instead
     if sync:
-        status = None
-        while not status or status == "running":
-            job = asyncio.run(client.get_job_results([jobID]))
-            status = job[0]["status"]
-            sleep(1)
+        job = asyncio.run(client.get_job_result_sync(jobID, retries=retries))
 
-        print(job[0])
-        if status == "failed":
-            result = job[0]["result"]["error"]
+        if not job:
+            click.echo("Job not found.")
+            return
+
+        if job["status"] == "failed":
+            result = cast(ContainerError, job["result"])["error"]
         else:
             # status is "completed"
-            result = job[0]["result"]["output"]
+            result = cast(ContainerOutput, job["result"])["output"]
 
     # Output result
     output_result(result, output)
@@ -262,8 +267,8 @@ def request_subscription(
     private_key = key.read().strip()
 
     # Load subscription parameters
-    params = json.load(params)
-    subscription = Subscription(**params)
+    subscription_params = json.load(params)
+    subscription = Subscription(**subscription_params)
 
     # Initialize the client and RPC
     client = NodeClient(url)
@@ -273,7 +278,7 @@ def request_subscription(
         client.request_delegated_subscription(
             subscription,
             rpc,
-            address,
+            rpc.get_checksum_address(address),
             expiry,
             private_key,
             data,

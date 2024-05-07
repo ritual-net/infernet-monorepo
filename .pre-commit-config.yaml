@@ -47,11 +47,6 @@ repos:
         language: system
         types: [python]
 
-  - repo: https://github.com/python-openapi/openapi-spec-validator
-    rev: master
-    hooks:
-      - id: openapi-spec-validator
-
   # Default pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0

@@ -38,17 +38,17 @@ class NodeInfo(TypedDict):
     version: str
     chain: ChainInfo
     containers: list[Container]
-    pending_jobs: PendingJobInfo
+    pending: PendingJobInfo
 
 
-class ContainerOutput:
+class ContainerOutput(TypedDict):
     """Container output."""
 
     container: str
     output: Any
 
 
-class ContainerError:
+class ContainerError(TypedDict):
     """Container error."""
 
     container: str

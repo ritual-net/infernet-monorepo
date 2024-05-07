@@ -1,6 +1,6 @@
 from typing import Any
 
-from eth_account.messages import SignableMessage, encode_structured_data
+from eth_account.messages import SignableMessage, encode_typed_data
 from eth_typing import ChecksumAddress
 from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.types import Nonce
@@ -100,8 +100,8 @@ class Subscription:
         Returns:
             SignableMessage: typed, signable DelegateSubscription message
         """
-        return encode_structured_data(
-            {
+        return encode_typed_data(
+            full_message={
                 "types": {
                     "EIP712Domain": [
                         {"name": "name", "type": "string"},
