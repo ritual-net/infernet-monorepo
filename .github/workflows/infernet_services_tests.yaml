@@ -35,15 +35,15 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --recursive
 
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
+      - id: Google auth
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_SA_JSON }}'
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: 'Get env vars'
+      - name: Get env vars
         run: |
           echo '${{ secrets.GCP_ENV }}' > gcp.env
           echo '${{ secrets.TESTS_ENV }}' > .env
