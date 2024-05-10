@@ -3,9 +3,10 @@
 name: Python Projects CI
 
 on:
-  push:
+  pull_request:
     paths:
       - 'projects/**'
+      - '.github/workflows/python_projects_ci.yaml'
 
 jobs:
   monorepo_ci:

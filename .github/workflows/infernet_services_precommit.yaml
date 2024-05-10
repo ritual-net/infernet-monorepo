@@ -8,7 +8,7 @@ on:
   pull_request:
     paths:
       - 'infernet_services/**'
-      - '.github/workflows/infernet_services_tests.yaml'
+      - '.github/workflows/infernet_services_precommit.yaml'
 
 jobs:
   python_precommits:
