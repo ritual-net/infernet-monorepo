@@ -5,7 +5,10 @@
 name: Infernet Services Pre-commits, Style, and Linting
 
 on:
-  pull_request
+  pull_request:
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_tests.yaml'
 
 jobs:
   python_precommits:
@@ -13,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - id: Google auth
+    - name: Google auth
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_JSON }}

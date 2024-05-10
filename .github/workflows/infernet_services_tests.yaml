@@ -5,7 +5,10 @@
 name: Infernet Services Tests
 
 on:
-  pull_request
+  pull_request:
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_tests.yaml'
 
 jobs:
   build-docker-and-run-e2e-tests:
@@ -33,7 +36,7 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --recursive
 
-      - id: Google auth
+      - name: Google auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_SA_JSON }}'
