@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
+          ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
 
       - name: Checkout
         uses: actions/checkout@v4
