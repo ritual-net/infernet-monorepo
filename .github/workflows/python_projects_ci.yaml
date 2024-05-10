@@ -71,6 +71,7 @@ jobs:
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
+      # first line is the project's specific dependencies,
       - name: Install dependencies
         run: |
           uv pip install -r projects/${{ matrix.project }}/requirements.lock

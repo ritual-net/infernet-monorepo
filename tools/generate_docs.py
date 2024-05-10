@@ -11,7 +11,8 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
     Args:
         src_root (str): The root directory of the source files.
-        docs_root (str): The root directory where the generated documentation files will be stored.
+        docs_root (str): The root directory where the generated documentation files will
+        be stored.
         nav_file_path (str): The path to the MkDocs navigation configuration file.
     """
 

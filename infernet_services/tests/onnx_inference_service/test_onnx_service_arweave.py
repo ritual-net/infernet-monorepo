@@ -5,6 +5,7 @@ from typing import Generator
 import pytest
 from dotenv import load_dotenv
 from infernet_fixture import handle_lifecycle
+from infernet_ml.utils.model_loader import ModelSource
 from onnx_inference_service.common import (
     SERVICE_NAME,
     assert_web2_inference,
@@ -19,7 +20,7 @@ def arweave_setup() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         SERVICE_NAME,
         {
-            "MODEL_SOURCE": "arweave",
+            "MODEL_SOURCE": ModelSource.ARWEAVE.value,
             "LOAD_ARGS": json.dumps(
                 {
                     "repo_id": "Ritual-Net/iris-classification",

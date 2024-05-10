@@ -4,6 +4,7 @@ from typing import Generator
 import pytest
 from dotenv import load_dotenv
 from infernet_fixture import handle_lifecycle
+from infernet_ml.utils.model_loader import ModelSource
 from onnx_inference_service.common import (
     SERVICE_NAME,
     assert_web2_inference,
@@ -18,7 +19,7 @@ def hf_hub_setup() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         SERVICE_NAME,
         {
-            "MODEL_SOURCE": "huggingface_hub",
+            "MODEL_SOURCE": ModelSource.HUGGINGFACE_HUB.value,
             "LOAD_ARGS": json.dumps(
                 {
                     "repo_id": "Ritual-Net/iris-classification",
