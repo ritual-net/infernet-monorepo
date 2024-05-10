@@ -5,9 +5,9 @@
 name: Pre-commits, Style, and Linting
 
 on:
-  pull_request:
-    paths:
-      - 'infernet_services/**/*'
+  pull_request
+#    paths:
+#      - 'infernet_services/**/*'
 
 jobs:
   python_precommits:
