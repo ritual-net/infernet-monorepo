@@ -1,0 +1,48 @@
+[project]
+name = "infernet-client"
+version = "0.3.0"
+description = "Infernet Node v0.3.0 REST client"
+authors = [
+    { name = "Stelios Rousoglou", email = "stelios@ritual.net" }
+]
+dependencies = [
+    "aiohttp>=3.9.2,<4.0.0",
+    "click>=8.1.7,<9.0.0",
+    "eth-account>=0.11.0,<1.0.0",
+    "eth-typing>=4.0.0,<5.0.0",
+    "web3>=6.11.0,<7.0.0",
+]
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[project.scripts]
+"infernet-client" = "infernet_client:main"
+
+[project.optional-dependencies]
+development = [
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "pytest-asyncio>=0.21.1",
+    "mypy>=1.9.0,<2.0.0",
+    "isort>=5.13.2,<6.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/infernet_client"]
+
+[tool.mypy]
+exclude = ['venv', '.venv']
+
+[tool.isort]
+profile = "black"

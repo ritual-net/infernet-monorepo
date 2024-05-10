@@ -1,6 +1,4 @@
-# pre-commit workflow
-#
-# Ensures the codebase passes the pre-commit stack.
+# pre-commit workflow for Infernet Monorepo
 
 name: Python CI
 
@@ -10,11 +8,11 @@ on:
       - 'projects/**'
 
 jobs:
-  python_ci:
+  monorepo_ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml", "ritual_arweave" ]
+        project: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
