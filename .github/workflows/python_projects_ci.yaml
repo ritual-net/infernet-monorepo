@@ -1,6 +1,6 @@
 # pre-commit workflow for Infernet Monorepo
 
-name: Python CI
+name: Python Projects CI
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
-      - id: 'auth'
+      - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_JSON }}'
