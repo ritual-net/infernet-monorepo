@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from infernet_ml.utils.hf_types import (
     HFClassificationInferenceInput,
     HFSummarizationConfig,
