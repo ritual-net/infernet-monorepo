@@ -2,12 +2,10 @@
 #
 # Ensures the codebase passes the pre-commit stack.
 
-name: Pre-commits, Style, and Linting
+name: Infernet Services Pre-commits, Style, and Linting
 
 on:
-  pull_request:
-    paths:
-      - 'infernet_services/**/*'
+  pull_request
 
 jobs:
   python_precommits:
