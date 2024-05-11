@@ -6,7 +6,7 @@ The goal of this module is to provide a generic interface to run inference on an
 
 import inspect
 import logging
-from typing import Any, Optional, Iterator
+from typing import Any, Iterator, Optional
 
 from huggingface_hub import InferenceClient  # type: ignore[import-untyped]
 from pydantic import ValidationError

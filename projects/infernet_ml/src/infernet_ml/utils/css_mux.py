@@ -5,10 +5,10 @@ Currently, 3 APIs are supported: OPENAI, PERPLEXITYAI, and GOOSEAI.
 
 """
 
+import json
 import logging
 from enum import Enum
-from typing import Any, Dict, Optional, Union, cast, Tuple
-import json
+from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Union, cast
 
 import requests
 from pydantic import BaseModel
@@ -290,7 +290,7 @@ def css_mux(req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None) -> str
     return cast(str, post_proc(response))
 
 
-streaming_post_processing = {
+streaming_post_processing: Dict[Provider, Callable[[Any], str]] = {
     Provider.OPENAI: lambda result: result["choices"][0]["delta"].get("content", ""),
     Provider.PERPLEXITYAI: lambda result: result["choices"][0]["delta"].get(
         "content", ""
@@ -299,7 +299,21 @@ streaming_post_processing = {
 }
 
 
-def css_streaming_mux(req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None):
+def css_streaming_mux(
+    req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None
+) -> Iterator[str]:
+    """
+    Make a streaming request to the respective closed-source model provider.
+
+    Args:
+        req: CSSRequest
+        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
+        API, they are getting merged with the input body.
+
+    Returns:
+        Iterator[str]: a generator that yields the response in chunks
+    """
+
     extra_args = extra_args or {}
     extra_args["stream"] = True
     url, headers, body = get_request_configuration(req, extra_args)

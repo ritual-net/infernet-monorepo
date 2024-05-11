@@ -3,7 +3,7 @@ workflow class for onnx inference workflows.
 """
 
 import logging
-from typing import Any, Dict, List, Tuple, Iterator
+from typing import Any, Dict, Iterator, List, Tuple
 
 import onnx
 import torch

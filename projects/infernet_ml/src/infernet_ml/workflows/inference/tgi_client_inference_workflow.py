@@ -1,4 +1,4 @@
-from typing import Any, Optional, cast, Iterator
+from typing import Any, Iterator, Optional, cast
 
 from pydantic import BaseModel
 from retry import retry
@@ -16,7 +16,7 @@ from text_generation.errors import (
     UnknownError,
     ValidationError,
 )
-from text_generation.types import StreamResponse
+from text_generation.types import StreamResponse  # type: ignore
 
 from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.workflows.exceptions import InfernetMLException

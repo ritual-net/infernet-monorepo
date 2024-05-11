@@ -10,8 +10,7 @@ subclass one of [TGIClientInferenceWorkflow, CSSInferenceWorkflow,
 
 import abc
 import logging
-from typing import Any, final, Iterator
-
+from typing import Any, Iterator, final
 
 logger: logging.Logger = logging.getLogger(__name__)
 

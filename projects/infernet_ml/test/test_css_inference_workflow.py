@@ -16,7 +16,6 @@ from infernet_ml.utils.css_mux import (
     CSSEmbeddingParams,
     CSSRequest,
     Provider,
-    css_streaming_mux,
 )
 from infernet_ml.workflows.exceptions import APIKeyMissingException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow

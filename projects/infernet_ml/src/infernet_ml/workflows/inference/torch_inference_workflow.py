@@ -3,7 +3,7 @@ workflow  class for torch inference workflows.
 """
 
 import logging
-from typing import Any, Optional, Tuple, cast, Iterator
+from typing import Any, Iterator, Optional, Tuple, cast
 
 import sk2torch  # type: ignore
 import torch
