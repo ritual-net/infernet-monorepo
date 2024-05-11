@@ -130,15 +130,16 @@ def handle_lifecycle(
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     developer_mode: bool = False,
     skip_deploying: bool = False,
+    node_wait_timeout: int = 10,
     service_wait_timeout: int = 10,
 ) -> Generator[None, None, None]:
     try:
         if not skip_deploying:
             deploy_node(service, service_env_vars, deploy_env_vars, developer_mode)
-        log.info("waiting for node to be ready")
+        log.info(f"waiting up to {node_wait_timeout}s for node to be ready")
         asyncio.run(await_node())
         log.info("✅ node is ready")
-        log.info(f"waiting for {service} to be ready")
+        log.info(f"waiting up to {service_wait_timeout}s for {service} to be ready")
         asyncio.run(await_service(timeout=service_wait_timeout))
         log.info(f"✅ {service} is ready")
         if not skip_contract:
@@ -164,21 +165,24 @@ def handle_lifecycle(
         stop_node(service)
 
 
-@retry(
-    exceptions=(AssertionError, ClientOSError, ServerDisconnectedError),
-    tries=10 * int(os.getenv("SETUP_WAIT", "60")),
-    delay=0.1,
-)  # type: ignore
-async def await_node() -> None:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            f"{NODE_URL}/api/jobs",
-        ) as response:
-            assert response.status == 200
-            await response.json()
-
-
 DEFAULT_TIMEOUT = 10
+
+
+async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:
+    @retry(
+        exceptions=(AssertionError, ClientOSError, ServerDisconnectedError),
+        tries=10 * timeout,
+        delay=0.1,
+    )  # type: ignore
+    async def _wait() -> None:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{NODE_URL}/api/jobs",
+            ) as response:
+                assert response.status == 200
+                await response.json()
+
+    return await _wait()
 
 
 async def await_service(
@@ -186,7 +190,7 @@ async def await_service(
 ) -> Any:
     @retry(
         exceptions=(AssertionError, ClientOSError, ServerDisconnectedError),
-        tries=10 * int(os.getenv("SETUP_WAIT", timeout)),
+        tries=10 * timeout,
         delay=0.1,
     )  # type: ignore
     async def _wait():
