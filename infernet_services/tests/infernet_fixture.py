@@ -137,7 +137,7 @@ def handle_lifecycle(
         if not skip_deploying:
             deploy_node(service, service_env_vars, deploy_env_vars, developer_mode)
         log.info(f"waiting up to {node_wait_timeout}s for node to be ready")
-        asyncio.run(await_node())
+        asyncio.run(await_node(timeout=node_wait_timeout))
         log.info("✅ node is ready")
         log.info(f"waiting up to {service_wait_timeout}s for {service} to be ready")
         asyncio.run(await_service(timeout=service_wait_timeout))
