@@ -1,4 +1,4 @@
-from typing import Any, Optional, cast
+from typing import Any, Optional, cast, Iterator
 
 from pydantic import BaseModel
 from retry import retry
@@ -16,6 +16,7 @@ from text_generation.errors import (
     UnknownError,
     ValidationError,
 )
+from text_generation.types import StreamResponse
 
 from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.workflows.exceptions import InfernetMLException
@@ -127,12 +128,36 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
 
         return _run()
 
+    def stream(self, input_data: TgiInferenceRequest) -> Iterator[StreamResponse]:
+        """
+        Stream results from the model.
+
+        Args:
+            input_data (TgiInferenceRequest): user input
+
+        Returns:
+            Iterator[StreamResponse]: stream of results
+        """
+        yield from super().stream(input_data)
+
+    def do_stream(self, _input: str) -> Iterator[StreamResponse]:
+        """
+        Stream results from the model.
+
+        Args:
+            _input (str): user input
+
+        Returns:
+            Iterator[StreamResponse]: stream of results
+        """
+        yield from self.client.generate_stream(_input, **self.inference_params)
+
     def do_run_model(self, prompt: str) -> str:
         """
         Run the model with the given prompt.
 
         Args:
-            dict (str): user input
+            prompt (str): user prompt
 
         Returns:
             Any: result of inference

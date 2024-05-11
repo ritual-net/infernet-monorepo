@@ -17,6 +17,11 @@ class InfernetInputSource(IntEnum):
     OFFCHAIN = 1
 
 
+class InfernetInputType(IntEnum):
+    NON_STREAMING = 0
+    STREAMING = 1
+
+
 class InfernetInput(BaseModel):
     """
     Infernet containers must accept InfernetInput. Depending on the source (onchain vs.
@@ -26,6 +31,7 @@ class InfernetInput(BaseModel):
 
     source: InfernetInputSource
     data: Union[HexStr, dict[str, Any]]
+    type: InfernetInputType
 
     @model_validator(mode="after")
     def check_data_correct(self) -> "InfernetInput":

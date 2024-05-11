@@ -44,8 +44,8 @@ dev: build-service stop-node deploy-node
 	$(MAKE) deploy-contract
 
 update-lock:
-	uv venv
-	uv pip install -r $(toplevel_dir)/$(req_file).txt
+	uv venv && source .venv/bin/activate && \
+	uv pip install -r $(toplevel_dir)/$(req_file).txt && \
 	uv pip freeze > $(toplevel_dir)/$(req_file).lock
 
 open-terminal:

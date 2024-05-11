@@ -10,7 +10,8 @@ subclass one of [TGIClientInferenceWorkflow, CSSInferenceWorkflow,
 
 import abc
 import logging
-from typing import Any, final
+from typing import Any, final, Iterator
+
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -47,6 +48,14 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
 
         Returns: Any
         """
+
+    def stream(self, input_data: Any) -> Iterator[Any]:
+        """
+        Stream data for inference. Subclasses should implement do_stream.
+        """
+        logging.info("preprocessing input_data %s", input_data)
+        preprocessed_data = self.do_preprocessing(input_data)
+        yield from self.do_stream(preprocessed_data)
 
     def inference(self, input_data: Any) -> Any:
         """performs inference. Checks that model is set up before
@@ -101,6 +110,17 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
             str: transformed input
         """
         return input_data
+
+    @abc.abstractmethod
+    def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
+        """
+        Implement any streaming logic here. For example, you may
+        want to stream data from OpenAI or any LLM. This method
+        should return the data to be streamed.
+
+        Returns:
+            typing.Any: data to be streamed
+        """
 
     @abc.abstractmethod
     def do_postprocessing(self, input_data: Any, output_data: Any) -> Any:

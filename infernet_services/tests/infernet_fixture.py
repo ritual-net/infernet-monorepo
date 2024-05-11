@@ -13,7 +13,7 @@ from aiohttp import ClientOSError, ServerDisconnectedError
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress
 from pydantic import BaseModel, ValidationError
-from retry_async import retry  # type: ignore
+from reretry import retry  # type: ignore
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 FixtureType = Callable[[], Generator[None, None, None]]
@@ -38,8 +38,8 @@ class CreateJobResult(BaseModel):
 
 ServiceEnvVars = Dict[str, Any]
 
-# suppressing retry_async logs
-logging.getLogger("retry_async.api").setLevel(logging.ERROR)
+# suppressing reretry logs
+logging.getLogger("reretry.api").setLevel(logging.ERROR)
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ def deploy_node(
         In developer mode, we stop the node, build the node, deploy the node & start the
         node. This enables faster iteration for developers.
         """
-        cmd = f"make stop-node build deploy-node service={service} env='{env}'"
+        cmd = f"make stop-node build-service deploy-node service={service} env='{env}'"
     else:
         cmd = f"make deploy-node service={service} env='{env}'"
     if deploy_env_vars:
@@ -168,7 +168,6 @@ def handle_lifecycle(
     exceptions=(AssertionError, ClientOSError, ServerDisconnectedError),
     tries=10 * int(os.getenv("SETUP_WAIT", "60")),
     delay=0.1,
-    is_async=True,
 )  # type: ignore
 async def await_node() -> None:
     async with aiohttp.ClientSession() as session:
@@ -189,7 +188,6 @@ async def await_service(
         exceptions=(AssertionError, ClientOSError, ServerDisconnectedError),
         tries=10 * int(os.getenv("SETUP_WAIT", timeout)),
         delay=0.1,
-        is_async=True,
     )  # type: ignore
     async def _wait():
         async with aiohttp.ClientSession() as session:
@@ -220,7 +218,6 @@ class JobFailed(Exception):
 async def get_job(job_id: str, timeout: int = 10) -> JobResult:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError, ValidationError),
-        is_async=True,
         tries=timeout * 10,
         delay=0.1,
     )  # type: ignore
@@ -253,7 +250,6 @@ async def assert_web3_output(
 ) -> None:
     @retry(
         exceptions=(AssertionError, InsufficientDataBytes),
-        is_async=True,
         tries=timeout * 2,
         delay=1 / 2,
     )  # type: ignore
@@ -275,7 +271,6 @@ async def request_job(
 ) -> CreateJobResult:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError),
-        is_async=True,
         tries=timeout,
         delay=1,
     )  # type: ignore
@@ -293,6 +288,23 @@ async def request_job(
                 return CreateJobResult(**r)
 
     return cast(CreateJobResult, await _post())
+
+
+async def request_streaming_job(
+    service_name: str, data: Dict[str, Any], timeout: int = 3
+) -> bytes:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            f"{NODE_URL}/api/jobs/stream",
+            json={
+                "containers": [service_name],
+                "data": data,
+            },
+        ) as response:
+            total = b""
+            async for chunk in response.content:
+                total += chunk
+            return total
 
 
 class LogCollector:

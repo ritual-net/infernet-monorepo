@@ -3,7 +3,7 @@ workflow class for onnx inference workflows.
 """
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Iterator
 
 import onnx
 import torch
@@ -93,6 +93,12 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
                 TensorOutput(values=values, dtype=str(output.dtype), shape=shape)
             )
         return result
+
+    def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
+        """
+        Streaming inference is not supported for ONNX models.
+        """
+        raise NotImplementedError
 
     def do_postprocessing(
         self, input_data: ONNXInferenceInput, output_data: ONNXInferenceResult

@@ -7,7 +7,8 @@ Currently, 3 APIs are supported: OPENAI, PERPLEXITYAI, and GOOSEAI.
 
 import logging
 from enum import Enum
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, Optional, Union, cast, Tuple
+import json
 
 import requests
 from pydantic import BaseModel
@@ -79,6 +80,9 @@ class CSSRequest(BaseModel):
     # parameters associated with the request. Can either be a Completion
     # or an Embedding Request
     params: Union[CSSCompletionParams, CSSEmbeddingParams]
+
+    # stream flag, if true, the API will stream the response
+    stream: bool = False
 
 
 def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
@@ -168,11 +172,13 @@ PROVIDERS: dict[Provider, Any] = {
         "endpoints": {
             "completions": {
                 "real_endpoint": "chat/completions",
-                "proc": lambda result: result["choices"][0]["message"]["content"],
+                "post_process": lambda result: result["choices"][0]["message"][
+                    "content"
+                ],
             },
             "embeddings": {
                 "real_endpoint": "embeddings",
-                "proc": lambda result: result["data"][0]["embedding"],
+                "post_process": lambda result: result["data"][0]["embedding"],
             },
         },
     },
@@ -181,7 +187,9 @@ PROVIDERS: dict[Provider, Any] = {
         "endpoints": {
             "completions": {
                 "real_endpoint": "chat/completions",
-                "proc": lambda result: result["choices"][0]["message"]["content"],
+                "post_process": lambda result: result["choices"][0]["message"][
+                    "content"
+                ],
             }
         },
     },
@@ -190,7 +198,7 @@ PROVIDERS: dict[Provider, Any] = {
         "endpoints": {
             "completions": {
                 "real_endpoint": "completions",
-                "proc": lambda result: result["choices"][0]["text"],
+                "post_process": lambda result: result["choices"][0]["text"],
             }
         },
     },
@@ -218,15 +226,20 @@ def validate(req: CSSRequest) -> None:
         raise InfernetMLException("Endpoint not supported for your provider!")
 
 
-def css_mux(req: CSSRequest) -> str:
+def get_request_configuration(
+    req: CSSRequest, extra_args: Dict[str, Any]
+) -> Tuple[str, Dict[str, str], Dict[str, Any]]:
     """
-    By this point, we've already validated the request, so we can proceed
-    with the actual API call.
+    Get the configuration for a given request.
 
     Args:
-        req: CSSRequest
+        req: a CSSRequest object, containing provider, endpoint, model,
+        api keys & params.
+        extra_args: dict[str, Any] containing extra arguments to pass to the API, they
+        are getting merged with the input body.
+
     Returns:
-        response: processed output from api
+        configuration: dict[str, Any]
     """
     provider = req.provider
     api_key = req.api_keys[provider]
@@ -238,10 +251,29 @@ def css_mux(req: CSSRequest) -> str:
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}",
     }
-    result = requests.post(url, headers=headers, json=proc_input)
+
+    return url, headers, {**proc_input, **extra_args}
+
+
+def css_mux(req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None) -> str:
+    """
+    By this point, we've already validated the request, so we can proceed
+    with the actual API call.
+
+    Args:
+        req: CSSRequest
+        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
+        API, they are getting merged with the input body.
+
+    Returns:
+        response: processed output from api
+    """
+    url, headers, body = get_request_configuration(req, (extra_args or {}))
+
+    result = requests.post(url, headers=headers, json=body)
 
     if result.status_code != 200:
-        match provider:
+        match req.provider:
             case Provider.OPENAI | Provider.GOOSEAI:
                 # https://help.openai.com/en/articles/6891839-api-error-code-guidance
                 if result.status_code == 429 or result.status_code == 500:
@@ -254,5 +286,35 @@ def css_mux(req: CSSRequest) -> str:
 
     response = result.json()
     logging.info(f"css mux result: {response}")
-    post_proc = PROVIDERS[provider]["endpoints"][req.endpoint]["proc"]
+    post_proc = PROVIDERS[req.provider]["endpoints"][req.endpoint]["post_process"]
     return cast(str, post_proc(response))
+
+
+streaming_post_processing = {
+    Provider.OPENAI: lambda result: result["choices"][0]["delta"].get("content", ""),
+    Provider.PERPLEXITYAI: lambda result: result["choices"][0]["delta"].get(
+        "content", ""
+    ),
+    Provider.GOOSEAI: lambda result: result["choices"][0]["text"],
+}
+
+
+def css_streaming_mux(req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None):
+    extra_args = extra_args or {}
+    extra_args["stream"] = True
+    url, headers, body = get_request_configuration(req, extra_args)
+
+    s = requests.Session()
+
+    with s.post(url, json=body, headers=headers, stream=True) as resp:
+        for data in resp.iter_lines():
+            decoded = data.decode()
+            if decoded.startswith("data:"):
+                rest = decoded[5:].strip()
+                if rest == "[DONE]":
+                    continue
+                post_processor = streaming_post_processing[req.provider]
+                chunk = post_processor(json.loads(rest))
+                yield chunk
+            else:
+                continue

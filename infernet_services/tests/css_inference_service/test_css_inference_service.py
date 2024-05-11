@@ -1,5 +1,5 @@
 import os
-from typing import Generator
+from typing import Any, Generator
 
 import pytest
 from dotenv import load_dotenv
@@ -9,7 +9,10 @@ from infernet_fixture import (
     CONTRACT_ADDRESS,
     assert_web3_output,
     get_abi,
+    get_job,
     handle_lifecycle,
+    request_job,
+    request_streaming_job,
 )
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
@@ -82,3 +85,72 @@ async def test_completion(
         ), f"yes or no should be in result, instead got {result}"
 
     await assert_web3_output(_assertions)
+
+
+apple_prompt = "who founded apple?"
+
+parameters: Any = [
+    "provider, model, params",
+    [
+        (
+            "OPENAI",
+            "gpt-4",
+            {
+                "endpoint": "completions",
+                "messages": [{"role": "user", "content": apple_prompt}],
+            },
+        ),
+        (
+            "PERPLEXITYAI",
+            "sonar-small-online",
+            {
+                "endpoint": "completions",
+                "messages": [{"role": "user", "content": apple_prompt}],
+            },
+        ),
+    ],
+]
+
+
+@pytest.mark.parametrize(*parameters)
+@pytest.mark.asyncio
+async def test_css_inference_service(
+    provider: str,
+    model: str,
+    params: dict[str, Any],
+) -> None:
+    task = await request_job(
+        SERVICE_NAME,
+        {
+            "provider": provider,
+            "endpoint": "completions",
+            "model": model,
+            "params": params,
+        },
+    )
+    result: str = (await get_job(task.id)).result.output["output"]
+    assert "steve" in result.lower(), (
+        f"steve jobs should be in result, instead got " f"{result}"
+    )
+
+
+@pytest.mark.parametrize(*parameters)
+@pytest.mark.asyncio
+async def test_tgi_client_streaming_service(
+    provider: str,
+    model: str,
+    params: dict[str, Any],
+) -> None:
+    task = await request_streaming_job(
+        SERVICE_NAME,
+        {
+            "provider": provider,
+            "endpoint": "completions",
+            "model": model,
+            "params": params,
+        },
+    )
+    result = task.decode()
+    assert "steve" in result.lower(), (
+        f"steve jobs should be in result, instead got " f"{result}"
+    )
