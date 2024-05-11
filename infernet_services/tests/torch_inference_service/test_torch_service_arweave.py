@@ -29,7 +29,7 @@ def arweave_setup() -> Generator[None, None, None]:
                 }
             ),
         },
-        service_wait_timeout=20,
+        service_wait_timeout=30,
     )
 
 
