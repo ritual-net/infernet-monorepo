@@ -40,7 +40,6 @@ def node_lifecycle() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         SERVICE_NAME,
         {},
-        skip_contract=False,
         filename=f"{contract_name}.sol",
         contract=contract_name,
         deploy_env_vars={"service_dir": "infernet_services/test_services"},

@@ -30,7 +30,7 @@ def node_lifecycle() -> Generator[None, None, None]:
     url = "https://api-inference.huggingface.co/models"
     model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     hf_token = os.environ["HF_TOKEN"]
-    args = f'["{url}/{model}", 30, {{"Authorization":"Bearer {hf_token}"}}]'
+    args = f'["{url}/{model}", 30, {{"Authorization": "Bearer {hf_token}"}}]'
     env = {"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args}
     yield from handle_lifecycle(
         SERVICE_NAME,
@@ -45,7 +45,7 @@ async def test_completion() -> None:
         abi=get_abi("GenericConsumerContract.sol", "GenericConsumerContract"),
     )
     await consumer.functions.requestCompute(
-        "tgi_client_inference_service",
+        SERVICE_NAME,
         encode(
             ["string"],
             ["whats 2 + 2?"],

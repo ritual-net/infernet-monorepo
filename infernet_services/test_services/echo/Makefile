@@ -1,5 +1,5 @@
 DOCKER_ORG := ritualnetwork
-SERVICE_NAME := echo-test-service
+SERVICE_NAME := echo
 TAG := $(DOCKER_ORG)/$(SERVICE_NAME):latest
 
 build:

@@ -16,6 +16,14 @@ from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
+from config_creator import (
+    create_config_file,
+    ServiceEnvVars,
+    DEFAULT_RPC_URL,
+    DEFAULT_PRIVATE_KEY,
+    DEFAULT_COORDINATOR_ADDRESS,
+)
+
 FixtureType = Callable[[], Generator[None, None, None]]
 TOPLEVEL_DIR = Path(__file__).resolve().parents[1]
 
@@ -35,8 +43,6 @@ class JobResult(BaseModel):
 class CreateJobResult(BaseModel):
     id: str
 
-
-ServiceEnvVars = Dict[str, Any]
 
 # suppressing reretry logs
 logging.getLogger("reretry.api").setLevel(logging.ERROR)
@@ -72,26 +78,31 @@ def deploy_node(
     env_vars: ServiceEnvVars,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     developer_mode: bool = False,
+    private_key: str = DEFAULT_PRIVATE_KEY,
+    coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    rpc_url: str = DEFAULT_RPC_URL,
 ) -> None:
-    env = json.dumps(env_vars)
+    create_config_file(
+        service,
+        f"ritualnetwork/{service}:latest",
+        env_vars,
+        private_key,
+        coordinator_address,
+        rpc_url,
+    )
     if developer_mode:
         """
         In developer mode, we stop the node, build the node, deploy the node & start the
         node. This enables faster iteration for developers.
         """
-        cmd = f"make stop-node build-service deploy-node service={service} env='{env}'"
+        cmd = f"make stop-node build-service deploy-node service={service}"
     else:
-        cmd = f"make deploy-node service={service} env='{env}'"
+        cmd = f"make deploy-node service={service}"
     if deploy_env_vars:
         for k, v in deploy_env_vars.items():
             cmd += f" {k}={v}"
     log.info(f"Running command: {cmd}")
-    result = subprocess.run(
-        [
-            *shlex.split(cmd),
-            f"env='{env}'",
-        ]
-    )
+    result = subprocess.run([*shlex.split(cmd)])
     if result.returncode != 0:
         msg = f"Error deploying the node: {result}"
         log.error(msg)

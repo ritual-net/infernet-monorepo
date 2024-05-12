@@ -46,19 +46,19 @@ def create_app() -> Quart:
     LLM_WORKFLOW_KW_ARGS = app.config.get("WORKFLOW_KW_ARGS", {})
 
     logging.info(
-        "%s %s %s",
+        "workflow_class: %s positional_args: %s kw_args: %s",
         LLM_WORKFLOW_CLASS,
         LLM_WORKFLOW_POSITIONAL_ARGS,
         LLM_WORKFLOW_KW_ARGS,
     )
 
     # create workflow instance from class, using specified arguments
-    LLM_WORKFLOW: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
+    workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
         *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
     )
 
     # setup workflow
-    LLM_WORKFLOW.setup()
+    workflow.setup()
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -90,7 +90,7 @@ def create_app() -> Quart:
                         logging.debug("received Offchain Request: %s", input_data)
 
                         ## send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
+                        result = await run_sync(workflow.inference)(
                             input_data=TgiInferenceRequest(
                                 **cast(dict[str, str], input_data)
                             )
@@ -108,7 +108,7 @@ def create_app() -> Quart:
                         logging.debug("received Streaming Request: %s", input_data)
 
                         async def stream_generator() -> AsyncGenerator[str, None]:
-                            for r in LLM_WORKFLOW.stream(
+                            for r in workflow.stream(
                                 TgiInferenceRequest(**cast(dict[str, str], input_data))
                             ):
                                 yield r.token.text.encode()
@@ -128,7 +128,7 @@ def create_app() -> Quart:
                         input = TgiInferenceRequest(text=text)
 
                         ## send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
+                        result = await run_sync(workflow.inference)(
                             input_data=input
                         )
 

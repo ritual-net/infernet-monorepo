@@ -22,7 +22,9 @@ save-image:
 env ?= '{"HF_INF_TASK": "text_generation", "HF_INF_MODEL": "HuggingFaceH4/zephyr-7b-beta"}'
 
 deploy-node:
-	jq '.containers[0].env = $(shell echo $(env))' $(service_dir)/$(service)/config.json > $(deploy_dir)/config.json
+	[ -n "$$create_config" ] && \
+	jq '.containers[0].env = $(shell echo $(env))' \
+	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 stop-node:
