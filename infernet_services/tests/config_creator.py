@@ -50,7 +50,7 @@ def create_config_file(
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
     rpc_url: str = DEFAULT_RPC_URL,
-):
+) -> None:
     cfg = get_config(
         service_name,
         image_id,
@@ -70,8 +70,8 @@ def get_config(
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
     rpc_url: str = DEFAULT_RPC_URL,
-):
-    cfg: Any = base_config.copy()
+) -> Dict[str, Any]:
+    cfg: Dict[str, Any] = base_config.copy()
     cfg["containers"][0]["id"] = service_name
     cfg["containers"][0]["image"] = image_id
     cfg["containers"][0]["env"] = env_vars
@@ -82,7 +82,7 @@ def get_config(
 
 
 # turn that into a function
-def config_path():
+def config_path() -> str:
     top_level_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # look for the directory that matches infernet-monorepo-internal
     while not os.path.basename(top_level_dir) == "infernet-monorepo-internal":

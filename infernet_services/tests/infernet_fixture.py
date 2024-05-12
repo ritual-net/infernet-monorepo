@@ -10,19 +10,18 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, cast
 
 import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
+from config_creator import (
+    DEFAULT_COORDINATOR_ADDRESS,
+    DEFAULT_PRIVATE_KEY,
+    DEFAULT_RPC_URL,
+    ServiceEnvVars,
+    create_config_file,
+)
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
 from web3 import AsyncHTTPProvider, AsyncWeb3
-
-from config_creator import (
-    create_config_file,
-    ServiceEnvVars,
-    DEFAULT_RPC_URL,
-    DEFAULT_PRIVATE_KEY,
-    DEFAULT_COORDINATOR_ADDRESS,
-)
 
 FixtureType = Callable[[], Generator[None, None, None]]
 TOPLEVEL_DIR = Path(__file__).resolve().parents[1]

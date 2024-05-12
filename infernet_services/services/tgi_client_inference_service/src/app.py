@@ -128,9 +128,7 @@ def create_app() -> Quart:
                         input = TgiInferenceRequest(text=text)
 
                         ## send parsed output back
-                        result = await run_sync(workflow.inference)(
-                            input_data=input
-                        )
+                        result = await run_sync(workflow.inference)(input_data=input)
 
                         logging.info("recieved result from workflow: %s", result)
 
