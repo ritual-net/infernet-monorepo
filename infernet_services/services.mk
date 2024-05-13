@@ -8,8 +8,8 @@ build-service: get_index_url
 run:
 	$(MAKE) run -C $(service_dir)/$(service)
 
-filename ?= "GenericConsumerContract.sol"
-contract ?= "GenericConsumerContract"
+filename ?= "GenericCallbackConsumer.sol"
+contract ?= "GenericCallbackConsumer"
 
 service ?= hf_inference_client_service
 

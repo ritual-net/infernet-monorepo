@@ -96,6 +96,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             try:
                 # load data into model for validation
                 inf_input = InfernetInput(**req_data)
+                hex_input = ""
                 match inf_input:
                     case InfernetInput(source=InfernetInputSource.OFFCHAIN, data=data):
                         logging.info("received Offchain Request: %s", data)
@@ -103,6 +104,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         input_data = data
                     case InfernetInput(source=InfernetInputSource.CHAIN, data=data):
                         logging.info("received On-chain Request: %s", data)
+                        hex_input = data
                         # decode web3 abi.encode(uint64, uint64, uint64, uint64)
                         dtype, shape, values = decode_vector(
                             bytes.fromhex(cast(str, data))
@@ -135,7 +137,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     case InfernetInput(source=InfernetInputSource.CHAIN):
                         first = result[0]
                         return {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": encode_vector(
                                 dtype,

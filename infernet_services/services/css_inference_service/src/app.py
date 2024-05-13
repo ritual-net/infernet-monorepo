@@ -129,10 +129,10 @@ def create_app() -> Quart:
 
                     case InfernetInput(
                         source=InfernetInputSource.CHAIN,
-                        data=hex_str,
+                        data=hex_input,
                         type=InfernetInputType.NON_STREAMING,
                     ):
-                        input_data_bytes: bytes = bytes.fromhex(cast(str, hex_str))
+                        input_data_bytes: bytes = bytes.fromhex(cast(str, hex_input))
                         provider, endpoint = decode_css_request(input_data_bytes)
                         logging.info(
                             "received Onchain Request: provider(%s) endpoint(%s)",
@@ -175,7 +175,7 @@ def create_app() -> Quart:
                                 )
 
                         onchain_output = {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",

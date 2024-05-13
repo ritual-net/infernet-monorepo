@@ -4,7 +4,8 @@ from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
-from infernet_fixture import get_job, handle_lifecycle, request_job, setup_logging
+from test_library.infernet_fixture import handle_lifecycle, setup_logging
+from test_library.infernet_client import get_job, request_job
 
 SERVICE_NAME = "hf_inference_client_service"
 setup_logging()

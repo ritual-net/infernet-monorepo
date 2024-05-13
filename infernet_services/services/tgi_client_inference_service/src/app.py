@@ -117,11 +117,11 @@ def create_app() -> Quart:
 
                     case InfernetInput(
                         source=InfernetInputSource.CHAIN,
-                        data=hex_str,
+                        data=hex_input,
                         type=InfernetInputType.NON_STREAMING,
                     ):
-                        logging.debug("received on chain Request: %s", hex_str)
-                        input_bytes: bytes = bytes.fromhex(cast(str, hex_str))
+                        logging.debug("received on chain Request: %s", hex_input)
+                        input_bytes: bytes = bytes.fromhex(cast(str, hex_input))
 
                         text = decode(["string"], input_bytes)[0]
 
@@ -135,7 +135,7 @@ def create_app() -> Quart:
                         output = encode(["string"], [result]).hex()
 
                         onchain_output = {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",

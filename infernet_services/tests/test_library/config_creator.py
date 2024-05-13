@@ -2,6 +2,12 @@ import json
 import os
 from typing import Any, Dict
 
+from test_library.constants import (
+    DEFAULT_PRIVATE_KEY,
+    DEFAULT_COORDINATOR_ADDRESS,
+    DEFAULT_INFERNET_RPC_URL,
+)
+
 base_config = {
     "log_path": "infernet_node.log",
     "server": {"port": 4000},
@@ -34,11 +40,6 @@ base_config = {
     ],
 }
 
-DEFAULT_PRIVATE_KEY = (
-    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-)
-DEFAULT_COORDINATOR_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-DEFAULT_RPC_URL = "http://host.docker.internal:8545"
 
 ServiceEnvVars = Dict[str, Any]
 
@@ -49,7 +50,7 @@ def create_config_file(
     env_vars: ServiceEnvVars = {},
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
-    rpc_url: str = DEFAULT_RPC_URL,
+    rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> None:
     cfg = get_config(
         service_name,
@@ -69,8 +70,23 @@ def get_config(
     env_vars: ServiceEnvVars = {},
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
-    rpc_url: str = DEFAULT_RPC_URL,
+    rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> Dict[str, Any]:
+    """
+    Create an infernet config.json dictionary with the given parameters.
+
+    Args:
+        service_name: The name of the service
+        image_id: The image ID of the service
+        env_vars: A dictionary of environment variables
+        private_key: The private key of the wallet
+        coordinator_address: The coordinator address
+        rpc_url: The RPC URL of the chain
+
+    Returns:
+        A dictionary representing the infernet config.json file
+    """
+
     cfg: Dict[str, Any] = base_config.copy()
     cfg["containers"][0]["id"] = service_name
     cfg["containers"][0]["image"] = image_id
@@ -81,10 +97,35 @@ def get_config(
     return cfg
 
 
-# turn that into a function
-def config_path() -> str:
+def monorepo_dir() -> str:
+    """
+    Get the top level directory of the infernet monorepo.
+
+    Returns:
+        The path to the top level directory
+    """
     top_level_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    # look for the directory that matches infernet-monorepo-internal
     while not os.path.basename(top_level_dir) == "infernet-monorepo-internal":
         top_level_dir = os.path.dirname(top_level_dir)
-    return os.path.join(top_level_dir, "infernet_services", "deploy", "config.json")
+    return top_level_dir
+
+
+def infernet_services_dir() -> str:
+    """
+    Get the path to the `infernet_services` directory under the infernet monorepo.
+
+    Returns:
+        The path to the `infernet_services` directory
+    """
+    return os.path.join(monorepo_dir(), "infernet_services")
+
+
+def config_path() -> str:
+    """
+    Get the path to the config.json file under the `infernet_services/deploy` directory.
+    This is used to write the config file for the infernet deployment.
+
+    Returns:
+        The target path
+    """
+    return os.path.join(infernet_services_dir(), "deploy", "config.json")

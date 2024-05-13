@@ -97,12 +97,12 @@ def create_app(
                         return result
 
                     case InfernetInput(
-                        source=InfernetInputSource.CHAIN, data=input_data
+                        source=InfernetInputSource.CHAIN, data=hex_input
                     ):
-                        logging.info(f"Received Onchain Request:{input_data}")
+                        logging.info(f"Received Onchain Request:{hex_input}")
                         # Decode input data from eth_abi bytes32 to string
                         (input_text_decoded,) = decode(
-                            ["string"], bytes.fromhex(cast(str, input_data))
+                            ["string"], bytes.fromhex(cast(str, hex_input))
                         )
                         logging.info(f"Decoded input text: {input_text_decoded}")
 
@@ -140,7 +140,7 @@ def create_app(
                                 output = encode(["string"], [result["output"]]).hex()
 
                         return {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",

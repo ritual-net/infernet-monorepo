@@ -20,7 +20,7 @@ def create_app() -> Flask:
         return {
             "raw_input": encode(["uint8"], [input]).hex(),
             "processed_input": "",
-            "raw_output": "",
+            "raw_output": encode(["uint8"], [input]).hex(),
             "processed_output": "",
             "proof": "",
         }

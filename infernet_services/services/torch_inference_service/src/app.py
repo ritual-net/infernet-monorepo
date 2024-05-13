@@ -101,9 +101,11 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         input: InfernetInput = InfernetInput(**infernet_input)
 
         data: dict[str, Any] = cast(dict[str, Any], input.data)
+        hex_input = ""
 
         if input.source == InfernetInputSource.CHAIN:
-            dtype, shape, values = decode_vector(bytes.fromhex(cast(str, input.data)))
+            hex_input = cast(str, input.data)
+            dtype, shape, values = decode_vector(bytes.fromhex(hex_input))
             inference_input = TensorInput(
                 dtype=dtype.name, shape=shape, values=values.tolist()
             )
@@ -121,7 +123,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 }
             case InfernetInput(source=InfernetInputSource.CHAIN):
                 return {
-                    "raw_input": "",
+                    "raw_input": hex_input,
                     "processed_input": "",
                     "raw_output": encode_vector(
                         dtype,

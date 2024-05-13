@@ -3,13 +3,12 @@ from enum import IntEnum
 from typing import Generator
 
 import pytest
-from infernet_fixture import (
-    ANVIL_NODE,
-    CONTRACT_ADDRESS,
-    LogCollector,
-    get_abi,
+from test_library.infernet_fixture import (
     handle_lifecycle,
 )
+from test_library.constants import DEFAULT_CONTRACT_ADDRESS, ANVIL_NODE
+from test_library.web3 import get_abi
+from test_library.log_collector import LogCollector
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 SERVICE_NAME = "echo"
@@ -111,7 +110,7 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 @pytest.mark.asyncio
 async def test_infernet_error_logs(error_id: ErrorId, expected_log: str) -> None:
     consumer = w3.eth.contract(
-        address=CONTRACT_ADDRESS,
+        address=DEFAULT_CONTRACT_ADDRESS,
         abi=get_abi(f"{contract_name}.sol", contract_name),
     )
 
