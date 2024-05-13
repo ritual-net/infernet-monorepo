@@ -61,7 +61,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     if LOAD_ARGS[0] == "'" or LOAD_ARGS[0] == '"':
         LOAD_ARGS = LOAD_ARGS[1:-1]
 
-    model_source = ModelSource(os.getenv("MODEL_SOURCE", "local").lower())
+    model_source = ModelSource(int(os.getenv("MODEL_SOURCE", ModelSource.LOCAL.value)))
     app_config = test_config or {
         "kwargs": {
             "model_source": model_source,

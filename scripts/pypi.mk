@@ -1,6 +1,10 @@
 # Make commands for building python packages & publishing them to GCP's Artifact Registry
 SHELL := /bin/bash
 
+ifneq ("$(wildcard gcp.env)","")
+include gcp.env
+endif
+
 # Conditional assignment based on the operating system
 ifeq ($(shell uname -s),Darwin)
     SED := gsed

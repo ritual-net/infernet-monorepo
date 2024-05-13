@@ -3,6 +3,7 @@ import json
 from typing import IO, Optional, cast
 
 import click
+
 from infernet_client.chain_utils import RPC, Subscription
 from infernet_client.cli.options import (
     input_option,

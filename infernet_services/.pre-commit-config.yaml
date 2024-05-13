@@ -1,3 +1,5 @@
+exclude: .*\.venv
+
 repos:
   - repo: local
     hooks:
