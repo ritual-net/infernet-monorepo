@@ -48,7 +48,6 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
         Returns: Any
         """
 
-    @final
     def inference(self, input_data: Any) -> Any:
         """performs inference. Checks that model is set up before
         performing inference.

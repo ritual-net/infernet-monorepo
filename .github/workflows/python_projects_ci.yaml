@@ -1,8 +1,12 @@
 # pre-commit workflow for Infernet Monorepo
 
-name: Python CI
+name: Python Projects CI
 
-on: [push]
+on:
+  pull_request:
+    paths:
+      - 'projects/**'
+      - '.github/workflows/python_projects_ci.yaml'
 
 jobs:
   monorepo_ci:
@@ -16,7 +20,7 @@ jobs:
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
+          ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +40,7 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
-      - id: 'auth'
+      - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_JSON }}'
@@ -44,11 +48,10 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      - name: 'Get gcp env vars'
-        run: echo '${{ secrets.GCP_ENV }}' > gcp.env
-
-      - name: 'Ensure file exists'
-        run: '[ -f gcp.env ] && echo "File exists" && ls || { echo "File does not exist"; exit 1; }'
+      - name: 'Get env var files'
+        run: |
+          echo '${{ secrets.GCP_ENV }}' > gcp.env
+          echo '${{ secrets.TESTS_ENV }}' > .env
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -69,15 +72,23 @@ jobs:
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
+      # first line is the project's specific dependencies,
       - name: Install dependencies
-        run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
+        run: |
+          uv pip install -r projects/${{ matrix.project }}/requirements.lock
+          uv pip install -r pyproject.toml
 
       - name: Run pre-commit hooks
-        run: make pre-commit project=${{ matrix.project }}
+        run: make pre-commit-project project=${{ matrix.project }}
 
       - name: Run tests
         env:
+          # We need to list the env vars here again for them to get filtered out in logs
           PYTHONPATH: projects/${{ matrix.project }}/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
+          GOOSEAI_API_KEY: ${{ secrets.GOOSEAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
+
         run: make test project=${{ matrix.project }}

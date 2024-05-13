@@ -5,6 +5,7 @@ from uuid import uuid4
 import aiohttp
 import pytest
 from eth_typing import ChecksumAddress, HexAddress, HexStr
+
 from infernet_client import NodeClient
 from infernet_client.error import APIError
 from infernet_client.types import ErrorResponse, JobResponse

@@ -1,0 +1,56 @@
+# pre-commit workflow
+#
+# Ensures the codebase passes the pre-commit stack.
+
+name: Infernet Services Pre-commits, Style, and Linting
+
+on:
+  pull_request:
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_precommit.yaml'
+
+jobs:
+  python_precommits:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Google auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_JSON }}
+
+    - name: Set up cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Get env vars
+      run: |
+        echo '${{ secrets.GCP_ENV }}' > gcp.env
+
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.SSH_GH_ACTIONS }}
+
+    - name: Install UV
+      run: python -m pip install uv
+
+    # Can't install from uv with the --system flag much like what we do in our
+    # dockerfiles, because we'd have to run it as root.
+    - name: Create virtual environment
+      run: uv venv
+
+    - name: Activate virtual environment
+      run: |
+        . .venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
+
+    - name: Get UV env file
+      run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: uv pip install -r infernet_services/requirements-precommit.lock
+
+    - name: Run pre-commit hooks
+      run: make pre-commit-services

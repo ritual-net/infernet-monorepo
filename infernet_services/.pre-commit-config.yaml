@@ -1,0 +1,65 @@
+exclude: .*\.venv
+
+repos:
+  - repo: local
+    hooks:
+      - id: mypy_hf_inference_client_service
+        name: mypy hf_inference_client_service
+        entry: mypy --strict
+        files: ^infernet_services/services/hf_inference_client_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_css_inference_service
+        name: mypy css_inference_service
+        entry: mypy --strict
+        files: ^infernet_services/services/css_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_tgi_client_inference_service
+        name: mypy tgi_client_inference_service
+        entry: mypy --strict
+        files: ^infernet_services/services/tgi_client_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_onnx_inference_service
+        name: mypy onnx_inference_service
+        entry: mypy --strict
+        files: ^infernet_services/services/onnx_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_torch_inference_service
+        name: mypy torch_inference_service
+        entry: mypy --strict
+        files: ^infernet_services/services/torch_inference_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy echo service
+        name: mypy echo service
+        entry: mypy --strict
+        files: ^infernet_services/test_services/echo
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: mypy_tests
+        name: mypy tests
+        entry: mypy --strict
+        files: ^infernet_services/tests
+        language: system
+        types: [python]
