@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 import numpy
 import pytest
 import torch
+
 from infernet_ml.workflows.inference.bark_hf_inference_workflow import (
     BarkHFInferenceWorkflow,
     BarkWorkflowInput,

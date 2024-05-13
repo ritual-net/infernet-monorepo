@@ -1,20 +1,22 @@
 import os
+from typing import Any, Dict
 
 import yaml
 
 
-def generate_docs(src_root, docs_root, nav_file_path):
+def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
     """
     Walks through the source directory, creates mirrored directories under docs root,
     and writes a Markdown file for each Python module with the mkdocstrings directive.
 
     Args:
         src_root (str): The root directory of the source files.
-        docs_root (str): The root directory where the generated documentation files will be stored.
+        docs_root (str): The root directory where the generated documentation files will
+        be stored.
         nav_file_path (str): The path to the MkDocs navigation configuration file.
     """
 
-    nav_entries = {}
+    nav_entries: Dict[str, Any] = {}
 
     for root, dirs, files in os.walk(src_root):
         # Modify dirs in-place to skip unwanted directories
@@ -39,7 +41,8 @@ def generate_docs(src_root, docs_root, nav_file_path):
         # Process each Python file in the current directory
         for file in files:
             if file.endswith(".py") and not file.startswith("__"):
-                # Remove the .py extension and replace os separators with dots for module path
+                # Remove the .py extension and replace os separators with dots
+                # for module path
                 module_name = file[:-3]
                 module_path = (
                     os.path.join(root, file)
@@ -62,9 +65,10 @@ def generate_docs(src_root, docs_root, nav_file_path):
                     os.sep, "/"
                 )
 
-    def write_nav_entries(nav_entries):
+    def write_nav_entries(nav_entries: Dict[str, str]) -> list[Dict[str, Any]]:
         """
-        Recursively builds a nested list representing the navigation structure for MkDocs.
+        Recursively builds a nested list representing the navigation structure for
+        MkDocs.
 
         Args:
             nav_entries (dict): A dictionary representing the navigation structure.
@@ -83,7 +87,7 @@ def generate_docs(src_root, docs_root, nav_file_path):
                 nav_list.append({name: value})
         return nav_list
 
-    def update_mkdocs_nav_file(nav_entries, config_path):
+    def update_mkdocs_nav_file(nav_entries: Dict[str, str], config_path: str) -> None:
         """
         Updates the navigation section in the MkDocs configuration file.
 
@@ -111,7 +115,8 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print(
-            "Usage: python generate_docs.py <project> <src_root> <docs_root> <nav_file_path>"
+            "Usage:\n"
+            "python generate_docs.py <project> <src_root> <docs_root> <nav_file_path>"
         )
         sys.exit(1)
 

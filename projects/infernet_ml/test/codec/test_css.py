@@ -1,4 +1,5 @@
 import pytest
+
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
     CSSProvider,

@@ -5,7 +5,7 @@ Hugging Face Hub, or Arweave.
 
 import logging
 import os
-from enum import Enum
+from enum import IntEnum
 from typing import Any, Optional, Union, cast
 
 from huggingface_hub import hf_hub_download  # type: ignore
@@ -13,14 +13,14 @@ from pydantic import BaseModel
 from ritual_arweave.model_manager import ModelManager
 
 
-class ModelSource(Enum):
+class ModelSource(IntEnum):
     """
     Enum for the model source
     """
 
-    LOCAL = "local"
-    ARWEAVE = "arweave"
-    HUGGINGFACE_HUB = "huggingface_hub"
+    LOCAL = 0
+    ARWEAVE = 1
+    HUGGINGFACE_HUB = 2
 
 
 logger: logging.Logger = logging.getLogger(__name__)

@@ -3,6 +3,7 @@ from typing import Any
 
 import pytest
 from dotenv import load_dotenv
+
 from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import ArweaveLoadArgs, HFLoadArgs, ModelSource
 from infernet_ml.workflows.inference.torch_inference_workflow import (

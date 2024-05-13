@@ -10,12 +10,13 @@ appropriate API key needs to be specified in environment variables.
 import logging
 from typing import Any, Optional, Union
 
+from retry import retry
+
 from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.utils.css_mux import ApiKeys, CSSRequest, css_mux, validate
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
-from retry import retry
 
 
 class CSSInferenceWorkflow(BaseInferenceWorkflow):

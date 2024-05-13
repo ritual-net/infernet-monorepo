@@ -1,0 +1,4 @@
+forge-std/=lib/forge-std/src
+infernet-sdk/=lib/infernet-sdk/src
+better-deployer/=lib/better-deployer/src
+solady/=lib/better-deployer/lib/solady/src

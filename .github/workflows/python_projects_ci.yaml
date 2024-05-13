@@ -1,24 +1,26 @@
-# pre-commit workflow
-#
-# Ensures the codebase passes the pre-commit stack.
+# pre-commit workflow for Infernet Monorepo
 
-name: Python CI
+name: Python Projects CI
 
-on: [push]
+on:
+  pull_request:
+    paths:
+      - 'projects/**'
+      - '.github/workflows/python_projects_ci.yaml'
 
 jobs:
-  python_ci:
+  monorepo_ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml", "ritual_arweave" ]
+        project: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
     steps:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_RITUAL_PYARWEAVE }}
+          ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +40,7 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
-      - id: 'auth'
+      - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_JSON }}'
@@ -70,11 +72,14 @@ jobs:
       - name: Get UV env file
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
+      # first line is the project's specific dependencies,
       - name: Install dependencies
-        run: uv pip install -r projects/${{ matrix.project }}/requirements.lock
+        run: |
+          uv pip install -r projects/${{ matrix.project }}/requirements.lock
+          uv pip install -r pyproject.toml
 
       - name: Run pre-commit hooks
-        run: make pre-commit project=${{ matrix.project }}
+        run: make pre-commit-project project=${{ matrix.project }}
 
       - name: Run tests
         env:

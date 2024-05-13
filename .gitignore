@@ -30,7 +30,6 @@ htmlcov/
 env/
 venv/
 
-
 # onnx environment
 onnx
 
@@ -39,9 +38,6 @@ onnx
 
 # Local logs
 *.log
-
-# Config file
-config.json
 
 # ignore build artifacts
 **/*.egg-info
@@ -83,3 +79,8 @@ logs
 # docs
 **/site
 .vercel
+
+# pytest logs
+**/pytest_logs.txt
+
+infernet_services/deploy/config.json

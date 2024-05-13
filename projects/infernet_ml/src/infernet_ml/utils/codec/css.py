@@ -9,6 +9,7 @@ These utilities are used in the `css_inference_service` service.
 from enum import IntEnum
 
 from eth_abi.abi import decode, encode
+
 from infernet_ml.utils.css_mux import ConvoMessage
 
 

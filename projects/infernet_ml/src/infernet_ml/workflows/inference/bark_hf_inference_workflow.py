@@ -5,13 +5,14 @@ from typing import Any, Optional, Protocol, cast
 
 import numpy
 import torch
+from pydantic import BaseModel
+from transformers import AutoProcessor  # type: ignore
+from transformers import BarkModel, BatchEncoding
+
 from infernet_ml.workflows.inference.tts_inference_workflow import (
     AudioInferenceResult,
     TTSInferenceWorkflow,
 )
-from pydantic import BaseModel
-from transformers import AutoProcessor  # type: ignore
-from transformers import BarkModel, BatchEncoding
 
 
 class BarkProcessor(Protocol):

@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 from dotenv import load_dotenv
+
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     ConvoMessage,
