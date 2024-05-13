@@ -3,12 +3,10 @@ from enum import IntEnum
 from typing import Generator
 
 import pytest
-from test_library.infernet_fixture import (
-    handle_lifecycle,
-)
-from test_library.constants import DEFAULT_CONTRACT_ADDRESS, ANVIL_NODE
-from test_library.web3 import get_abi
+from test_library.constants import ANVIL_NODE, DEFAULT_CONTRACT_ADDRESS
+from test_library.infernet_fixture import handle_lifecycle
 from test_library.log_collector import LogCollector
+from test_library.web3 import get_abi
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 SERVICE_NAME = "echo"

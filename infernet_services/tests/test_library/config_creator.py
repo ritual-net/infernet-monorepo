@@ -3,9 +3,9 @@ import os
 from typing import Any, Dict
 
 from test_library.constants import (
-    DEFAULT_PRIVATE_KEY,
     DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_INFERNET_RPC_URL,
+    DEFAULT_PRIVATE_KEY,
 )
 
 base_config = {

@@ -2,25 +2,25 @@ import json
 import logging
 import shlex
 import subprocess
-from typing import Callable, List, Dict, Any
+from typing import Any, Callable, Dict, List, cast
 from uuid import uuid4
 
 from eth_abi.exceptions import InsufficientDataBytes
-from reretry import retry
-from web3 import AsyncWeb3, AsyncHTTPProvider
-from web3.contract import AsyncContract
-from web3.exceptions import ContractLogicError
-from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
-
+from eth_typing import HexAddress
+from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
-    DEFAULT_PRIVATE_KEY,
-    DEFAULT_COORDINATOR_ADDRESS,
-    DEFAULT_CONTRACT_FILENAME,
-    DEFAULT_CONTRACT,
     ANVIL_NODE,
+    DEFAULT_CONTRACT,
+    DEFAULT_CONTRACT_FILENAME,
+    DEFAULT_COORDINATOR_ADDRESS,
+    DEFAULT_PRIVATE_KEY,
 )
 from test_library.test_config import global_config
+from web3 import AsyncHTTPProvider, AsyncWeb3
+from web3.contract import AsyncContract  # type: ignore
+from web3.exceptions import ContractLogicError
+from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
 
 log = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ async def assert_web3_output(
         delay=1 / 2,
     )  # type: ignore
     async def _assert():
-        log.info(f"querying consumer contract for task id {task_id}")
+        log.info(f"querying consumer contract for task id {task_id!r}")
         consumer = await get_consumer_contract()
         _input = await consumer.functions.receivedInput(task_id).call()
         _output = await consumer.functions.receivedOutput(task_id).call()
@@ -128,24 +128,24 @@ async def get_w3() -> AsyncWeb3:
     return w3
 
 
-def get_account() -> str:
+def get_account() -> HexAddress:
     w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
     account = w3.eth.account.from_key(global_config.private_key)
-    return account.address
+    return cast(HexAddress, account.address)
 
 
-def get_deployed_contract_address(deployment_name: str) -> str:
+def get_deployed_contract_address(deployment_name: str) -> HexAddress:
     with open(
         f"{infernet_services_dir()}/consumer-contracts/deployments/deployments.json"
     ) as f:
         deployments = json.load(f)
-    return deployments[deployment_name]
+    return cast(HexAddress, deployments[deployment_name])
 
 
 async def get_consumer_contract(
     filename: str = DEFAULT_CONTRACT_FILENAME,
     consumer_contract: str = DEFAULT_CONTRACT,
-):
+) -> AsyncContract:
     """
     Gets the deployed consumer contract.
 
@@ -158,13 +158,19 @@ async def get_consumer_contract(
     Returns:
         AsyncContract: The consumer contract.
     """
-    contract_address = global_config.contract_address or get_deployed_contract_address(
-        consumer_contract
+    contract_address = cast(
+        HexAddress,
+        global_config.contract_address
+        or get_deployed_contract_address(consumer_contract),
     )
+    w3 = await get_w3()
 
-    return (await get_w3()).eth.contract(
-        address=contract_address,
-        abi=get_abi(filename, consumer_contract),
+    return cast(
+        AsyncContract,
+        w3.eth.contract(  # type: ignore
+            address=contract_address,
+            abi=get_abi(filename, consumer_contract),
+        ),
     )
 
 
@@ -181,11 +187,11 @@ async def request_web3_compute(service_id: str, input: bytes) -> bytes:
     """
     consumer = await get_consumer_contract()
     randomness = f"{uuid4()}"
-    log.info(f"requesting compute {service_id} {randomness} {input}")
+    log.info(f"requesting compute {service_id} {randomness} {input!r}")
     fn = consumer.functions.requestCompute(service_id, randomness, input)
     gen_id = await fn.call()
     log.info(f"generated id {gen_id}")
     tx = await fn.transact()
     log.info(f"awaiting transaction {tx.hex()}")
     await (await get_w3()).eth.wait_for_transaction_receipt(tx)
-    return gen_id
+    return cast(bytes, gen_id)

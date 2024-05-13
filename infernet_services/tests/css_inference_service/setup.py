@@ -1,6 +1,7 @@
-from test_library.web3 import deploy_smart_contracts
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from test_library.web3 import deploy_smart_contracts
 
 load_dotenv()
 
@@ -23,4 +24,6 @@ if __name__ == "__main__":
     #     coordinator_address=coordinator_address,
     # )
     print("Deploying smart contracts, private key: ", private_key, "rpc_url: ", rpc_url)
-    deploy_smart_contracts(sender=private_key, rpc_url=rpc_url, coordinator_address=coordinator_address)
+    deploy_smart_contracts(
+        sender=private_key, rpc_url=rpc_url, coordinator_address=coordinator_address
+    )

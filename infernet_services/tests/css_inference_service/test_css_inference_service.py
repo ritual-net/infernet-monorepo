@@ -5,21 +5,15 @@ from typing import Any, Generator
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import decode
-
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
     CSSProvider,
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from test_library.infernet_client import get_job, request_job, request_streaming_job
-from test_library.infernet_fixture import (
-    handle_lifecycle,
-)
-from test_library.web3 import (
-    assert_web3_output,
-    request_web3_compute,
-)
+from test_library.infernet_fixture import handle_lifecycle
+from test_library.web2_utils import get_job, request_job, request_streaming_job
+from test_library.web3 import assert_web3_output, request_web3_compute
 
 SERVICE_NAME = "css_inference_service"
 log = logging.getLogger(__name__)

@@ -1,13 +1,11 @@
-from typing import Dict, Any, Optional, List, cast
+from typing import Any, Dict, List, Optional, cast
 
 import aiohttp
 from aiohttp import ServerDisconnectedError
-
 from pydantic import BaseModel, ValidationError
-from reretry import retry
-
-from test_library.infernet_fixture import log
+from reretry import retry  # type: ignore
 from test_library.constants import NODE_URL
+from test_library.infernet_fixture import log
 
 
 class ContainerResult(BaseModel):

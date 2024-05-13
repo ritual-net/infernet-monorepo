@@ -1,14 +1,12 @@
+import os
 from typing import Optional
 
 from pydantic import BaseModel
-import os
-
 from test_library.constants import (
     ANVIL_NODE,
-    DEFAULT_INFERNET_RPC_URL,
     DEFAULT_COORDINATOR_ADDRESS,
+    DEFAULT_INFERNET_RPC_URL,
     DEFAULT_PRIVATE_KEY,
-    DEFAULT_CONTRACT_ADDRESS,
 )
 
 

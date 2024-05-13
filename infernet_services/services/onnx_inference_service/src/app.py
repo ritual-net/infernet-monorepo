@@ -104,7 +104,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         input_data = data
                     case InfernetInput(source=InfernetInputSource.CHAIN, data=data):
                         logging.info("received On-chain Request: %s", data)
-                        hex_input = data
+                        hex_input = cast(str, data)
                         # decode web3 abi.encode(uint64, uint64, uint64, uint64)
                         dtype, shape, values = decode_vector(
                             bytes.fromhex(cast(str, data))

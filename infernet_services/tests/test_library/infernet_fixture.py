@@ -5,18 +5,15 @@ import shlex
 import subprocess
 from typing import Callable, Generator, Optional
 
-from test_library.config_creator import (
-    ServiceEnvVars,
+from test_library.config_creator import ServiceEnvVars
+from test_library.constants import DEFAULT_CONTRACT, DEFAULT_CONTRACT_FILENAME
+from test_library.orchestration import await_node, await_service, deploy_node
+from test_library.test_config import (
+    NetworkConfig,
+    default_network_config,
+    global_config,
 )
-from test_library.constants import (
-    DEFAULT_CONTRACT_FILENAME,
-    DEFAULT_CONTRACT,
-)
-from test_library.orchestration import await_service, await_node, deploy_node
-from test_library.test_config import NetworkConfig, default_network_config, global_config
-from test_library.web3 import (
-    deploy_smart_contracts,
-)
+from test_library.web3 import deploy_smart_contracts
 
 FixtureType = Callable[[], Generator[None, None, None]]
 

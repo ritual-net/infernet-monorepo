@@ -1,14 +1,14 @@
 import torch
 from eth_abi import decode  # type: ignore
-from test_library.constants import DEFAULT_CONTRACT_ADDRESS, ANVIL_NODE
-from test_library.infernet_client import get_job, request_job
-from test_library.web3 import get_abi, assert_web3_output, request_web3_compute
 from infernet_ml.utils.codec.vector import (
     TORCH_VALUE_LOOKUP,
     DataType,
     decode_vector,
     encode_vector,
 )
+from test_library.constants import ANVIL_NODE
+from test_library.web2_utils import get_job, request_job
+from test_library.web3 import assert_web3_output, request_web3_compute
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 
