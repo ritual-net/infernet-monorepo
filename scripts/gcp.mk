@@ -5,6 +5,10 @@
 # get the service account auth file and export it to base64.
 SHELL := /bin/bash
 
+ifneq ("$(wildcard gcp.env)","")
+include gcp.env
+endif
+
 # service account email
 sa_email := $(sa_name)@$(gcp_project).iam.gserviceaccount.com
 # service account auth file name

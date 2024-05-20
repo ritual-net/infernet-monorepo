@@ -14,11 +14,12 @@ def create_app() -> Flask:
     @app.route("/service_output", methods=["POST"])
     def inference() -> dict[str, Any]:
         body: dict[str, Any] = cast(dict[str, Any], request.json)
-        (input,) = decode(["uint8"], bytes.fromhex(cast(str, body.get("data"))))
+        hex_data: str = cast(str, body.get("data"))
+        (input,) = decode(["uint8"], bytes.fromhex(hex_data))
         print(f"input is: {input}")
 
         return {
-            "raw_input": encode(["uint8"], [input]).hex(),
+            "raw_input": hex_data,
             "processed_input": "",
             "raw_output": encode(["uint8"], [input]).hex(),
             "processed_output": "",

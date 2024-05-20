@@ -33,7 +33,6 @@ contract_name = "InfernetErrors"
 
 @pytest.fixture(scope="module", autouse=True)
 def node_lifecycle() -> Generator[None, None, None]:
-    # pass
     yield from handle_lifecycle(
         SERVICE_NAME,
         {},

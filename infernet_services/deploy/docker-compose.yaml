@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:streaming
+    image: ritualnetwork/infernet-node-internal:no-filter
     ports:
       - "0.0.0.0:4000:4000"
     volumes:
@@ -51,15 +51,23 @@ services:
 
   anvil-node:
       image: ritualnetwork/infernet-anvil:0.0.0
+      command: --host 0.0.0.0 --port 3000 --load-state saved_states/everything-deployed.state -b 1
       ports:
         - "8545:3000"
       networks:
         - network
       container_name: anvil-node
+#
+#  echo:
+#    image: ritualnetwork/echo:latest
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - network
+#    container_name: echo
 
 networks:
   network:
-
 
 volumes:
   node-logs:

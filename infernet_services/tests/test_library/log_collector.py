@@ -1,6 +1,7 @@
 import asyncio
 from asyncio import StreamReader
 from typing import List, Optional, Tuple, cast
+import re
 
 
 class LogCollector:
@@ -8,7 +9,7 @@ class LogCollector:
         self.running = False
         self.logs: List[Tuple[str, str]] = []
         self.line_event: asyncio.Event = asyncio.Event()
-        self.current_trigger_line: Optional[str] = None
+        self.regex_pattern: Optional[str] = None
 
     async def start(self: "LogCollector", cmd: str) -> "LogCollector":
         self.running = True
@@ -27,9 +28,12 @@ class LogCollector:
                 if line:
                     decoded_line = line.decode().strip()
                     self.logs.append((tag, decoded_line))
-                    if (
-                        self.current_trigger_line
-                        and self.current_trigger_line in decoded_line
+                    # if (
+                    #     self.current_trigger_line
+                    #     and self.current_trigger_line in decoded_line
+                    # ):
+                    if self.regex_pattern and re.search(
+                        self.regex_pattern, decoded_line
                     ):
                         self.line_event.set()
                 else:
@@ -56,9 +60,9 @@ class LogCollector:
                 pass
 
     async def wait_for_line(
-        self: "LogCollector", trigger_line: str, timeout: int
+        self: "LogCollector", regex_pattern: str, timeout: int
     ) -> Tuple[bool, List[Tuple[str, str]]]:
-        self.current_trigger_line = trigger_line
+        self.regex_pattern = regex_pattern
         self.line_event.clear()  # Clear the event for reuse
         try:
             await asyncio.wait_for(self.line_event.wait(), timeout=timeout)
