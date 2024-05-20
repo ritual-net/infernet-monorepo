@@ -57,6 +57,9 @@ def populate_global_config(network_config: NetworkConfig) -> None:
             )
 
 
+InfernetFixtureType = Callable[[], Generator[None, None, None]]
+
+
 def handle_lifecycle(
     service: str,
     service_env_vars: ServiceEnvVars,

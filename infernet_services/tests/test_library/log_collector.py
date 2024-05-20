@@ -1,7 +1,7 @@
 import asyncio
+import re
 from asyncio import StreamReader
 from typing import List, Optional, Tuple, cast
-import re
 
 
 class LogCollector:

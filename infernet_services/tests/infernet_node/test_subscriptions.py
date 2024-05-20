@@ -4,21 +4,19 @@ import random
 from typing import Generator
 
 import pytest
-from eth_abi import encode, decode
+from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
 from reretry import retry  # type: ignore
-from web3.exceptions import ContractLogicError
-
-from test_library.infernet_fixture import (
-    handle_lifecycle,
-)
+from test_library.infernet_fixture import InfernetFixtureType, handle_lifecycle
 from test_library.log_collector import LogCollector
 from test_library.web3 import (
-    request_web3_compute,
     assert_generic_callback_consumer_output,
     get_consumer_contract,
     get_w3,
+    request_web3_compute,
 )
+from web3.contract import AsyncContract  # type: ignore
+from web3.exceptions import ContractLogicError
 
 SERVICE_NAME = "echo"
 
@@ -36,7 +34,9 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_infernet_callback_consumer(callback_consumer) -> None:
+async def test_infernet_callback_consumer(
+    callback_consumer: InfernetFixtureType,
+) -> None:
     collector = await LogCollector().start("docker logs -n 0 -f infernet-node")
     task_id = await request_web3_compute(SERVICE_NAME, encode(["uint8"], [12]))
 
@@ -71,7 +71,7 @@ def subscription_consumer() -> Generator[None, None, None]:
     )
 
 
-async def get_subscription_consumer_contract():
+async def get_subscription_consumer_contract() -> AsyncContract:
     return await get_consumer_contract(
         f"{subscription_consumer_contract}.sol", subscription_consumer_contract
     )
@@ -81,7 +81,7 @@ timeout = 30
 freq = 2
 
 
-async def assert_next_output(current_outputs, next_item):
+async def assert_next_output(current_outputs: list[int], next_item: bytes) -> None:
     consumer = await get_subscription_consumer_contract()
 
     @retry(
@@ -99,7 +99,9 @@ async def assert_next_output(current_outputs, next_item):
 
 
 @pytest.mark.asyncio
-async def test_infernet_subscription_consumer_happy_path(subscription_consumer) -> None:
+async def test_infernet_subscription_consumer_happy_path(
+    subscription_consumer: InfernetFixtureType,
+) -> None:
     consumer = await get_subscription_consumer_contract()
 
     outputs = await consumer.functions.getReceivedOutputs().call()
@@ -117,7 +119,7 @@ async def test_infernet_subscription_consumer_happy_path(subscription_consumer) 
 
 @pytest.mark.asyncio
 async def test_infernet_subscription_recurring_subscription(
-    subscription_consumer,
+    subscription_consumer: InfernetFixtureType,
 ) -> None:
     consumer = await get_consumer_contract(
         f"{subscription_consumer_contract}.sol", subscription_consumer_contract
@@ -144,7 +146,7 @@ async def test_infernet_subscription_recurring_subscription(
 
 @pytest.mark.asyncio
 async def test_infernet_subscription_cancelled_subscription(
-    subscription_consumer,
+    subscription_consumer: InfernetFixtureType,
 ) -> None:
     consumer = await get_consumer_contract(
         f"{subscription_consumer_contract}.sol", subscription_consumer_contract
