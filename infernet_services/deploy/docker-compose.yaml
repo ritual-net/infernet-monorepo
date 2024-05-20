@@ -50,7 +50,7 @@ services:
       on-failure
 
   anvil-node:
-      image: ritualnetwork/infernet-anvil:0.0.0
+      image: ritualnetwork/infernet-anvil-internal:latest
       command: --host 0.0.0.0 --port 3000 --load-state saved_states/everything-deployed.state -b 1
       ports:
         - "8545:3000"
