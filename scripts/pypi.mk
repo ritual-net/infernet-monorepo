@@ -76,8 +76,10 @@ gcp-setup: activate-service-account get_index_url
 	@echo "\nexport UV_EXTRA_INDEX_URL=$(index_url)\n"
 	@echo "Or simply set that env var everytime you're installing from uv."
 
+export_prefix ?= "export "
+
 generate-uv-env-file: get_index_url
-	@echo "export UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
+	@echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc

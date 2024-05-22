@@ -70,6 +70,8 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Get UV env file
+        env:
+          export_prefix: ""
         run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       # first line is the project's specific dependencies,
