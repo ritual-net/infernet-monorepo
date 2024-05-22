@@ -11,7 +11,7 @@ import numpy as np
 from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import HFLoadArgs, ModelSource, parse_load_args
-from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceInput,
@@ -98,11 +98,11 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 inf_input = InfernetInput(**req_data)
                 hex_input = ""
                 match inf_input:
-                    case InfernetInput(source=InfernetInputSource.OFFCHAIN, data=data):
+                    case InfernetInput(source=JobLocation.OFFCHAIN, data=data):
                         logging.info("received Offchain Request: %s", data)
                         # send parsed output back
                         input_data = data
-                    case InfernetInput(source=InfernetInputSource.CHAIN, data=data):
+                    case InfernetInput(source=JobLocation.ONCHAIN, data=data):
                         logging.info("received On-chain Request: %s", data)
                         hex_input = cast(str, data)
                         # decode web3 abi.encode(uint64, uint64, uint64, uint64)
@@ -130,11 +130,11 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 logging.info("received result from workflow: %s", result)
 
                 match inf_input:
-                    case InfernetInput(source=InfernetInputSource.OFFCHAIN):
+                    case InfernetInput(destination=JobLocation.OFFCHAIN):
                         return {
                             "result": result,
                         }
-                    case InfernetInput(source=InfernetInputSource.CHAIN):
+                    case InfernetInput(destination=JobLocation.ONCHAIN):
                         first = result[0]
                         return {
                             "raw_input": hex_input,

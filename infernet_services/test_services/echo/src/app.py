@@ -2,7 +2,7 @@ from typing import Any, Dict, cast
 
 from eth_abi import decode, encode  # type: ignore
 from flask import Flask, request
-from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from pydantic import ValidationError
 
 
@@ -18,10 +18,10 @@ def create_app() -> Flask:
         body: dict[str, Any] = cast(dict[str, Any], request.json)
         inf_input = InfernetInput(**body)
         match inf_input:
-            case InfernetInput(source=InfernetInputSource.OFFCHAIN, data=data):
+            case InfernetInput(source=JobLocation.OFFCHAIN, data=data):
                 print(f"received Offchain Request: {data}")
                 hex_input = cast(str, cast(Dict[str, Any], data)["input"])
-            case InfernetInput(source=InfernetInputSource.CHAIN, data=data):
+            case InfernetInput(source=JobLocation.ONCHAIN, data=data):
                 print(f"received On-chain Request: {data}")
                 hex_input = cast(str, data)
             case _:

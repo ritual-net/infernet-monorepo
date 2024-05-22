@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:no-filter
+    image: ritualnetwork/infernet-node-internal:no-filter-postmerge
     ports:
       - "0.0.0.0:4000:4000"
     volumes:
@@ -23,8 +23,8 @@ services:
 
   redis:
     image: redis:latest
-    expose:
-      - "6379"
+    ports:
+    - "6379:6379"
     networks:
       - network
     volumes:
@@ -55,14 +55,6 @@ services:
       networks:
         - network
       container_name: anvil-node
-#
-#  echo:
-#    image: ritualnetwork/echo:latest
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - network
-#    container_name: echo
 
 networks:
   network:
