@@ -3,17 +3,14 @@ import logging
 from enum import IntEnum
 
 import pytest
-from web3 import AsyncHTTPProvider, AsyncWeb3
-
-from infernet_node.session import delegate_subscription_consumer
 from test_library.constants import ANVIL_NODE, NODE_LOG_CMD
 from test_library.log_collector import LogCollector
 from test_library.web3 import get_consumer_contract
+from web3 import AsyncHTTPProvider, AsyncWeb3
 
 SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
-log.info(delegate_subscription_consumer.__name__)
 
 
 class ErrorId(IntEnum):

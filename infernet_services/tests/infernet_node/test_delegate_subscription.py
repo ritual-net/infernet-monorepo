@@ -3,39 +3,29 @@ import logging
 import random
 import re
 from time import time
-from typing import Optional
+from typing import Optional, cast
 
 import pytest
-from eth_abi import decode, encode  # type: ignore
-from reretry import retry  # type: ignore
-from web3.contract import AsyncContract  # type: ignore
-
+from eth_abi import encode  # type: ignore
 from infernet_client import NodeClient
-from infernet_client.chain_utils import Subscription, RPC
-from infernet_node.session import delegate_subscription_consumer
-from infernet_node.test_subscriptions import (
-    assert_next_output,
-    set_next_input,
-)
-from test_library.constants import MAX_GAS_PRICE, MAX_GAS_LIMIT, NODE_LOG_CMD
+from infernet_client.chain_utils import RPC, Subscription
+from infernet_node.test_subscriptions import assert_next_output, set_next_input
+from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
 from test_library.log_collector import LogCollector
 from test_library.test_config import global_config
-from test_library.web3 import (
-    get_deployed_contract_address,
-    get_coordinator_contract,
-)
+from test_library.web3 import get_coordinator_contract, get_deployed_contract_address
 
 SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
-log.info(delegate_subscription_consumer.__name__)
 
 CONSUMER_CONTRACT = "DelegateSubscriptionConsumer"
 
 
 async def get_next_subscription_id() -> int:
     coordinator = await get_coordinator_contract()
-    return await coordinator.functions.id().call()
+    _id = await coordinator.functions.id().call()
+    return cast(int, _id)
 
 
 async def create_delegated_subscription(

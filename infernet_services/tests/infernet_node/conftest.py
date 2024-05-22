@@ -1,12 +1,12 @@
-import pytest
-
-from test_library.infernet_fixture import handle_lifecycle
 from typing import Generator
+
+import pytest
+from test_library.infernet_fixture import handle_lifecycle
 from test_library.test_config import global_config
 from test_library.web3 import deploy_smart_contract, get_account
 
 
-def _deploy_smart_contract(contract_name: str):
+def _deploy_smart_contract(contract_name: str) -> None:
     deploy_smart_contract(
         filename=f"{contract_name}.sol",
         consumer_contract=contract_name,
@@ -18,7 +18,6 @@ def _deploy_smart_contract(contract_name: str):
 
 
 def deploy_contracts() -> None:
-    return
     _deploy_smart_contract("GenericCallbackConsumer")
     _deploy_smart_contract("InfernetErrors")
     _deploy_smart_contract("GenericSubscriptionConsumer")
@@ -36,7 +35,5 @@ def delegate_subscription_consumer() -> Generator[None, None, None]:
         {},
         deploy_env_vars={"service_dir": "infernet_services/test_services"},
         post_node_deploy_hook=deploy_contracts,
-        skip_deploying=True,
         skip_contract=True,
-        skip_teardown=True,
     )

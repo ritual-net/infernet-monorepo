@@ -1,10 +1,9 @@
-from typing import Any, cast
+from typing import Any, Dict, cast
 
 from eth_abi import decode, encode  # type: ignore
 from flask import Flask, request
-from pydantic import ValidationError
-
 from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from pydantic import ValidationError
 
 
 def create_app() -> Flask:
@@ -21,7 +20,7 @@ def create_app() -> Flask:
         match inf_input:
             case InfernetInput(source=InfernetInputSource.OFFCHAIN, data=data):
                 print(f"received Offchain Request: {data}")
-                hex_input = cast(str, data["input"])
+                hex_input = cast(str, cast(Dict[str, Any], data)["input"])
             case InfernetInput(source=InfernetInputSource.CHAIN, data=data):
                 print(f"received On-chain Request: {data}")
                 hex_input = cast(str, data)

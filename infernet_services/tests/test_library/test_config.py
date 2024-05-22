@@ -1,13 +1,14 @@
 import os
-from typing import Optional
+from typing import Optional, cast
 
+from eth_typing import ChecksumAddress
 from pydantic import BaseModel
 from test_library.constants import (
     ANVIL_NODE,
     DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_INFERNET_RPC_URL,
-    DEFAULT_PRIVATE_KEY,
     DEFAULT_NODE_URL,
+    DEFAULT_PRIVATE_KEY,
 )
 
 
@@ -42,9 +43,9 @@ class NetworkConfig(BaseModel):
     rpc_url: str
     node_url: str
     infernet_rpc_url: str
-    coordinator_address: str
+    coordinator_address: ChecksumAddress
     private_key: str
-    contract_address: Optional[str] = None
+    contract_address: Optional[ChecksumAddress] = None
 
 
 default_network_config: NetworkConfig = NetworkConfig(
@@ -62,8 +63,8 @@ def load_config_from_env() -> NetworkConfig:
     private_key = os.environ["PRIVATE_KEY"]
     rpc_url = os.environ["RPC_URL"]
     node_url = os.environ["NODE_URL"]
-    coordinator_address = os.environ["COORDINATOR_ADDRESS"]
-    consumer_address = os.environ["CONSUMER_ADDRESS"]
+    coordinator_address = cast(ChecksumAddress, os.environ["COORDINATOR_ADDRESS"])
+    consumer_address = cast(ChecksumAddress, os.environ["CONSUMER_ADDRESS"])
 
     return NetworkConfig(
         rpc_url=rpc_url,

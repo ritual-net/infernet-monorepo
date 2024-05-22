@@ -1,6 +1,6 @@
 [project]
 name = "infernet-client"
-version = "0.3.0.1"
+version = "0.3.0.2"
 description = "Infernet Node v0.3.0 REST client"
 authors = [
     { name = "Stelios Rousoglou", email = "stelios@ritual.net" }

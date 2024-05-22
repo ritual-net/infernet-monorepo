@@ -7,27 +7,21 @@ import pytest
 from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
 from reretry import retry  # type: ignore
+from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
+from test_library.log_collector import LogCollector
+from test_library.web3 import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
-
-from infernet_node.session import delegate_subscription_consumer
-from test_library.constants import MAX_GAS_PRICE, MAX_GAS_LIMIT, NODE_LOG_CMD
-from test_library.log_collector import LogCollector
-from test_library.web3 import (
-    get_consumer_contract,
-    get_w3,
-)
 
 SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
-log.info(delegate_subscription_consumer.__name__)
 
 SUBSCRIPTION_CONSUMER_CONTRACT = "GenericSubscriptionConsumer"
 
 
 async def get_subscription_consumer_contract(
-    contract_name=SUBSCRIPTION_CONSUMER_CONTRACT,
+    contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT,
 ) -> AsyncContract:
     return await get_consumer_contract(f"{contract_name}.sol", contract_name)
 
@@ -36,7 +30,9 @@ freq = 2
 
 
 async def assert_next_output(
-    next_item: bytes, contract_name=SUBSCRIPTION_CONSUMER_CONTRACT, timeout=30
+    next_item: bytes,
+    contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT,
+    timeout: int = 30,
 ) -> None:
     log.info(f"checking contract: {contract_name}")
     consumer = await get_subscription_consumer_contract(contract_name)
@@ -57,7 +53,9 @@ async def assert_next_output(
     await _assert()
 
 
-async def set_next_input(i: int, contract_name=SUBSCRIPTION_CONSUMER_CONTRACT) -> None:
+async def set_next_input(
+    i: int, contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT
+) -> None:
     consumer = await get_subscription_consumer_contract(contract_name)
     log.info(f"setting input to: {i}")
     tx = await consumer.functions.setInput(encode(["uint8"], [i])).transact()
@@ -68,7 +66,7 @@ async def create_sub_with_random_input(
     frequency: int,
     period: int,
     redundancy: int = 1,
-    contract_name=SUBSCRIPTION_CONSUMER_CONTRACT,
+    contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT,
 ) -> tuple[int, int]:
     # setting the input to a random number, this is to distinguish between the outputs
     # of different subscriptions

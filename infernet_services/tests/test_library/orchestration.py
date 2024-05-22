@@ -7,7 +7,7 @@ import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
 from reretry import retry  # type: ignore
 from test_library.config_creator import ServiceEnvVars, create_config_file
-from test_library.constants import DEFAULT_TIMEOUT, DEFAULT_NODE_URL
+from test_library.constants import DEFAULT_NODE_URL, DEFAULT_TIMEOUT
 from test_library.test_config import global_config
 
 log = logging.getLogger(__name__)

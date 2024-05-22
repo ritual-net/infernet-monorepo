@@ -6,7 +6,9 @@ DEFAULT_PRIVATE_KEY = (
     "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 )
 
-DEFAULT_COORDINATOR_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+DEFAULT_COORDINATOR_ADDRESS: ChecksumAddress = cast(
+    ChecksumAddress, "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+)
 
 # rpc url that the infernet-node uses to talk to the chain
 DEFAULT_INFERNET_RPC_URL = "http://host.docker.internal:8545"
@@ -29,5 +31,4 @@ DEFAULT_CONTRACT_FILENAME: str = "GenericCallbackConsumer.sol"
 DEFAULT_CONTRACT: str = "GenericCallbackConsumer"
 MAX_GAS_PRICE = int(20e9)
 MAX_GAS_LIMIT = 1_000_000
-# NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"
-NODE_LOG_CMD = "tail -f ~/infernet-logs.log"
+NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"

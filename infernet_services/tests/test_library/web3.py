@@ -163,11 +163,10 @@ async def get_consumer_contract(
     Returns:
         AsyncContract: The consumer contract.
     """
-    contract_address = cast(
-        HexAddress,
-        global_config.contract_address
-        or get_deployed_contract_address(consumer_contract),
+    contract_address = global_config.contract_address or get_deployed_contract_address(
+        consumer_contract
     )
+
     w3 = await get_w3()
 
     return cast(

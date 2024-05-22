@@ -2,19 +2,16 @@ import json
 import logging
 
 import pytest
-from eth_abi import encode, decode
-
-from infernet_node.session import delegate_subscription_consumer
+from eth_abi import decode, encode  # type: ignore
 from infernet_node.test_subscriptions import SERVICE_NAME
 from test_library.constants import NODE_LOG_CMD
 from test_library.log_collector import LogCollector
 from test_library.web3 import (
-    request_web3_compute,
     assert_generic_callback_consumer_output,
+    request_web3_compute,
 )
 
 log = logging.getLogger(__name__)
-log.info(delegate_subscription_consumer.__name__)
 
 
 @pytest.mark.asyncio

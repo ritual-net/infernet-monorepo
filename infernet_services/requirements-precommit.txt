@@ -17,3 +17,4 @@ infernet-ml[tgi_inference]>=1.0.0.14,<2.0.0
 matplotlib>=3.8.4,<4.0.0
 isort>=5.13.2,<6.0.0
 reretry>=0.11.8,<1.0.0
+infernet-client>=0.3.0,<1.0.0
