@@ -1,29 +1,25 @@
+import logging
 import os
 from typing import Any, Generator
 
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import decode
-from infernet_fixture import (
-    ANVIL_NODE,
-    CONTRACT_ADDRESS,
-    assert_web3_output,
-    get_abi,
-    get_job,
-    handle_lifecycle,
-    request_job,
-    request_streaming_job,
-)
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
     CSSProvider,
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from web3 import AsyncHTTPProvider, AsyncWeb3
+from test_library.infernet_fixture import handle_lifecycle
+from test_library.web2_utils import get_job, request_job, request_streaming_job
+from test_library.web3 import (
+    assert_generic_callback_consumer_output,
+    request_web3_compute,
+)
 
 SERVICE_NAME = "css_inference_service"
-NODE_URL = "http://127.0.0.1:4000"
+log = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -38,9 +34,6 @@ def node_lifecycle() -> Generator[None, None, None]:
             "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
         },
     )
-
-
-w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 
 
 @pytest.mark.parametrize(
@@ -67,16 +60,11 @@ async def test_completion(
     endpoint: CSSEndpoint,
     messages: list[ConvoMessage],
 ) -> None:
-    consumer = w3.eth.contract(
-        address=CONTRACT_ADDRESS,
-        abi=get_abi("GenericConsumerContract.sol", "GenericConsumerContract"),
-    )
     encoded = encode_css_completion_request(provider, endpoint, model, messages)
-
-    await consumer.functions.requestCompute(
-        "css_inference_service",
+    task_id = await request_web3_compute(
+        SERVICE_NAME,
         encoded,
-    ).transact()
+    )
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         result: str = decode(["string"], output, strict=False)[0]
@@ -84,7 +72,7 @@ async def test_completion(
             "yes" in result.lower() or "no" in result.lower()
         ), f"yes or no should be in result, instead got {result}"
 
-    await assert_web3_output(_assertions)
+    await assert_generic_callback_consumer_output(task_id, _assertions)
 
 
 apple_prompt = "who founded apple?"

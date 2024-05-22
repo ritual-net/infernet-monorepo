@@ -15,11 +15,7 @@ from infernet_ml.utils.codec.css import (
     decode_css_request,
 )
 from infernet_ml.utils.css_mux import ApiKeys, CSSCompletionParams, CSSRequest, Provider
-from infernet_ml.utils.service_models import (
-    InfernetInput,
-    InfernetInputSource,
-    InfernetInputType,
-)
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 from pydantic import ValidationError as PydValError
@@ -96,9 +92,9 @@ def create_app() -> Quart:
 
                 match inf_input:
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN,
+                        source=JobLocation.OFFCHAIN,
                         data=input_data,
-                        type=InfernetInputType.NON_STREAMING,
+                        destination=JobLocation.OFFCHAIN,
                     ):
                         logging.info("received Offchain Request: %s", input_data)
                         css_request = CSSRequest(**cast(dict[str, Any], input_data))
@@ -114,8 +110,8 @@ def create_app() -> Quart:
                         return {"output": result}
 
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN,
-                        type=InfernetInputType.STREAMING,
+                        source=JobLocation.OFFCHAIN,
+                        destination=JobLocation.STREAM,
                         data=input_data,
                     ):
                         logging.debug("received Streaming Request: %s", input_data)
@@ -127,12 +123,8 @@ def create_app() -> Quart:
 
                         return stream_generator()
 
-                    case InfernetInput(
-                        source=InfernetInputSource.CHAIN,
-                        data=hex_str,
-                        type=InfernetInputType.NON_STREAMING,
-                    ):
-                        input_data_bytes: bytes = bytes.fromhex(cast(str, hex_str))
+                    case InfernetInput(data=hex_input, destination=JobLocation.ONCHAIN):
+                        input_data_bytes: bytes = bytes.fromhex(cast(str, hex_input))
                         provider, endpoint = decode_css_request(input_data_bytes)
                         logging.info(
                             "received Onchain Request: provider(%s) endpoint(%s)",
@@ -175,7 +167,7 @@ def create_app() -> Quart:
                                 )
 
                         onchain_output = {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",

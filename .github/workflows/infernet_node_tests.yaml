@@ -23,6 +23,14 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --recursive
 
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_JSON }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -68,6 +76,11 @@ jobs:
         run: |
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Get UV env file
+        env:
+          export_prefix: ""
+        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
         run: uv pip install -r infernet_services/requirements-node-tests.lock

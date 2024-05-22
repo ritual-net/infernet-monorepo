@@ -5,12 +5,11 @@ from typing import Generator
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import encode
-from infernet_fixture import (
-    ANVIL_NODE,
-    CONTRACT_ADDRESS,
-    assert_web3_output,
-    get_abi,
-    handle_lifecycle,
+from test_library.constants import ANVIL_NODE
+from test_library.infernet_fixture import handle_lifecycle
+from test_library.web3 import (
+    assert_generic_callback_consumer_output,
+    request_web3_compute,
 )
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
@@ -39,16 +38,12 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 
 @pytest.mark.asyncio
 async def test_completion() -> None:
-    consumer = w3.eth.contract(
-        address=CONTRACT_ADDRESS,
-        abi=get_abi("GenericConsumerContract.sol", "GenericConsumerContract"),
-    )
-    await consumer.functions.requestCompute(
-        "hf_inference_client_service",
+    task_id = await request_web3_compute(
+        SERVICE_NAME,
         encode(["string"], ["I absolutely love this product!"]),
-    ).transact()
+    )
 
     def _assertions(output: bytes, _error: bytes, _proof: bytes) -> None:
         assert output != b""
 
-    await assert_web3_output(_assertions)
+    await assert_generic_callback_consumer_output(task_id, _assertions)

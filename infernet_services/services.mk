@@ -8,8 +8,8 @@ build-service: get_index_url
 run:
 	$(MAKE) run -C $(service_dir)/$(service)
 
-filename ?= "GenericConsumerContract.sol"
-contract ?= "GenericConsumerContract"
+filename ?= "GenericCallbackConsumer.sol"
+contract ?= "GenericCallbackConsumer"
 
 service ?= hf_inference_client_service
 
@@ -28,8 +28,8 @@ deploy-node:
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 stop-node:
-	docker compose -f $(deploy_dir)/docker-compose.yaml kill || true
-	docker compose -f $(deploy_dir)/docker-compose.yaml rm -f || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml kill || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml rm -f || true
 	@docker stop $(service) anvil-node || true
 	@docker rm $(service) anvil-node || true
 	@kill $(lsof -i :8545 | grep anvil | awk '{print $2}') || true

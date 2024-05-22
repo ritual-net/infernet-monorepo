@@ -14,23 +14,33 @@ contract Deploy is BetterDeployer {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         string memory filename = vm.envString("filename");
         string memory contractName = vm.envString("contract");
+        address coordinator = vm.envAddress("coordinator");
+        address signer = vm.envAddress("signer");
         vm.startBroadcast(deployerPrivateKey);
 
-        // skip file generation
-        setSkipFile(true);
+        // set filename
+        setPathAndFile("deployments", "deployments.json");
 
         // Log address
         address deployerAddress = vm.addr(deployerPrivateKey);
         console2.log("Loaded deployer: ", deployerAddress);
-
-        address coordinator = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
+        console2.log("Coordinator: ", coordinator);
 
         string memory artifact = string.concat("./out/", filename, "/", contractName, ".json");
-        address consumer = deploy("consumer", artifact, abi.encode(coordinator));
+        address consumer;
+        if (signer != address(0)) {
+            console2.log("Signer: ", signer);
+            consumer = deploy(contractName, artifact, abi.encode(coordinator, signer));
+        } else {
+            consumer = deploy(contractName, artifact, abi.encode(coordinator));
+        }
 
         console2.log("Deployed Contract: ", address(consumer));
 
-        // Execute
+        // dump deployed contract addresses to file
+        dump();
+
+        // Broadcast
         vm.stopBroadcast();
         vm.broadcast();
     }
