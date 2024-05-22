@@ -14,7 +14,7 @@ RUN apt-get update
 RUN apt-get install -y git curl
 
 # install uv
-RUN curl -LsSf https://astral.sh/uv/0.1.45/install.sh | sh
+RUN curl -LsSf https://astral.sh/uv/0.2.1/install.sh | sh
 
 # Add github.com to known hosts. This is necessary to install private packages from
 # github. Refer to the following links for more information:
