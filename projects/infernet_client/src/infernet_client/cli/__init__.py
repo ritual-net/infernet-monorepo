@@ -250,6 +250,7 @@ def get_jobs(url: str, output: IO[str], status: str) -> None:
     required=False,
     type=int,
     help="The nonce of the subscription. By default it is set to 0.",
+    default=0,
 )
 @url_option
 @cli.command(
@@ -263,7 +264,7 @@ def request_subscription(
     input: IO[str],
     key: IO[str],
     params: IO[str],
-    nonce: Optional[int],
+    nonce: int,
 ) -> None:
     """Request a delegated subscription.
 
@@ -288,7 +289,7 @@ def request_subscription(
             rpc,
             rpc.get_checksum_address(address),
             expiry,
-            nonce or 0,
+            nonce,
             private_key,
             data,
         )

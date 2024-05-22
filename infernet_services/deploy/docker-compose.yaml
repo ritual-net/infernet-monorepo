@@ -57,14 +57,6 @@ services:
       networks:
         - network
       container_name: anvil-node
-#
-#  echo:
-#    image: ritualnetwork/echo:latest
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - network
-#    container_name: echo
 
 networks:
   network:
