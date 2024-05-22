@@ -245,6 +245,12 @@ def get_jobs(url: str, output: IO[str], status: str) -> None:
     type=str,
     help="RPC url. Can also set RPC_URL environment variable.",
 )
+@click.option(
+    "--nonce",
+    required=False,
+    type=int,
+    help="The nonce of the subscription. By default it is set to 0.",
+)
 @url_option
 @cli.command(
     name="sub",
@@ -257,6 +263,7 @@ def request_subscription(
     input: IO[str],
     key: IO[str],
     params: IO[str],
+    nonce: Optional[int],
 ) -> None:
     """Request a delegated subscription.
 
@@ -281,6 +288,7 @@ def request_subscription(
             rpc,
             rpc.get_checksum_address(address),
             expiry,
+            nonce or 0,
             private_key,
             data,
         )

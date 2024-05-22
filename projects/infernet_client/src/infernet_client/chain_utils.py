@@ -6,7 +6,6 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.types import Nonce
 
 
-
 class Subscription:
     """Infernet Coordinator subscription representation
 
