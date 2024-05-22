@@ -11,7 +11,7 @@ import numpy as np
 from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import HFLoadArgs, ModelSource, parse_load_args
-from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.inference.torch_inference_workflow import (
     TorchInferenceWorkflow,
 )
@@ -103,7 +103,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         data: dict[str, Any] = cast(dict[str, Any], input.data)
         hex_input = ""
 
-        if input.source == InfernetInputSource.CHAIN:
+        if input.source == JobLocation.ONCHAIN:
             hex_input = cast(str, input.data)
             dtype, shape, values = decode_vector(bytes.fromhex(hex_input))
             inference_input = TensorInput(
@@ -115,13 +115,13 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         result = WORKFLOW.inference(inference_input)
 
         match input:
-            case InfernetInput(source=InfernetInputSource.OFFCHAIN):
+            case InfernetInput(destination=JobLocation.OFFCHAIN):
                 return {
                     "dtype": data["dtype"],
                     "shape": result.shape,
                     "values": result.outputs.tolist(),
                 }
-            case InfernetInput(source=InfernetInputSource.CHAIN):
+            case InfernetInput(destination=JobLocation.ONCHAIN):
                 return {
                     "raw_input": hex_input,
                     "processed_input": "",

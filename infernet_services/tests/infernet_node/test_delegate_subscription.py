@@ -76,7 +76,9 @@ async def test_infernet_delegated_subscription_happy_path() -> None:
 
     await create_delegated_subscription(encode(["uint8"], [i]), 2, 1)
 
-    await assert_next_output(encode(["uint8"], [i]), contract_name=CONSUMER_CONTRACT)
+    await assert_next_output(
+        encode(["uint8"], [i]), contract_name=CONSUMER_CONTRACT, timeout=10
+    )
 
 
 @pytest.mark.asyncio
