@@ -14,8 +14,7 @@ RUN apt-get update
 RUN apt-get install -y git curl
 
 # install uv
-ADD --chmod=755 https://astral.sh/uv/install.sh /install.sh
-RUN /install.sh && rm /install.sh
+RUN curl -LsSf https://astral.sh/uv/0.1.45/install.sh | sh
 
 COPY requirements.txt .
 
