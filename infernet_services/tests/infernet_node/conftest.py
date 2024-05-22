@@ -18,7 +18,6 @@ def _deploy_smart_contract(contract_name: str) -> None:
 
 
 def deploy_contracts() -> None:
-    return
     _deploy_smart_contract("GenericCallbackConsumer")
     _deploy_smart_contract("InfernetErrors")
     _deploy_smart_contract("GenericSubscriptionConsumer")
@@ -37,5 +36,4 @@ def delegate_subscription_consumer() -> Generator[None, None, None]:
         deploy_env_vars={"service_dir": "infernet_services/test_services"},
         post_node_deploy_hook=deploy_contracts,
         skip_contract=True,
-        skip_teardown=True,
     )
