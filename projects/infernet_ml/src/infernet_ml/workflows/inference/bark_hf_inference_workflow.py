@@ -1,7 +1,7 @@
 """
 Implementation of Suno's Bark TTS (text-to-speech) Inference Workflow.
 """
-from typing import Any, Optional, Protocol, cast
+from typing import Any, Iterator, Optional, Protocol, cast
 
 import numpy
 import torch
@@ -97,6 +97,12 @@ class BarkHFInferenceWorkflow(TTSInferenceWorkflow):
 
     def do_run_model(self, preprocessed_data: BatchEncoding) -> torch.Tensor:
         return cast(torch.Tensor, self.model.generate(**preprocessed_data))
+
+    def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
+        """
+        Stream data for inference. Currently not implemented.
+        """
+        raise NotImplementedError
 
     def do_postprocessing(
         self, input_data: Any, output: torch.Tensor

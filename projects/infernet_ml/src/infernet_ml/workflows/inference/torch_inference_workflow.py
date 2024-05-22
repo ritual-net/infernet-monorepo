@@ -3,7 +3,7 @@ workflow  class for torch inference workflows.
 """
 
 import logging
-from typing import Any, Optional, Tuple, cast
+from typing import Any, Iterator, Optional, Tuple, cast
 
 import sk2torch  # type: ignore
 import torch
@@ -113,6 +113,12 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         shape = tuple(model_result.shape)
         model_result = model_result.flatten()
         return TorchInferenceResult(dtype=dtype, shape=shape, outputs=model_result)
+
+    def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
+        """
+        Streaming inference is not supported for Torch models.
+        """
+        raise NotImplementedError
 
     def do_postprocessing(
         self, input_data: TensorInput, output_data: TorchInferenceResult

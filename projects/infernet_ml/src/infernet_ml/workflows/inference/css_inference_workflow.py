@@ -8,12 +8,18 @@ appropriate API key needs to be specified in environment variables.
 """
 
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Iterator, Optional, Union
 
 from retry import retry
 
 from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
-from infernet_ml.utils.css_mux import ApiKeys, CSSRequest, css_mux, validate
+from infernet_ml.utils.css_mux import (
+    ApiKeys,
+    CSSRequest,
+    css_mux,
+    css_streaming_mux,
+    validate,
+)
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
@@ -53,6 +59,30 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
     def inference(self, input_data: CSSRequest) -> Any:
         return super().inference(input_data)
 
+    def stream(self, input_data: CSSRequest) -> Iterator[str]:
+        """
+        Stream results from the model.
+
+        Args:
+            input_data (CSSRequest): input data from client
+
+        Returns:
+            Iterator[str]: stream of results
+        """
+        yield from super().stream(input_data)
+
+    def do_stream(self, _input: CSSRequest) -> Iterator[str]:
+        """
+        Stream results from the model.
+
+        Args:
+            _input (CSSRequest): input data from client
+
+        Returns:
+            Iterator[str]: stream of results
+        """
+        yield from css_streaming_mux(_input)
+
     def do_preprocessing(self, input_data: CSSRequest) -> CSSRequest:
         """
         Validate input data and return a dictionary with the provider and endpoint.
@@ -83,7 +113,7 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         """
         Inference implementation. Generally, you should not need to change this
         implementation directly, as the code already implements calling a closed source
-         LLM server.
+        LLM server.
 
         Instead, you can perform any preprocessing or postprocessing in the relevant
         abstract methods.

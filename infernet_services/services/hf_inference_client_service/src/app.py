@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Union, cast
 
 from eth_abi import decode  # type: ignore
 from eth_abi import encode  # type: ignore
-from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.hf_inference_client_workflow import (
     HFInferenceClientWorkflow,
@@ -86,7 +86,7 @@ def create_app(
                 inf_input = InfernetInput(**data)
                 match inf_input:
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN, data=input_data
+                        destination=JobLocation.OFFCHAIN, data=input_data
                     ):
                         logging.info(f"Received Offchain Request: {input_data}")
                         result = await run_sync(WORKFLOW.inference)(
@@ -96,13 +96,11 @@ def create_app(
                         logging.info(f"Received result from workflow: {result}")
                         return result
 
-                    case InfernetInput(
-                        source=InfernetInputSource.CHAIN, data=input_data
-                    ):
-                        logging.info(f"Received Onchain Request:{input_data}")
+                    case InfernetInput(destination=JobLocation.ONCHAIN, data=hex_input):
+                        logging.info(f"Received Onchain Request:{hex_input}")
                         # Decode input data from eth_abi bytes32 to string
                         (input_text_decoded,) = decode(
-                            ["string"], bytes.fromhex(cast(str, input_data))
+                            ["string"], bytes.fromhex(cast(str, hex_input))
                         )
                         logging.info(f"Decoded input text: {input_text_decoded}")
 
@@ -140,7 +138,7 @@ def create_app(
                                 output = encode(["string"], [result["output"]]).hex()
 
                         return {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",

@@ -4,10 +4,11 @@ this module serves as the driver for the llm inference service.
 
 import json
 import logging
-from typing import Any, Union, cast
+from typing import Any, AsyncGenerator, cast
 
+from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
-from infernet_ml.utils.service_models import InfernetInput, InfernetInputSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
@@ -41,19 +42,19 @@ def create_app() -> Quart:
     LLM_WORKFLOW_KW_ARGS = app.config.get("WORKFLOW_KW_ARGS", {})
 
     logging.info(
-        "%s %s %s",
+        "workflow_class: %s positional_args: %s kw_args: %s",
         LLM_WORKFLOW_CLASS,
         LLM_WORKFLOW_POSITIONAL_ARGS,
         LLM_WORKFLOW_KW_ARGS,
     )
 
     # create workflow instance from class, using specified arguments
-    LLM_WORKFLOW: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
+    workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
         *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
     )
 
     # setup workflow
-    LLM_WORKFLOW.setup()
+    workflow.setup()
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -64,7 +65,7 @@ def create_app() -> Quart:
         return {"message": "Lightweight TGI Client Inference Service"}
 
     @app.route("/service_output", methods=["POST"])
-    async def inference() -> Union[str, dict[str, Any]]:
+    async def inference() -> Any:
         """implements inference. Expects json/application data,
         formatted according to the InferenceRequest schema.
         Returns:
@@ -75,15 +76,17 @@ def create_app() -> Quart:
             try:
                 ## load data into model for validation
                 inf_input = InfernetInput(**data)
-                logging.info("recieved InfernetInput %s", inf_input)
+                logging.info("received InfernetInput %s", inf_input)
                 match inf_input:
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN, data=input_data
+                        source=JobLocation.OFFCHAIN,
+                        destination=JobLocation.OFFCHAIN,
+                        data=input_data,
                     ):
                         logging.debug("received Offchain Request: %s", input_data)
 
                         ## send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
+                        result = await run_sync(workflow.inference)(
                             input_data=TgiInferenceRequest(
                                 **cast(dict[str, str], input_data)
                             )
@@ -93,26 +96,38 @@ def create_app() -> Quart:
 
                         # return dict
                         return {"output": result}
+                    case InfernetInput(
+                        source=JobLocation.OFFCHAIN,
+                        data=input_data,
+                        destination=JobLocation.STREAM,
+                    ):
+                        logging.debug("received Streaming Request: %s", input_data)
 
-                    case InfernetInput(source=InfernetInputSource.CHAIN, data=hex_str):
-                        logging.debug("received on chain Request: %s", hex_str)
-                        input_bytes: bytes = bytes.fromhex(cast(str, hex_str))
+                        async def stream_generator() -> AsyncGenerator[str, None]:
+                            for r in workflow.stream(
+                                TgiInferenceRequest(**cast(dict[str, str], input_data))
+                            ):
+                                yield r.token.text.encode()
+
+                        return stream_generator()
+
+                    case InfernetInput(data=hex_input, destination=JobLocation.ONCHAIN):
+                        logging.debug("received on chain Request: %s", hex_input)
+                        input_bytes: bytes = bytes.fromhex(cast(str, hex_input))
 
                         text = decode(["string"], input_bytes)[0]
 
                         input = TgiInferenceRequest(text=text)
 
                         ## send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
-                            input_data=input
-                        )
+                        result = await run_sync(workflow.inference)(input_data=input)
 
                         logging.info("recieved result from workflow: %s", result)
 
                         output = encode(["string"], [result]).hex()
 
                         onchain_output = {
-                            "raw_input": "",
+                            "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": output,
                             "processed_output": "",
@@ -150,3 +165,9 @@ def create_app() -> Quart:
         return response
 
     return app
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    app = create_app()
+    app.run(port=3000, debug=True)

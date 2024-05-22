@@ -4,13 +4,13 @@ from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
-from infernet_fixture import handle_lifecycle
 from infernet_ml.utils.model_loader import ModelSource
 from onnx_inference_service.common import (
     SERVICE_NAME,
     assert_web2_inference,
     assert_web3_inference,
 )
+from test_library.infernet_fixture import handle_lifecycle
 
 load_dotenv()
 
@@ -29,6 +29,7 @@ def arweave_setup() -> Generator[None, None, None]:
                 }
             ),
         },
+        service_wait_timeout=30,
     )
 
 

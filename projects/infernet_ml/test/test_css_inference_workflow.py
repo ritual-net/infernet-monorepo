@@ -145,3 +145,44 @@ def test_embedding_inference() -> None:
     workflow.setup()
     res: dict[str, Any] = workflow.inference(req)
     assert len(res), "non empty result"
+
+
+@pytest.mark.parametrize(
+    "provider, model, prompt, _expected",
+    [
+        (Provider.OPENAI, "gpt-4", "Who founded apple?", "steve"),
+        (
+            Provider.OPENAI,
+            "gpt-4",
+            "How can I bake a cake? give me just the list of ingredients & limit it "
+            "to 2 sentences",
+            "flour",
+        ),
+        (Provider.PERPLEXITYAI, "mistral-7b-instruct", "Who founded apple?", "steve"),
+        (Provider.GOOSEAI, "gpt-neo-125m", "Who founded apple?", ""),
+    ],
+)
+def test_streaming_endpoint(
+    provider: Provider, model: str, prompt: str, _expected: str
+) -> None:
+    messages = [ConvoMessage(role="user", content=prompt)]
+    params: CSSCompletionParams = CSSCompletionParams(messages=messages)
+    endpoint = "completions"
+
+    req: CSSRequest = CSSRequest(
+        provider=provider,
+        endpoint=endpoint,
+        model=model,
+        params=params,
+        api_keys=api_keys,
+    )
+
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
+    workflow.setup()
+
+    total = ""
+    for chunk in workflow.stream(req):
+        total += chunk
+
+    print(f"total: {total}")
+    assert _expected in total.lower()

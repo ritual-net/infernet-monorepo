@@ -7,13 +7,14 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PIP_NO_CACHE_DIR 1
 ENV RUNTIME docker
 ENV PYTHONPATH src
+ARG index_url
+ENV UV_EXTRA_INDEX_URL ${index_url}
 
 RUN apt-get update
 RUN apt-get install -y git curl
 
 # install uv
-ADD --chmod=755 https://astral.sh/uv/install.sh /install.sh
-RUN /install.sh && rm /install.sh
+RUN curl -LsSf https://astral.sh/uv/0.2.1/install.sh | sh
 
 COPY requirements.txt .
 

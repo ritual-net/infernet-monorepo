@@ -12,9 +12,12 @@ HexStr = Annotated[
 ]
 
 
-class InfernetInputSource(IntEnum):
-    CHAIN = 0
+class JobLocation(IntEnum):
+    """Job location"""
+
+    ONCHAIN = 0
     OFFCHAIN = 1
+    STREAM = 2
 
 
 class InfernetInput(BaseModel):
@@ -24,7 +27,8 @@ class InfernetInput(BaseModel):
     source meant to be decoded directly, or a data dictionary (off chain source).
     """
 
-    source: InfernetInputSource
+    source: JobLocation
+    destination: JobLocation
     data: Union[HexStr, dict[str, Any]]
 
     @model_validator(mode="after")
@@ -35,8 +39,8 @@ class InfernetInput(BaseModel):
             src is not None
             and dta is not None
             and (
-                (src == InfernetInputSource.CHAIN and not isinstance(dta, str))
-                or (src == InfernetInputSource.OFFCHAIN and not isinstance(dta, dict))
+                (src == JobLocation.ONCHAIN and not isinstance(dta, str))
+                or (src == JobLocation.OFFCHAIN and not isinstance(dta, dict))
             )
         ):
             raise ValueError(

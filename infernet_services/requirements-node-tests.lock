@@ -37,7 +37,7 @@ pyunormalize==15.1.0
 referencing==0.34.0
 regex==2024.4.16
 requests==2.31.0
-retry-async==0.1.4
+reretry==0.11.8
 retry2==0.9.5
 rlp==4.0.0
 rpds-py==0.18.0
@@ -47,3 +47,4 @@ urllib3==2.2.1
 web3==6.17.2
 websockets==12.0
 yarl==1.9.4
+infernet-client==0.3.0.2
