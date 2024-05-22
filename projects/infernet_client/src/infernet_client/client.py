@@ -346,6 +346,7 @@ class NodeClient:
         rpc: RPC,
         coordinator_address: ChecksumAddress,
         expiry: int,
+        nonce: int,
         private_key: str,
         data: dict[str, Any],
         timeout: int = 5,
@@ -357,6 +358,7 @@ class NodeClient:
             rpc (RPC): The RPC client
             coordinator_address (ChecksumAddress): The coordinator contract address
             expiry (int): The expiry of the subscription, in seconds (UNIX timestamp)
+            nonce (int): The nonce of the subscription signing
             private_key (str): The private key of the subscriber
             data (dict[str, Any]): The input data for the first container
             timeout (int, optional): The timeout for the request. Defaults to 5.
@@ -365,7 +367,6 @@ class NodeClient:
             APIError: If the request returns an error code
         """
 
-        nonce = await rpc.get_nonce(rpc.get_checksum_address(subscription.owner))
         chain_id = await rpc.get_chain_id()
 
         typed_data = subscription.get_delegate_subscription_typed_data(

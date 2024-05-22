@@ -36,7 +36,7 @@ contract GenericSubscriptionConsumer is SubscriptionConsumer  {
         uint32 frequency,
         uint32 period,
         uint16 redundancy
-    ) public returns (uint256 subscriptionId){
+    ) public returns (uint256 subscriptionId) {
         return _createComputeSubscription(containerId, maxGasPrice, maxGasLimit, frequency, period, redundancy);
     }
 
@@ -52,7 +52,9 @@ contract GenericSubscriptionConsumer is SubscriptionConsumer  {
         bytes calldata input,
         bytes calldata output,
         bytes calldata proof
-    ) internal override {
+    ) internal virtual override {
         receivedOutputs.push(output);
+        console2.log("received output!");
+        console2.logBytes(output);
     }
 }

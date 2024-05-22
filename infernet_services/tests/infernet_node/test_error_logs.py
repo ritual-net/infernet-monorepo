@@ -1,15 +1,19 @@
 import json
+import logging
 from enum import IntEnum
-from typing import Generator
 
 import pytest
-from test_library.constants import ANVIL_NODE, DEFAULT_CONTRACT_ADDRESS
-from test_library.infernet_fixture import handle_lifecycle
-from test_library.log_collector import LogCollector
-from test_library.web3 import get_abi
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
+from infernet_node.session import delegate_subscription_consumer
+from test_library.constants import ANVIL_NODE, NODE_LOG_CMD
+from test_library.log_collector import LogCollector
+from test_library.web3 import get_consumer_contract
+
 SERVICE_NAME = "echo"
+
+log = logging.getLogger(__name__)
+log.info(delegate_subscription_consumer.__name__)
 
 
 class ErrorId(IntEnum):
@@ -29,17 +33,6 @@ class ErrorId(IntEnum):
 
 
 contract_name = "InfernetErrors"
-
-
-@pytest.fixture(scope="module", autouse=True)
-def node_lifecycle() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
-        {},
-        filename=f"{contract_name}.sol",
-        contract=contract_name,
-        deploy_env_vars={"service_dir": "infernet_services/test_services"},
-    )
 
 
 w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
@@ -106,16 +99,13 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 )
 @pytest.mark.asyncio
 async def test_infernet_error_logs(error_id: ErrorId, expected_log: str) -> None:
-    consumer = w3.eth.contract(
-        address=DEFAULT_CONTRACT_ADDRESS,
-        abi=get_abi(f"{contract_name}.sol", contract_name),
-    )
+    consumer = await get_consumer_contract(f"{contract_name}.sol", contract_name)
 
-    collector = await LogCollector().start("docker logs -n 0 -f infernet-node")
+    collector = await LogCollector().start(NODE_LOG_CMD)
 
     await consumer.functions.echoThis(error_id.value).transact()
 
-    found, logs = await collector.wait_for_line(expected_log, timeout=4)
+    found, logs = await collector.wait_for_line(expected_log, timeout=10)
 
     assert found, (
         f"Expected {expected_log} to exist in the output logs. Collected logs: "

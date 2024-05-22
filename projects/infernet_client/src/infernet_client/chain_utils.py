@@ -6,6 +6,7 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.types import Nonce
 
 
+
 class Subscription:
     """Infernet Coordinator subscription representation
 
@@ -37,7 +38,7 @@ class Subscription:
         max_gas_price: int,
         max_gas_limit: int,
         container_id: str,
-        inputs: bytes,
+        inputs: str,
     ) -> None:
         """Initializes new Subscription
 
@@ -50,7 +51,7 @@ class Subscription:
             max_gas_price (int): Max gas price in wei paid by Infernet node
             max_gas_limit (int): Max gas limit in wei used by Infernet node
             container_id (str): Comma-delimited container IDs
-            inputs (bytes): Optional container input parameters
+            inputs (str): Optional container input parameters (hex-encoded)
         """
 
         self.owner = owner

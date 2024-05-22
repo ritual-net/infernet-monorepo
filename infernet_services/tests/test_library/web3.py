@@ -25,12 +25,13 @@ from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
 log = logging.getLogger(__name__)
 
 
-def deploy_smart_contracts(
+def deploy_smart_contract(
     filename: str = DEFAULT_CONTRACT_FILENAME,
     consumer_contract: str = DEFAULT_CONTRACT,
     sender: str = DEFAULT_PRIVATE_KEY,
     rpc_url: str = ANVIL_NODE,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    extra_params: Dict[str, str] = {},
 ) -> None:
     """
     Deploys an infernet consumer contract to the chain. Uses the makefile script under
@@ -53,6 +54,10 @@ def deploy_smart_contracts(
         f"contract={consumer_contract} sender={sender} "
         f"rpc_url={rpc_url} coordinator={coordinator_address}"
     )
+
+    for k, v in extra_params.items():
+        cmd += f" {k}={v}"
+
     log.info(f"deploying contract: {cmd}")
     subprocess.run(shlex.split(cmd))
 

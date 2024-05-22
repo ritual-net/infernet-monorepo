@@ -23,7 +23,11 @@ DEFAULT_CONTRACT_ADDRESS: ChecksumAddress = cast(
 )
 
 ANVIL_NODE = "http://127.0.0.1:8545"
-NODE_URL = "http://127.0.0.1:4000"
+DEFAULT_NODE_URL = "http://127.0.0.1:4000"
 DEFAULT_TIMEOUT = 10
 DEFAULT_CONTRACT_FILENAME: str = "GenericCallbackConsumer.sol"
 DEFAULT_CONTRACT: str = "GenericCallbackConsumer"
+MAX_GAS_PRICE = int(20e9)
+MAX_GAS_LIMIT = 1_000_000
+# NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"
+NODE_LOG_CMD = "tail -f ~/infernet-logs.log"

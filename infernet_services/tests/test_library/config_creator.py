@@ -19,6 +19,7 @@ base_config = {
         "wallet": {
             "max_gas_limit": 4000000,
             "private_key": "",
+            "allowed_errors": ["reverting"],
         },
     },
     "startup_wait": 1.0,
