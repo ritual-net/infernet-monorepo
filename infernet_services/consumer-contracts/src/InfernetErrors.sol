@@ -9,14 +9,13 @@ import {EIP712Coordinator} from "infernet-sdk/EIP712Coordinator.sol";
 /// @notice Contract to test Infernet error handling.
 /// @dev This contract raises the same errors in our Manager & Consumer, to test error
 /// handling.
-contract InfernetErrors is CallbackConsumer, EIP712Coordinator  {
-    string private EXTREMELY_COOL_BANNER = "\n\n"
-    "_____  _____ _______ _    _         _                 \n"
-    "|  __ \\|_   _|__   __| |  | |  /\\   | |             \n"
-    "| |__) | | |    | |  | |  | | /  \\  | |              \n"
-    "|  _  /  | |    | |  | |  | |/ /\\ \\ | |             \n"
-    "| | \\ \\ _| |_   | |  | |__| / ____ \\| |____        \n"
-    "|_|  \\_\\_____|  |_|   \\____/_/    \\_\\______|   \n\n";
+contract InfernetErrors is CallbackConsumer, EIP712Coordinator {
+    string private EXTREMELY_COOL_BANNER = "\n\n" "_____  _____ _______ _    _         _                 \n"
+        "|  __ \\|_   _|__   __| |  | |  /\\   | |             \n"
+        "| |__) | | |    | |  | |  | | /  \\  | |              \n"
+        "|  _  /  | |    | |  | |  | |/ /\\ \\ | |             \n"
+        "| | \\ \\ _| |_   | |  | |__| / ____ \\| |____        \n"
+        "|_|  \\_\\_____|  |_|   \\____/_/    \\_\\______|   \n\n";
 
     constructor(address coordinator) CallbackConsumer(coordinator) {}
 
@@ -25,13 +24,7 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator  {
     /// @dev Based on the returned errorId, the contract will revert with the corresponding error. This is then
     /// caught by our tests.
     function echoThis(uint8 errorId) public {
-        _requestCompute(
-            "echo",
-            abi.encode(errorId),
-            20 gwei,
-            1_000_000,
-            1
-        );
+        _requestCompute("echo", abi.encode(errorId), 20 gwei, 1_000_000, 1);
     }
 
     function _receiveCompute(

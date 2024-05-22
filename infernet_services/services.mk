@@ -8,8 +8,8 @@ build-service: get_index_url
 run:
 	$(MAKE) run -C $(service_dir)/$(service)
 
-filename ?= "GenericConsumerContract.sol"
-contract ?= "GenericConsumerContract"
+filename ?= "GenericCallbackConsumer.sol"
+contract ?= "GenericCallbackConsumer"
 
 service ?= hf_inference_client_service
 
@@ -22,12 +22,14 @@ save-image:
 env ?= '{"HF_INF_TASK": "text_generation", "HF_INF_MODEL": "HuggingFaceH4/zephyr-7b-beta"}'
 
 deploy-node:
-	jq '.containers[0].env = $(shell echo $(env))' $(service_dir)/$(service)/config.json > $(deploy_dir)/config.json
+	[ -n "$$create_config" ] && \
+	jq '.containers[0].env = $(shell echo $(env))' \
+	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 stop-node:
-	docker compose -f $(deploy_dir)/docker-compose.yaml kill || true
-	docker compose -f $(deploy_dir)/docker-compose.yaml rm -f || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml kill || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml rm -f || true
 	@docker stop $(service) anvil-node || true
 	@docker rm $(service) anvil-node || true
 	@kill $(lsof -i :8545 | grep anvil | awk '{print $2}') || true

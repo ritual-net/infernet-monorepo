@@ -80,6 +80,6 @@ def get_subscription_params() -> (
             max_gas_price=1000000000000,
             max_gas_limit=3000000,
             container_id="openai-client-inference-0.0.1",
-            inputs=bytes(),
+            inputs="",
         ),  # subscription
     )

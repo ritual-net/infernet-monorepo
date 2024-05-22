@@ -3,8 +3,8 @@ from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
-from infernet_fixture import FixtureType, handle_lifecycle
 from infernet_ml.utils.model_loader import ModelSource
+from test_library.infernet_fixture import FixtureType, handle_lifecycle
 from torch_inference_service.common import (
     SERVICE_NAME,
     assert_web2_inference,
