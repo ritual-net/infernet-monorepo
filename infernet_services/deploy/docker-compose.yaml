@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:streaming
+    image: ritualnetwork/infernet-node-internal:no-filter-postmerge
     ports:
       - "0.0.0.0:4000:4000"
     volumes:
@@ -23,10 +23,8 @@ services:
 
   redis:
     image: redis:latest
-    expose:
-      - "6379"
     ports:
-      - "6379:6379"
+    - "6379:6379"
     networks:
       - network
     volumes:
@@ -50,7 +48,8 @@ services:
       on-failure
 
   anvil-node:
-      image: ritualnetwork/infernet-anvil:0.0.0
+      image: ritualnetwork/infernet-anvil-internal:latest
+      command: --host 0.0.0.0 --port 3000 --load-state saved_states/everything-deployed.state -b 1
       ports:
         - "8545:3000"
       networks:
@@ -59,7 +58,6 @@ services:
 
 networks:
   network:
-
 
 volumes:
   node-logs:

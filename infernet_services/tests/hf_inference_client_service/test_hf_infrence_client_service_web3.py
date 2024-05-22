@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 from eth_abi.abi import encode
 from test_library.constants import ANVIL_NODE
 from test_library.infernet_fixture import handle_lifecycle
-from test_library.web3 import assert_web3_output, request_web3_compute
+from test_library.web3 import (
+    assert_generic_callback_consumer_output,
+    request_web3_compute,
+)
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 SERVICE_NAME = "hf_inference_client_service"
@@ -43,4 +46,4 @@ async def test_completion() -> None:
     def _assertions(output: bytes, _error: bytes, _proof: bytes) -> None:
         assert output != b""
 
-    await assert_web3_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(task_id, _assertions)

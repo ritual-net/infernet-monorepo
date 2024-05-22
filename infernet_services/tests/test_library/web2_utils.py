@@ -4,7 +4,7 @@ import aiohttp
 from aiohttp import ServerDisconnectedError
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
-from test_library.constants import NODE_URL
+from test_library.constants import DEFAULT_NODE_URL
 from test_library.infernet_fixture import log
 
 
@@ -32,7 +32,7 @@ async def get_job(job_id: str, timeout: int = 10) -> JobResult:
     )  # type: ignore
     async def _get() -> JobResult:
         async with aiohttp.ClientSession() as session:
-            url = f"{NODE_URL}/api/jobs?id={job_id}"
+            url = f"{DEFAULT_NODE_URL}/api/jobs?id={job_id}"
             log.info(f"url: {url}")
             async with session.get(
                 url,
@@ -65,7 +65,7 @@ async def request_job(
     async def _post() -> CreateJobResult:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                f"{NODE_URL}/api/jobs",
+                f"{DEFAULT_NODE_URL}/api/jobs",
                 json={
                     "containers": [service_name],
                     "data": data,
@@ -83,7 +83,7 @@ async def request_streaming_job(
 ) -> bytes:
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            f"{NODE_URL}/api/jobs/stream",
+            f"{DEFAULT_NODE_URL}/api/jobs/stream",
             json={
                 "containers": [service_name],
                 "data": data,

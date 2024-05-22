@@ -13,7 +13,10 @@ from infernet_ml.utils.codec.css import (
 from infernet_ml.utils.css_mux import ConvoMessage
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.web2_utils import get_job, request_job, request_streaming_job
-from test_library.web3 import assert_web3_output, request_web3_compute
+from test_library.web3 import (
+    assert_generic_callback_consumer_output,
+    request_web3_compute,
+)
 
 SERVICE_NAME = "css_inference_service"
 log = logging.getLogger(__name__)
@@ -30,10 +33,6 @@ def node_lifecycle() -> Generator[None, None, None]:
             "GOOSEAI_API_KEY": os.environ["GOOSEAI_API_KEY"],
             "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
         },
-        # network_config=load_config_from_env(),
-        # skip_teardown=True,
-        # skip_contract=True,
-        # skip_deploying=True,
     )
 
 
@@ -73,7 +72,7 @@ async def test_completion(
             "yes" in result.lower() or "no" in result.lower()
         ), f"yes or no should be in result, instead got {result}"
 
-    await assert_web3_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(task_id, _assertions)
 
 
 apple_prompt = "who founded apple?"

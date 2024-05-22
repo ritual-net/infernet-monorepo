@@ -8,11 +8,7 @@ from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
-from infernet_ml.utils.service_models import (
-    InfernetInput,
-    InfernetInputSource,
-    InfernetInputType,
-)
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
@@ -83,9 +79,9 @@ def create_app() -> Quart:
                 logging.info("received InfernetInput %s", inf_input)
                 match inf_input:
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN,
+                        source=JobLocation.OFFCHAIN,
+                        destination=JobLocation.OFFCHAIN,
                         data=input_data,
-                        type=InfernetInputType.NON_STREAMING,
                     ):
                         logging.debug("received Offchain Request: %s", input_data)
 
@@ -101,9 +97,9 @@ def create_app() -> Quart:
                         # return dict
                         return {"output": result}
                     case InfernetInput(
-                        source=InfernetInputSource.OFFCHAIN,
-                        type=InfernetInputType.STREAMING,
+                        source=JobLocation.OFFCHAIN,
                         data=input_data,
+                        destination=JobLocation.STREAM,
                     ):
                         logging.debug("received Streaming Request: %s", input_data)
 
@@ -115,11 +111,7 @@ def create_app() -> Quart:
 
                         return stream_generator()
 
-                    case InfernetInput(
-                        source=InfernetInputSource.CHAIN,
-                        data=hex_input,
-                        type=InfernetInputType.NON_STREAMING,
-                    ):
+                    case InfernetInput(data=hex_input, destination=JobLocation.ONCHAIN):
                         logging.debug("received on chain Request: %s", hex_input)
                         input_bytes: bytes = bytes.fromhex(cast(str, hex_input))
 

@@ -8,7 +8,10 @@ from infernet_ml.utils.codec.vector import (
 )
 from test_library.constants import ANVIL_NODE
 from test_library.web2_utils import get_job, request_job
-from test_library.web3 import assert_web3_output, request_web3_compute
+from test_library.web3 import (
+    assert_generic_callback_consumer_output,
+    request_web3_compute,
+)
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 
@@ -51,7 +54,7 @@ async def assert_web3_inference() -> None:
         assert shape == (1,)
         assert abs(values[0] - 4.151943055154582) < 1e-6
 
-    await assert_web3_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(task_id, _assertions)
 
 
 w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))

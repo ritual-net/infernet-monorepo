@@ -25,12 +25,13 @@ from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
 log = logging.getLogger(__name__)
 
 
-def deploy_smart_contracts(
+def deploy_smart_contract(
     filename: str = DEFAULT_CONTRACT_FILENAME,
     consumer_contract: str = DEFAULT_CONTRACT,
     sender: str = DEFAULT_PRIVATE_KEY,
     rpc_url: str = ANVIL_NODE,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    extra_params: Dict[str, str] = {},
 ) -> None:
     """
     Deploys an infernet consumer contract to the chain. Uses the makefile script under
@@ -53,6 +54,10 @@ def deploy_smart_contracts(
         f"contract={consumer_contract} sender={sender} "
         f"rpc_url={rpc_url} coordinator={coordinator_address}"
     )
+
+    for k, v in extra_params.items():
+        cmd += f" {k}={v}"
+
     log.info(f"deploying contract: {cmd}")
     subprocess.run(shlex.split(cmd))
 
@@ -79,7 +84,7 @@ def get_abi(filename: str, contract_name: str) -> ABIType:
         return _abi
 
 
-async def assert_web3_output(
+async def assert_generic_callback_consumer_output(
     task_id: bytes,
     assertions: Callable[[bytes, bytes, bytes], None],
     timeout: int = 20,
@@ -103,7 +108,7 @@ async def assert_web3_output(
         delay=1 / 2,
     )  # type: ignore
     async def _assert():
-        log.info(f"querying consumer contract for task id {task_id!r}")
+        log.info(f"querying consumer contract for task id {task_id.hex()}")
         consumer = await get_consumer_contract()
         _input = await consumer.functions.receivedInput(task_id).call()
         _output = await consumer.functions.receivedOutput(task_id).call()
@@ -158,11 +163,10 @@ async def get_consumer_contract(
     Returns:
         AsyncContract: The consumer contract.
     """
-    contract_address = cast(
-        HexAddress,
-        global_config.contract_address
-        or get_deployed_contract_address(consumer_contract),
+    contract_address = global_config.contract_address or get_deployed_contract_address(
+        consumer_contract
     )
+
     w3 = await get_w3()
 
     return cast(
@@ -170,6 +174,20 @@ async def get_consumer_contract(
         w3.eth.contract(  # type: ignore
             address=contract_address,
             abi=get_abi(filename, consumer_contract),
+        ),
+    )
+
+
+async def get_coordinator_contract() -> AsyncContract:
+    contract_address = cast(HexAddress, global_config.coordinator_address)
+    w3 = await get_w3()
+    contract_name = "EIP712Coordinator"
+
+    return cast(
+        AsyncContract,
+        w3.eth.contract(  # type: ignore
+            address=contract_address,
+            abi=get_abi(f"{contract_name}.sol", contract_name),
         ),
     )
 

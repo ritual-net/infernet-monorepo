@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {SubscriptionConsumer} from "infernet-sdk/consumer/Subscription.sol";
+import {console2} from "forge-std/console2.sol";
 
 contract GenericCallbackConsumer is CallbackConsumer {
     mapping(bytes32 => bytes) public receivedInput;
@@ -31,6 +32,8 @@ contract GenericCallbackConsumer is CallbackConsumer {
     ) internal override {
         (bytes memory raw, bytes memory processed) = abi.decode(input, (bytes, bytes));
         bytes32 taskId = keccak256(raw);
+        console2.log("Received compute");
+        console2.logBytes32(taskId);
         receivedInput[taskId] = input;
         receivedOutput[taskId] = output;
         receivedProof[taskId] = proof;

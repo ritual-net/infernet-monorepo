@@ -13,7 +13,7 @@ from test_library.test_config import (
     default_network_config,
     global_config,
 )
-from test_library.web3 import deploy_smart_contracts
+from test_library.web3 import deploy_smart_contract
 
 FixtureType = Callable[[], Generator[None, None, None]]
 
@@ -57,6 +57,9 @@ def populate_global_config(network_config: NetworkConfig) -> None:
             )
 
 
+InfernetFixtureType = Callable[[], Generator[None, None, None]]
+
+
 def handle_lifecycle(
     service: str,
     service_env_vars: ServiceEnvVars,
@@ -64,6 +67,7 @@ def handle_lifecycle(
     filename: str = DEFAULT_CONTRACT_FILENAME,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
+    post_node_deploy_hook: Optional[Callable[[], None]] = None,
     developer_mode: bool = False,
     skip_deploying: bool = False,
     skip_teardown: bool = False,
@@ -81,6 +85,8 @@ def handle_lifecycle(
                 deploy_env_vars,
                 developer_mode,
             )
+        if post_node_deploy_hook:
+            post_node_deploy_hook()
         log.info(f"waiting up to {node_wait_timeout}s for node to be ready")
         asyncio.run(await_node(timeout=node_wait_timeout))
         log.info("✅ node is ready")
@@ -88,7 +94,7 @@ def handle_lifecycle(
         asyncio.run(await_service(timeout=service_wait_timeout))
         log.info(f"✅ {service} is ready")
         if not skip_contract:
-            deploy_smart_contracts(
+            deploy_smart_contract(
                 filename=filename,
                 consumer_contract=contract,
                 sender=global_config.private_key,

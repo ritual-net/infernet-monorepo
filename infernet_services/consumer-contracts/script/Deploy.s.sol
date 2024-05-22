@@ -15,6 +15,7 @@ contract Deploy is BetterDeployer {
         string memory filename = vm.envString("filename");
         string memory contractName = vm.envString("contract");
         address coordinator = vm.envAddress("coordinator");
+        address signer = vm.envAddress("signer");
         vm.startBroadcast(deployerPrivateKey);
 
         // set filename
@@ -26,7 +27,13 @@ contract Deploy is BetterDeployer {
         console2.log("Coordinator: ", coordinator);
 
         string memory artifact = string.concat("./out/", filename, "/", contractName, ".json");
-        address consumer = deploy(contractName, artifact, abi.encode(coordinator));
+        address consumer;
+        if (signer != address(0)) {
+            console2.log("Signer: ", signer);
+            consumer = deploy(contractName, artifact, abi.encode(coordinator, signer));
+        } else {
+            consumer = deploy(contractName, artifact, abi.encode(coordinator));
+        }
 
         console2.log("Deployed Contract: ", address(consumer));
 
