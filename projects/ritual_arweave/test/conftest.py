@@ -12,4 +12,4 @@ def fund_account() -> None:
 
 @pytest.fixture(autouse=True, scope="session")
 def arweave_node() -> Generator[None, None, None]:
-    yield from arweave_node_lifecycle(skip_setup=True, skip_teardown=True)
+    yield from arweave_node_lifecycle()
