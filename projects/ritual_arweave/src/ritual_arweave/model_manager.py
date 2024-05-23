@@ -16,15 +16,28 @@ import mimetypes
 import os
 import time
 from pathlib import Path
-from typing import Any, Optional, Dict, Union
+from typing import Any, Dict, Optional, Union
 
+import requests
 from ar import Transaction  # type: ignore
 from ar.manifest import Manifest  # type: ignore
+from pydantic import BaseModel
+from requests.exceptions import HTTPError
 from ritual_arweave.file_manager import FileManager
 from ritual_arweave.types import ModelId, Tags
 from ritual_arweave.utils import edge_unix_ts, get_sha256_digest
 
 log = logging.getLogger(__name__)
+
+
+class NotFinalizedException(Exception):
+    pass
+
+
+class UploadModelResult(BaseModel):
+    id: ModelId
+    transaction_id: str
+    manifest_url: str
 
 
 class ModelManager(FileManager):
@@ -153,7 +166,7 @@ class ModelManager(FileManager):
         version_mapping_file: Optional[str] = None,
         version_mapping: Optional[Dict[str, str]] = None,
         extra_file_tags: Optional[Dict[str, Tags]] = None,
-    ) -> str:
+    ) -> UploadModelResult:
         """
         Uploads a model directory to Arweave. For every model upload, a manifest
         mapping is created.
@@ -183,10 +196,10 @@ class ModelManager(FileManager):
         """
 
         # path to load files from
-        path: Path = Path(path)
+        _path: Path = Path(path)
 
         # load all sub-paths in this path
-        p = path.glob("**/*")
+        p = _path.glob("**/*")
 
         # get timestamp to tag files with
         timestamp = time.time()
@@ -198,8 +211,8 @@ class ModelManager(FileManager):
         if version_mapping:
             _version_mapping = version_mapping
         elif version_mapping_file:
-            with open(version_mapping_file, "r") as version_mapping_file:
-                _version_mapping = json.load(version_mapping_file)
+            with open(version_mapping_file, "r") as vf:
+                _version_mapping = json.load(vf)
         self.logger(f"using mapping {_version_mapping}")
 
         # keep track of entries via a manifest
@@ -213,7 +226,7 @@ class ModelManager(FileManager):
         }
 
         for f in files:
-            rel_path = os.path.relpath(f, path)
+            rel_path = os.path.relpath(f, _path)
 
             self.logger(f"looking at {f} ({rel_path}) Size: {os.path.getsize(f)}")
 
@@ -240,7 +253,7 @@ class ModelManager(FileManager):
             tx = self.upload(f, tags_dict)
 
             # we are done uploading the whole file, keep track if filename -> tx.id
-            manifest_dict[str(os.path.relpath(f, path))] = tx.id
+            manifest_dict[str(os.path.relpath(f, _path))] = tx.id
             self.logger(f"uploaded file {f} with id {tx.id} and tags {tags_dict}")
 
         # we create a manifest of all the files to their transactions
@@ -262,7 +275,11 @@ class ModelManager(FileManager):
 
         self.logger(f"uploaded manifest with tx id {t.id}")
 
-        return f"{t.api_url}/{t.id}"
+        return UploadModelResult(
+            id=ModelId(owner=self.wallet.address, name=name),
+            transaction_id=t.id,
+            manifest_url=f"{t.api_url}/{t.id}",
+        )
 
     def download_model(
         self,
@@ -340,7 +357,12 @@ class ModelManager(FileManager):
         )
 
         # self.logger(query_str)
-        res = self.peer.graphql(query_str)
+        log.info("getting first query")
+        try:
+            res = self.peer.graphql(query_str)
+        except HTTPError as e:
+            raise ValueError(f"Error querying model manifests: {e}")
+        log.info("done getting first query")
 
         # get latest Manifest
 
@@ -358,7 +380,18 @@ class ModelManager(FileManager):
         # download manifest data
         self.logger(f"found manifest {manifest}")
 
-        m = json.loads(self.peer.tx_data(tx_id))
+        log.info("getting manifest")
+        try:
+            m = json.loads(self.peer.tx_data(tx_id))
+        except Exception as e:
+            log.info("Exception while getting manifest")
+            r = requests.get(f"{self.peer.api_url}/tx/{tx_id}")
+            if r.status_code == 202:
+                raise NotFinalizedException(
+                    f"Manifest {tx_id} is still being mined. Please try again later."
+                )
+            raise ValueError(f"Error fetching manifest data: {e}")
+        log.info("done getting manifest")
 
         self.logger(f"loaded manifest {m}")
 

@@ -165,7 +165,7 @@ if __name__ == "__main__":
             "kwargs": {
                 "model_source": ModelSource.HUGGINGFACE_HUB,
                 "load_args": HFLoadArgs(
-                    repo_id="Ritual-Net/california-housing",
+                    id="Ritual-Net/california-housing",
                     filename="california_housing.torch",
                 ),
             }

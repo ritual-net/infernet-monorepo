@@ -2,8 +2,8 @@ import logging
 import tempfile
 
 from ritual_arweave.types import ModelId
-from .util import TemporaryModel, mine_block, upload_model
-from .utils import FixtureType
+
+from .utils import FixtureType, TemporaryModel, mine_block, upload_model
 
 log = logging.getLogger(__name__)
 
@@ -193,5 +193,3 @@ def test_download_model_using_string_id(fund_account: FixtureType) -> None:
         model.check_against_file(file_path)
 
     model.delete()
-
-

@@ -7,6 +7,8 @@ from typing_extensions import NotRequired
 class HFInferenceInput(BaseModel):
     """Base class for input data"""
 
+    model_config = ConfigDict(protected_namespaces=())
+
     model: Optional[str] = None
 
 

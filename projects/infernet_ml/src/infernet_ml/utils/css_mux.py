@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Union, cast
 
 import requests
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from infernet_ml.workflows.exceptions import (
     APIKeyMissingException,
@@ -66,6 +66,8 @@ class CSSRequest(BaseModel):
         api_keys: ApiKeys
         params: Union[CSSCompletionParams, CSSEmbeddingParams]
     """
+
+    model_config = ConfigDict(protected_namespaces=())
 
     # provider and endpoint to query
     provider: Provider

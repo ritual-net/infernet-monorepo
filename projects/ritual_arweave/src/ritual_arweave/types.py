@@ -1,4 +1,4 @@
-from typing import NewType, Dict
+from typing import Dict, NewType
 
 from pydantic import BaseModel
 

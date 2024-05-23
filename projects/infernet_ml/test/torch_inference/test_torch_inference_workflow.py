@@ -16,7 +16,7 @@ hf_args = {
     "model_source": ModelSource.HUGGINGFACE_HUB,
     "load_args": HFLoadArgs(
         **{
-            "repo_id": "Ritual-Net/iris-classification",
+            "id": "Ritual-Net/iris-classification",
             "filename": "iris.torch",
         },
     ),
@@ -25,9 +25,8 @@ hf_args = {
 arweave_args = {
     "model_source": ModelSource.ARWEAVE,
     "load_args": ArweaveLoadArgs(
-        repo_id="Ritual-Net/iris-classification",
+        id=f"{os.environ['MODEL_OWNER']}/iris-classification",
         filename="iris.torch",
-        owners=[os.environ["MODEL_OWNER"]],
     ),
 }
 

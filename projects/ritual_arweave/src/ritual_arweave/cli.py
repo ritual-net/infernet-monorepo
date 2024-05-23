@@ -5,15 +5,20 @@ the model upload and download functions from the command line.
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Callable, Optional
 
 import click
 from ar import PUBLIC_GATEWAYS  # type: ignore
 from ritual_arweave.file_manager import FileManager
-from ritual_arweave.model_manager import ModelManager
+from ritual_arweave.model_manager import ModelManager, NotFinalizedException
 
 DEFAULT_ARWEAVE_GATEWAY = PUBLIC_GATEWAYS[0]
+
+
+# suppress ritual-pyarweave error logs
+logging.getLogger("ar.peer").setLevel(logging.ERROR)
 
 
 @click.group()
@@ -25,12 +30,26 @@ GenericCallable = Callable[..., Any]
 
 
 # Define reusable options as functions
+def model_name_option(f: GenericCallable) -> GenericCallable:
+    return click.option(
+        "--model-name",
+        type=str,
+        required=True,
+        help="Model name to upload. Once you upload this model, it can be downloaded "
+        "using the model id: `owner/model_name` where `owner` is the wallet address"
+        "that uploaded the model.",
+    )(f)
+
+
 def model_id_option(f: GenericCallable) -> GenericCallable:
     return click.option(
-        "--model_id",
+        "--model-id",
         type=str,
-        help="Model ID to upload or download. This is a unique identifier for "
-        "the model.",
+        required=True,
+        help="Model ID to upload or download. This is a unique identifier for the model,"
+        " and is in the format: `owner/model_name` where `owner` is the wallet "
+        "address that uploaded the model, and `model_name` is the name of the "
+        "model.",
     )(f)
 
 
@@ -38,102 +57,115 @@ def wallet_option(f: GenericCallable) -> GenericCallable:
     return click.option(
         "--wallet",
         type=str,
+        required=False,
         default="wallet.json",
-        help="Path to wallet file, default is wallet.json",
+        help="Path to wallet file, default is `wallet.json`",
     )(f)
 
 
 def api_url_option(f: GenericCallable) -> GenericCallable:
     return click.option(
-        "--api_url",
+        "--api-url",
         type=str,
-        default="https://arweave.net",  # Assuming a default value is set
-        help="Arweave gateway URL, defaults to https://arweave.net",
+        required=False,
+        default=DEFAULT_ARWEAVE_GATEWAY,  # Assuming a default value is set
+        help=f"Arweave gateway URL, defaults to {DEFAULT_ARWEAVE_GATEWAY}",
     )(f)
 
 
 @click.option(
-    "--model_dir",
+    "--model-dir",
+    required=True,
     type=click.Path(exists=True, readable=True),
     help="Enter model directory",
 )
 @click.option(
-    "--version_file",
+    "--version-file",
+    required=False,
+    default=None,
     type=str,
-    help="enter version mapping json of model files to upload",  # noqa: E501
+    help="enter version mapping json of model files to upload",
 )
-@model_id_option
+@model_name_option
 @wallet_option
 @api_url_option
 @cli.command(
     name="upload-model",
 )
 def upload_model(
-    model_id: str,
+    model_name: str,
     model_dir: str,
-    version_file: Optional[str] = None,
-    wallet: str = "wallet.json",
-    api_url: str = DEFAULT_ARWEAVE_GATEWAY,
+    version_file: Optional[str],
+    wallet: str,
+    api_url: str,
 ) -> None:
     """
-    Uploads a model to Arweave using the specified model ID, model directory,
-    & owner.
+    Uploads a model to Arweave using the specified model name & model directory.
 
-    Optionally, you can specify a version file that maps model files to their
-    corresponding versions. This is useful when you have multiple versions of
-    the same model and want to keep track of them.
+    Parameters:
+        model_name: Name of the model to upload.
+        model_dir: Path to the model directory.
+        version_file (optional): Path to the version mapping file. This is a json file
+            that maps model filenames to their corresponding versions.
+        wallet (optional): Path to the wallet file. Default is `wallet.json`.
+        api_url (optional): Arweave gateway URL. Default is `https://arweave.net`.
+
 
     Examples:
 
     To upload a model with ID <model-id> from the directory <model-dir>:
 
-    ritual-arweave upload-model --model-id <model-id> \
-        --model-dir <model-dir> \
-        --owner <owner-address>
+    ritual-arweave upload-model --model-name <model-name> --model-dir <model-dir>
+
+    To upload a model with ID <model-id> from the directory <model-dir> and version
+    mapping file <version-file>:
+
+    ritual-arweave upload-model --model-name <model-name> --model-dir <model-dir> \
+        --version-file <version-file>
+
+    To upload a model with ID <model-id> from the directory <model-dir> and
+    wallet <wallet>:
+
+    ritual-arweave upload-model --model-name <model-name> --model-dir <model-dir> \
+        --wallet <wallet>
+
     """
-    r = ModelManager(
-        api_url=api_url, wallet_path=wallet, logger=click.echo
-    ).upload_model(model_id, model_dir, version_file)
-    click.echo(f"uploaded model: {r}")
+    r = ModelManager(api_url=api_url, wallet_path=wallet).upload_model(
+        name=model_name, path=model_dir, version_mapping_file=version_file
+    )
+    click.echo(
+        f"uploaded model: {r}"
+        f"\n\tyou can download it using the model id: `{r.id.owner}/{r.id.name}`"
+    )
 
 
 @click.option(
-    "--owner",
-    type=str,
-    default=[],
-    multiple=True,
-    help="Owner(s) of the model. By default, the owner of a model is the "
-    "wallet file that uploaded it. So to download a model you've previously uploaded, "
-    "pass in your public arweave address here. You can specify multiple owners by "
-    "passing multiple --owner flags.",
-)
-@click.option(
-    "--base_path",
+    "--base-path",
     type=str,
     default=".",
+    required=False,
     help="enter base path to save model files, defaults to the current directory.",
 )
 @click.option(
-    "--force_download",
+    "--force-download",
     is_flag=True,
+    default=False,
+    required=False,
     help="If set, it will override the existing model files if they exist",
 )
 @model_id_option
-@wallet_option
 @api_url_option
 @cli.command(
     name="download-model",
 )
 def download_model(
     model_id: str,
-    owner: list[str],
     base_path: str = ".",
-    wallet: str = "wallet.json",
     force_download: bool = False,
     api_url: str = DEFAULT_ARWEAVE_GATEWAY,
 ) -> None:
     """
-    Downloads a model from Arweave using the specified model ID, wallet, and
+    Downloads a model from Arweave using the specified model ID, and
     API URL. Optionally, you can specify multiple owners and a
     base path where the model files will be saved.
     Use the --force-download flag to override existing files.
@@ -147,25 +179,30 @@ def download_model(
     To download a model with ID <model-id> and owner <owner-address> and save the model
     files to <path-to-save-model>:
 
-    ritual-arweave download-model \
-        --model-id <model-id> \
-        --owner <owner-address> \
-        --base-path <path-to-save-model>
+    ritual-arweave download-model --model-id <model-id> --base-path <path-to-save-model>
     """
 
-    files = ModelManager(api_url=api_url, wallet_path=wallet).download_model(
-        model_id, owner, base_path, force_download
-    )
+    try:
+        files = ModelManager(api_url=api_url).download_model(
+            model_id, base_path, force_download
+        )
+    except NotFinalizedException:
+        click.echo(
+            f"Model with ID {model_id} is not finalized yet. Please retry "
+            f"in a few minutes."
+        )
+        return
+
     click.echo(f"downloaded files: {files}")
 
 
 @click.option(
-    "--file_path",
+    "--file-path",
     type=str,
     help="Path to the file to download",
 )
 @click.option(
-    "--tx_id",
+    "--tx-id",
     type=str,
     help="Transaction id of the file to download",
 )
@@ -187,23 +224,21 @@ def download_file(
 
     ritual-arweave download-file --file-path <file-path> --tx-id <tx-id>
 
-    python playground/run_cli.py download-file \
-    --file_path "downloaded_models/gabagool.torch" \
-    --tx_id "PtXaJpwa_Xmr4nkjfxV4Tc2n9hWjc1VTvq1YcrBHCeM" \
-    --api_url "http://127.0.0.1:3069"
     """
     fm = FileManager(api_url=api_url)
     fm.download(file_path, tx_id)
 
 
 @click.option(
-    "--file_path",
+    "--file-path",
     type=str,
     help="Path to the file to upload",
+    required=True,
 )
 @click.option(
     "--tags",
     type=str,
+    required=False,
     default="{}",
     help="Dictionary of tags to attach to the file. Must be a JSON string.",
 )

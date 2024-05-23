@@ -4,7 +4,6 @@ Hugging Face Hub, or Arweave.
 """
 
 import logging
-import os
 from enum import IntEnum
 from typing import Any, Optional, Union, cast
 
@@ -31,7 +30,7 @@ class HFLoadArgs(BaseModel):
     Arguments for loading the model
     """
 
-    repo_id: str
+    id: str
     filename: str
 
 
@@ -40,10 +39,9 @@ class ArweaveLoadArgs(BaseModel):
     Arguments for loading the model
     """
 
-    repo_id: str
+    id: str
     filename: str
-    owners: list[str]
-    wallet: Optional[str] = None
+    version: Optional[str] = None
 
 
 class LocalLoadArgs(BaseModel):
@@ -51,7 +49,7 @@ class LocalLoadArgs(BaseModel):
     Arguments for loading the model
     """
 
-    model_path: str
+    path: str
 
 
 LoadArgs = Union[HFLoadArgs, ArweaveLoadArgs, LocalLoadArgs]
@@ -75,17 +73,16 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
     match model_source:
         # parse the load arguments for the local model
         case ModelSource.LOCAL:
-            return LocalLoadArgs(model_path=config["model_path"])
+            return LocalLoadArgs(path=config["model_path"])
         # parse the load arguments for the model from Hugging Face Hub
         case ModelSource.HUGGINGFACE_HUB:
-            return HFLoadArgs(repo_id=config["repo_id"], filename=config["filename"])
+            return HFLoadArgs(id=config["model_id"], filename=config["filename"])
         # parse the load arguments for the model from Arweave
         case ModelSource.ARWEAVE:
             return ArweaveLoadArgs(
-                repo_id=config["repo_id"],
+                id=config["model_id"],
                 filename=config["filename"],
-                owners=config["owners"],
-                wallet=config.get("wallet"),
+                version=config.get("version"),
             )
         case _:
             raise ValueError(f"Invalid model source {model_source}")
@@ -113,35 +110,25 @@ def load_model(
         # load the model locally
         case ModelSource.LOCAL:
             local_args = cast(LocalLoadArgs, load_args)
-            logging.info(f"Loading model from local path {local_args.model_path}")
-            return local_args.model_path
+            logging.info(f"Loading model from local path {local_args.path}")
+            return local_args.path
         case ModelSource.HUGGINGFACE_HUB:
             hf_args = cast(HFLoadArgs, load_args)
             logging.info(
-                f"Downloading model from Hugging Face Hub {hf_args.repo_id}"
+                f"Downloading model from Hugging Face Hub {hf_args.id}"
                 f" with filename {hf_args.filename}"
             )
-            return cast(str, hf_hub_download(hf_args.repo_id, hf_args.filename))
+            return cast(str, hf_hub_download(hf_args.id, hf_args.filename))
         case ModelSource.ARWEAVE:
             arweave_args = cast(ArweaveLoadArgs, load_args)
             logging.info(
-                f"Downloading model from Arweave {arweave_args.repo_id}"
+                f"Downloading model from Arweave {arweave_args.id}"
                 f" with filename {arweave_args.filename}"
             )
-
-            # first check if the wallet file is provided in the arguments,
-            # if not, check if it is provided in the environment variables,
-            # if not, use the default wallet file: keyfile-arweave.json
-            wallet_file: str = cast(
-                str,
-                arweave_args.wallet
-                or os.getenv("ARWEAVE_WALLET_FILE_PATH", "keyfile-arweave.json"),
-            )
-            logging.info(f"Using wallet file {wallet_file}")
-            return ModelManager(wallet_path=wallet_file).download_model_file(
-                model_id=arweave_args.repo_id,
-                model_file_name=arweave_args.filename,
-                owners=arweave_args.owners,
+            return ModelManager().download_model_file(
+                model_id=arweave_args.id,
+                file_name=arweave_args.filename,
+                version=arweave_args.version,
             )
         case _:
             raise ValueError(f"Invalid model source {model_source}")

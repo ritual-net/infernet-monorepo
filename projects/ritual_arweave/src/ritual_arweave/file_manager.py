@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from typing import Callable
 
+import requests
 from ar import DEFAULT_API_URL, Peer, Transaction, Wallet  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
@@ -18,6 +19,10 @@ from ritual_arweave.utils import (
 )
 from ritual_arweave.utils import log as default_logger
 from tqdm import tqdm
+
+
+class FileNotReadyException(Exception):
+    pass
 
 
 class FileManager:
@@ -46,6 +51,14 @@ class FileManager:
         Returns:
             str: absolute path of the downloaded file
         """
+
+        # check if the file is pending
+        r = requests.get(f"{self.api_url}/tx/{txid}")
+        if r.status_code == 202:
+            self.logger(f"file with txid {txid} is pending")
+            raise FileNotReadyException(
+                f"File with txid {txid} is pending. It has not reached finality yet."
+            )
 
         loaded_bytes = 0
 

@@ -76,12 +76,11 @@ In our request that would look like:
 
 ### `OUTPUT_NAMES`
 
-A comma separated list of output names in the onnx model.
+A comma separated list of output names in the `ONNX` model.
 
 ### `MODEL_SOURCE`
 
-How you want the model to be loaded. Options are `LOCAL`, `ARWEAVE` or
-`HUGGINGFACE_HUB`.
+How you want the model to be loaded. Options are `LOCAL`, `ARWEAVE` or `HUGGINGFACE_HUB`.
 
 ### `MODEL_ARGS`
 
@@ -90,10 +89,14 @@ that string is different for each `MODEL_SOURCE`.
 
 * `LOCAL`:
     * `model_path`: The path to the onnx model file.
-* `ARWEAVE`: TODO -
-  pending [PR#4](https://github.com/origin-research/infernet-ml/pull/4) to be merged.
+
+* `ARWEAVE`:
+  * `model_id`: The name of the model on the huggingface hub. i.e. `ProsusAI/finbert`
+  * `filename`: Name of the file in the model repo. i.e. `onnx_model.onnx`
+  * `version`: The version of the model to load. i.e. `1.0.0`
+
 * `HUGGINGFACE_HUB`:
-    * `repo_id`: The name of the model on the huggingface hub. i.e. `ProsusAI/finbert`
+    * `model_id`: The name of the model on the huggingface hub. i.e. `ProsusAI/finbert`
     * `filename`: Name of the file in the model repo. i.e. `onnx_model.onnx`
 
 ## Example Environment File
@@ -104,7 +107,7 @@ name in the ONNX model is `output`.
 
 ```bash
 MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
+MODEL_ARGS='{"model_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
 OUTPUT_NAMES=output
 ```
 
@@ -128,7 +131,7 @@ touch onnx_inference_service.env
 ```bash
 # content of onnx_inference_service.env
 MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
+MODEL_ARGS='{"model_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
 ```
 
 Then run the container
