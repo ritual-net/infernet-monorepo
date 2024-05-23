@@ -25,5 +25,5 @@ pre-commit-services:
 	pre-commit run check-added-large-files --files $$(git ls-files infernet_services)
 	pre-commit run trailing-whitespace --files $$(git ls-files infernet_services)
 
-test:
+test-library:
 	PYTHONPATH=projects/$(project)/src pytest projects/$(project)

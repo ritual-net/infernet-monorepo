@@ -16,7 +16,7 @@ start-arweave:
 	$$RUNNER arlocal $(port)
 
 seed ?= "test test test test test test test test test test test test"
-
+wallet_file ?= "./wallet.json"
 # generates an arweave wallet
 # more instructions here: https://docs.arweave.org/developers/wallets/generating-cold-wallet#cold-wallet-generation-with-the-ardrive-cli-advanced
 generate-wallet:
@@ -25,7 +25,7 @@ generate-wallet:
 		exit 1; \
 	fi;
 	echo "Generating wallet..."
-	ardrive generate-wallet -s $(seed) > ./wallet.json
+	ardrive generate-wallet -s $(seed) > $(wallet_file)
 
 # this is the default first test address generated from the `seed` variable above.
 address ?= "9OtncJjXzqTWBlt26UHIGDxiD65GKGC2hdj6Mhai99g"

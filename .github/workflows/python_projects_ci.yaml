@@ -93,4 +93,4 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
 
-        run: make test project=${{ matrix.project }}
+        run: make test-library project=${{ matrix.project }}

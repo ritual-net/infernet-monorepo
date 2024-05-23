@@ -1,29 +1,15 @@
+import logging
 import os
-import shlex
-import signal
-import subprocess
 import tempfile
-from typing import Generator
 
-import pytest
 import requests
 from ritual_arweave.model_manager import ModelManager
 
-from .utils import api_url, base_path, get_test_wallet, mint_ar, port, wallet
+from .utils import FixtureType, api_url, base_path, get_test_wallet, wallet
 
 mock_model = "mymodel"
 
-
-@pytest.fixture(autouse=True, scope="function")
-def arweave_node() -> Generator[None, None, None]:
-    runner = os.popen("command -v bunx || command -v npx").read()
-    ar_node = subprocess.Popen(shlex.split(f"{runner} arlocal {port} &"))
-    mint_ar()
-    yield
-    awk_cmd = "awk '{print $2}'"
-    pid = os.popen(f"lsof -i :{port} | tail -n 1  | {awk_cmd}").read()
-    os.kill(int(pid), signal.SIGKILL)
-    ar_node.wait()
+log = logging.getLogger(__name__)
 
 
 def upload_model() -> tuple[ModelManager, str, list[str]]:
@@ -41,7 +27,7 @@ def upload_model() -> tuple[ModelManager, str, list[str]]:
     return mm, model_id, owners
 
 
-def test_upload_and_download_model() -> None:
+def test_upload_and_download_model(fund_account: FixtureType) -> None:
     mm, model_id, owners = upload_model()
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -57,7 +43,7 @@ def test_upload_and_download_model() -> None:
         assert downloaded_content == original_content
 
 
-def test_upload_and_download_model_file() -> None:
+def test_upload_and_download_model_file(fund_account: FixtureType) -> None:
     mm, model_id, owners = upload_model()
 
     with tempfile.TemporaryDirectory() as temp_dir:
