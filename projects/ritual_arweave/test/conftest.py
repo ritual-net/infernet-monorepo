@@ -2,11 +2,11 @@ from typing import Generator
 
 import pytest
 
-from .utils import mint_ar, get_test_wallet, arweave_node_lifecycle
+from .utils import arweave_node_lifecycle, get_test_wallet, mint_ar
 
 
 @pytest.fixture()
-def fund_account():
+def fund_account() -> None:
     mint_ar(get_test_wallet().address)
 
 
