@@ -14,7 +14,7 @@ from ar import DEFAULT_API_URL, Wallet  # type: ignore
 # we take lower to be conservative
 MAX_NODE_BYTES = 1e7
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def get_tags_dict(tag_dicts: list[dict[str, str]]) -> dict[str, str]:
@@ -92,7 +92,7 @@ def load_wallet(
             "ARWEAVE_WALLET_FILE_PATH or explicitly pass a file path."
         )
 
-    print(f"checking wallet file path: {wallet_file_path}")
+    log.info(f"checking wallet file path: {wallet_file_path}")
 
     if not os.path.exists(wallet_file_path):
         raise ValueError(f"Wallet file {wallet_file_path} does not exist.")

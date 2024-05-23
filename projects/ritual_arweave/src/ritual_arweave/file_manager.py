@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from ar import DEFAULT_API_URL, Peer, Transaction  # type: ignore
+from ar import DEFAULT_API_URL, Peer, Transaction, Wallet  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
 from ritual_arweave.utils import (
@@ -16,7 +16,7 @@ from ritual_arweave.utils import (
     get_tags_dict,
     load_wallet,
 )
-from ritual_arweave.utils import logger as default_logger
+from ritual_arweave.utils import log as default_logger
 from tqdm import tqdm
 
 
@@ -31,6 +31,10 @@ class FileManager:
         self.peer = Peer(self.api_url)
         self.wallet_path = wallet_path
         self.logger = logger
+
+    @property
+    def wallet(self) -> Wallet:
+        return load_wallet(self.wallet_path, api_url=self.api_url)
 
     def download(self, pathname: str, txid: str) -> str:
         """function to dowload an arweave data tx to a given path
@@ -105,10 +109,12 @@ class FileManager:
         """
         Upload a file to Arweave with the given tags.
         """
-        wallet = load_wallet(self.wallet_path, api_url=self.api_url)
         with open(file_path, "rb", buffering=0) as file_handler:
             tx = Transaction(
-                wallet, peer=self.peer, file_handler=file_handler, file_path=file_path
+                self.wallet,
+                peer=self.peer,
+                file_handler=file_handler,
+                file_path=file_path,
             )
 
             for n, v in tags_dict.items():

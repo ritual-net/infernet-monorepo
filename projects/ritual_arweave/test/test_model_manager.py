@@ -1,61 +1,197 @@
 import logging
-import os
 import tempfile
 
-import requests
-from ritual_arweave.model_manager import ModelManager
-
-from .utils import FixtureType, api_url, base_path, get_test_wallet, wallet
-
-mock_model = "mymodel"
+from ritual_arweave.types import ModelId
+from .util import TemporaryModel, mine_block, upload_model
+from .utils import FixtureType
 
 log = logging.getLogger(__name__)
 
 
-def upload_model() -> tuple[ModelManager, str, list[str]]:
-    mm = ModelManager(api_url, wallet_path=wallet)
-    model_id = f"myorg/{mock_model}"
-    owners = [get_test_wallet().address]
-    mm.upload_model(
-        model_id,
-        f"{base_path}/resources/mock_model",
-        version_file=f"{base_path}/resources/version.json",
+def test_upload_and_download_model(fund_account: FixtureType) -> None:
+    model1 = TemporaryModel(
+        name="model1",
+        files_dict={
+            "file1": "This is a mock model file. Henlo.",
+            "file2": "This is another file.",
+        },
+    ).create()
+
+    mm = upload_model(model1)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        paths = mm.download_model(
+            model_id=ModelId(name=model1.name, owner=mm.wallet.address),
+            base_path=temp_dir,
+        )
+        model1.check_against(temp_dir)
+        model1.check_paths(paths)
+
+    model1.delete()
+
+
+def test_uploading_model_twice_and_downloading_again_should_give_latest_version(
+    fund_account: FixtureType,
+) -> None:
+    model_name = "model1"
+    original_model = TemporaryModel(
+        name=model_name,
+        files_dict={
+            "file1": "This is a mock model file. Henlo.",
+            "file2": "This is another file.",
+        },
+    ).create()
+
+    upload_model(original_model)
+
+    updated_model = TemporaryModel(
+        name=model_name,
+        files_dict={
+            "file1": "This is an updated mock model file. Henlo.",
+            "file2": "This is another file.",
+            "file3": "This is a new file.",
+        },
+    ).create()
+
+    mm = upload_model(updated_model)
+
+    # mine a block in arlocal to make the model available for download
+    mine_block()
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        paths = mm.download_model(
+            model_id=ModelId(name=model_name, owner=mm.wallet.address),
+            base_path=temp_dir,
+        )
+        updated_model.check_against(temp_dir)
+        updated_model.check_paths(paths)
+        # assert that the same check against original model fails
+        try:
+            original_model.check_against(temp_dir)
+            original_model.check_paths(paths)
+            assert False
+        except AssertionError:
+            pass
+
+    original_model.delete()
+    updated_model.delete()
+
+
+def test_versioned_model_download(fund_account: FixtureType) -> None:
+    model_name = "model1"
+    versioned_model = TemporaryModel(
+        name=model_name,
+        files_dict={
+            "file1": "This is a mock model file. Henlo.",
+            "file2": "This is another file.",
+        },
+    ).create()
+
+    mm = upload_model(
+        versioned_model,
+        version_mapping={
+            "file1": "1.0.0",
+            "file2": "1.0.0",
+        },
     )
 
-    # required by arlocal, to make sure the transaction is mined
-    requests.get(f"{api_url}/mine")
-    return mm, model_id, owners
-
-
-def test_upload_and_download_model(fund_account: FixtureType) -> None:
-    mm, model_id, owners = upload_model()
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        paths = mm.download_model(model_id, owners=owners, base_path=temp_dir)
-        assert os.path.exists(os.path.join(temp_dir, mock_model))
-        assert paths[0] == os.path.join(temp_dir, mock_model)
-        with open(os.path.join(temp_dir, mock_model), "r") as f:
-            downloaded_content = f.read()
-
-        with open(f"{base_path}/resources/mock_model/{mock_model}", "r") as f:
-            original_content = f.read()
-
-        assert downloaded_content == original_content
-
-
-def test_upload_and_download_model_file(fund_account: FixtureType) -> None:
-    mm, model_id, owners = upload_model()
+    latest_model = TemporaryModel(
+        name=model_name,
+        files_dict={
+            "file1": "This is an updated mock model file. Henlo.",
+            "file2": "This is another file.",
+            "file3": "This is a new file.",
+        },
+    ).create()
+    upload_model(latest_model)
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        path = mm.download_model_file(
-            model_id, mock_model, owners=owners, base_path=temp_dir
+        latest_file = mm.download_model_file(
+            model_id=ModelId(name=model_name, owner=mm.wallet.address),
+            file_name="file1",
+            base_path=temp_dir,
         )
-        assert os.path.exists(os.path.join(temp_dir, mock_model))
-        assert path == os.path.join(temp_dir, mock_model)
-        with open(os.path.join(temp_dir, mock_model), "r") as f:
-            downloaded_content = f.read()
 
-        with open(f"{base_path}/resources/mock_model/{mock_model}", "r") as f:
-            original_content = f.read()
+        latest_model.check_against_file(latest_file)
 
-        assert downloaded_content == original_content
+        versioned_file = mm.download_model_file(
+            model_id=ModelId(name=model_name, owner=mm.wallet.address),
+            file_name="file1",
+            version="1.0.0",
+            base_path=temp_dir,
+        )
+        versioned_model.check_against_file(versioned_file)
+
+        # assert that versioned file isn't in the latest model
+        try:
+            latest_model.check_against_file(versioned_file)
+            assert False
+        except AssertionError:
+            pass
+
+        # assert that the latest file is not in the versioned model
+        try:
+            versioned_model.check_against_file(latest_file)
+            assert False
+        except AssertionError:
+            pass
+
+    versioned_model.delete()
+    latest_model.delete()
+
+
+def test_download_model_file(fund_account: FixtureType) -> None:
+    model = TemporaryModel(
+        name="model1",
+        files_dict={
+            "file1": "This is a mock model file. Henlo.",
+            "file2": "This is another file.",
+        },
+    ).create()
+
+    mm = upload_model(model)
+
+    for file in model.files_dict:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file_path = mm.download_model_file(
+                model_id=ModelId(name=model.name, owner=mm.wallet.address),
+                file_name=file,
+                base_path=temp_dir,
+            )
+            model.check_against_file(file_path)
+
+    model.delete()
+
+
+def test_download_model_using_string_id(fund_account: FixtureType) -> None:
+    model = TemporaryModel(
+        name="model1",
+        files_dict={
+            "file1": "This is a mock model file. Henlo.",
+            "file2": "This is another file.",
+        },
+    ).create()
+
+    mm = upload_model(model)
+
+    # download entire model
+    with tempfile.TemporaryDirectory() as temp_dir:
+        paths = mm.download_model(
+            model_id=f"{mm.wallet.address}/{model.name}",
+            base_path=temp_dir,
+        )
+        model.check_against(temp_dir)
+        model.check_paths(paths)
+
+    # download a specific file
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = mm.download_model_file(
+            model_id=f"{mm.wallet.address}/{model.name}",
+            file_name="file1",
+            base_path=temp_dir,
+        )
+        model.check_against_file(file_path)
+
+    model.delete()
+
+

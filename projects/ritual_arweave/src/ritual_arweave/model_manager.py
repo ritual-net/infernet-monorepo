@@ -7,7 +7,7 @@ transaction data to named files.
 When uploading a model directory, a version mapping dictionary file is expected to be
 provided. The mapping should contain a map of filename to version tag. The version tag
 is useful if a specific version of a file is meant to be downloaded. If no mapping is
-specified, the empty string is used by default.
+specified, version will be an empty string.
 """
 
 import json
@@ -16,65 +16,63 @@ import mimetypes
 import os
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Dict, Union
 
-from ar import Transaction, Wallet  # type: ignore
+from ar import Transaction  # type: ignore
 from ar.manifest import Manifest  # type: ignore
 from ritual_arweave.file_manager import FileManager
-from ritual_arweave.utils import edge_unix_ts, get_sha256_digest, load_wallet
+from ritual_arweave.types import ModelId, Tags
+from ritual_arweave.utils import edge_unix_ts, get_sha256_digest
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class ModelManager(FileManager):
     def download_model_file(
         self,
-        model_id: str,
-        model_file_name: str,
-        file_version: Optional[str] = None,
-        owners: Optional[list[str]] = None,
+        model_id: Union[ModelId, str],
+        file_name: str,
+        version: Optional[str] = None,
         force_download: bool = False,
-        base_path: str = "",
+        base_path: str = ".",
     ) -> str:
         """Downloads a specific model file from Arweave.
 
         Args:
-            model_id (str): model id
-            model_file_name (str): name of model file
-            file_version (Optional[str], optional): Version of file. Defaults to None.
-            owners (list[str], optional): List of owners allowed for file. If None
-            specified, will default to owner address for ARWEAVE_WALLET_FILE_PATH
-            environment variable.
+            model_id (Union[ModelId, str]): id of model, if provided as a string, the
+                format must be of the form `owner`/`name`. Where `owner` is the wallet
+                address of the uploader and `name` is the model's name.
+            file_name (str): name of model file
+            version (Optional[str], optional): Version of file. Defaults to None.
+                If none specified, will fetch the latest version.
+            force_download (bool, optional): If True, will download file even if it
+                already exists at that path. Defaults to False.
             base_path (str, optional): path to download file to. Defaults to "".
 
         Raises:
-            ValueError: If ARWEAVE_WALLET_FILE_PATH not specified
+            ValueError: if wallet file path is not specified or wallet file is not found.
 
         Returns:
             str: path of downloaded file
         """
+        if isinstance(model_id, str):
+            model_id = ModelId.from_str(model_id)
+
         base = Path(base_path)
         if not Path.exists(base):
             os.makedirs(base)
-
-        if not owners:
-            # default to current wallet address
-            if not (wallet_file_path := os.getenv("ARWEAVE_WALLET_FILE_PATH")):
-                raise ValueError(
-                    "ARWEAVE_WALLET_FILE_PATH environment variable not set"
-                )
-
-            owners = [Wallet(wallet_file_path).address]
+        owners = [model_id.owner]
 
         file_version_str = (
             ""
-            if not file_version
+            if not version
             else """
             {
                 name: "File-Version",
                 values: ["%s"]
             },
         """
+            % version
         )
         query_str = """
         query {
@@ -92,7 +90,7 @@ class ModelManager(FileManager):
                         values: ["%s"]
                     },
                     {
-                        name: "Model-Id",
+                        name: "Model-Name",
                         values: ["%s"]
                     }
                 ])
@@ -118,59 +116,74 @@ class ModelManager(FileManager):
         """ % (
             json.dumps(owners),
             file_version_str,
-            model_file_name,
-            model_id,
+            file_name,
+            model_id.name,
         )
-        logger.debug(query_str)
+        log.debug(query_str)
 
-        file_path: Path = base.joinpath(model_file_name)
+        file_path: Path = base.joinpath(file_name)
 
         res = self.peer.graphql(query_str)
+        transactions = res["data"]["transactions"]["edges"]
+        transactions.sort(reverse=True, key=edge_unix_ts)
 
-        res["data"]["transactions"]["edges"].sort(reverse=True, key=edge_unix_ts)
+        if len(transactions) == 0:
+            raise ValueError(
+                f"Could not find any matching model files for: "
+                f"({model_id}, {file_name}, {version or 'latest'})"
+            )
 
-        tx_metadata: dict[str, Any] = res["data"]["transactions"]["edges"][0]["node"]
+        transaction = transactions[0]
+
+        tx_metadata: dict[str, Any] = transaction["node"]
 
         tx_id = tx_metadata["id"]
 
         if force_download or not self.file_exists(str(file_path), tx_id):
-            logger.info(f"downloading {tx_metadata}")
+            log.info(f"downloading {tx_metadata}")
             return self.download(str(file_path), tx_id)
-
         else:
-            logger.info(f"not downloading {tx_metadata} because it already exists")
+            log.info(f"not downloading {tx_metadata} because it already exists")
             return os.path.abspath(file_path)
 
     def upload_model(
         self,
-        model_id: str,
-        path_str: str,
-        version_file: Optional[str] = None,
+        name: str,
+        path: str,
+        version_mapping_file: Optional[str] = None,
+        version_mapping: Optional[Dict[str, str]] = None,
+        extra_file_tags: Optional[Dict[str, Tags]] = None,
     ) -> str:
         """
         Uploads a model directory to Arweave. For every model upload, a manifest
-        mappping is created. Please set the ARWEAVE_WALLET_FILE_PATH environment
-        variable before using.
+        mapping is created.
 
         Args:
-            model_id (str): id associated with the model. Generally, this looks like
-                MODEL_ORG/MODEL_NAME
-            path_str (str): directory path
-            version_file (str): path to a json dict file mapping file names to
+            name (str): Name of model. Once uploaded, the model will be
+                accessible via the model Id: owner/name. Where `owner` is the wallet
+                address of the uploader and `name` is the model's name.
+            path (str): Path to the directory containing the model files.
+            version_mapping_file (str): Path to a json dict file mapping file names to
                 specific versions. If a specific mapping is found, the File-Version
-                attribute is tagged with the value. This is to faciliate uploading and
+                attribute is tagged with the value. This is to facilitate uploading and
                 downloading version specific files.
+            version_mapping (dict[str, str]): Dictionary mapping file names to specific
+                versions. If a specific mapping is found, the File-Version attribute is
+                tagged with the value. This is to facilitate uploading and downloading
+                version specific files. If provided, this will override the version_file.
+            extra_file_tags (dict[str, Tags]): Dictionary mapping file names to
+                additional tags to be added to the file. This is useful for adding
+                additional metadata to each file.
 
         Raises:
-            ValueError: if ARWEAVE_WALLET_FILE_PATH not set
+            ValueError: if wallet file path is not specified or wallet file is not found.
 
         Returns:
             str: url to the manifest file
         """
-        wallet = load_wallet(self.wallet_path, api_url=self.api_url)
 
         # path to load files from
-        path: Path = Path(path_str)
+        path: Path = Path(path)
 
         # load all sub-paths in this path
         p = path.glob("**/*")
@@ -181,94 +194,106 @@ class ModelManager(FileManager):
         # filter out simlinks and non-files
         files = [x for x in p if x.is_file()]
 
-        version_mapping = {}
-
-        if version_file:
-            with open(version_file, "r") as version_mapping_file:
-                version_mapping = json.load(version_mapping_file)
-                self.logger(f"using mapping {version_mapping}")
+        _version_mapping = {}
+        if version_mapping:
+            _version_mapping = version_mapping
+        elif version_mapping_file:
+            with open(version_mapping_file, "r") as version_mapping_file:
+                _version_mapping = json.load(version_mapping_file)
+        self.logger(f"using mapping {_version_mapping}")
 
         # keep track of entries via a manifest
         manifest_dict: dict[str, str] = {}
 
+        ritual_tags: Tags = {
+            "App-Name": "Ritual",
+            "App-Version": "0.1.0",
+            "Unix-Time": str(timestamp),
+            "Model-Name": str(name),
+        }
+
         for f in files:
             rel_path = os.path.relpath(f, path)
+
             self.logger(f"looking at {f} ({rel_path}) Size: {os.path.getsize(f)}")
 
-            tags_dict = {
-                "Content-Type": guess
+            content_type = (
+                guess
                 if (guess := mimetypes.guess_type(f)[0])
-                else "application/octet-stream",
-                "App-Name": "Ritual",
-                "App-Version": "0.0.1",
-                "Unix-Time": str(timestamp),
-                "Model-Id": str(model_id),
-                "File-Version": version_mapping.get(str(rel_path), "0.0.0"),
+                else "application/octet-stream"
+            )
+            file_extra_tags = (
+                extra_file_tags.get(rel_path, {}) if extra_file_tags else {}
+            )
+
+            tags_dict: Tags = {
+                **file_extra_tags,
+                "Content-Type": content_type,
+                "File-Version": _version_mapping.get(str(rel_path), "0.0.0"),
                 "File-Name": rel_path,
                 "File-SHA256": get_sha256_digest(str(f)),
+                **ritual_tags,
             }
+
+            self.logger(f"uploading: {f} with tags: {tags_dict}")
 
             tx = self.upload(f, tags_dict)
 
             # we are done uploading the whole file, keep track if filename -> tx.id
-            manifest_dict[str(os.path.relpath(f, path_str))] = tx.id
+            manifest_dict[str(os.path.relpath(f, path))] = tx.id
             self.logger(f"uploaded file {f} with id {tx.id} and tags {tags_dict}")
 
         # we create a manifest of all the files to their transactions
         m = Manifest(manifest_dict)
 
         # upload the manifest
-        t = Transaction(wallet, peer=self.peer, data=m.tobytes())
+        t = Transaction(self.wallet, peer=self.peer, data=m.tobytes())
 
-        t.add_tag("Content-Type", "application/x.arweave-manifest+json")
-        t.add_tag("Type", "manifest")
-        t.add_tag("App-Name", "Ritual")
-        t.add_tag("App-Version", "0.0.1")
-        t.add_tag("Unix-Time", str(timestamp))
-        t.add_tag("Model-Id", str(model_id))
+        t.add_tags(
+            {
+                "Content-Type": "application/x.arweave-manifest+json",
+                "Type": "manifest",
+                **ritual_tags,
+            }
+        )
 
         t.sign()
         t.send()
 
-        self.logger(f"uploaded manifest with id {t.id}")
+        self.logger(f"uploaded manifest with tx id {t.id}")
 
         return f"{t.api_url}/{t.id}"
 
     def download_model(
         self,
-        model_id: str,
-        owners: list[str] = [],
-        base_path: str = "",
+        model_id: Union[ModelId, str],
+        base_path: str = ".",
         force_download: bool = False,
     ) -> list[str]:
         """Downloads a model from Arweave to a given directory.
 
         Args:
-            model_id (str): id of model
-            owners (list[str]): list of owners for the given model. If empty list
-            provided, defaults to address of ARWEAVE_WALLET_FILE_PATH.
+            model_id (Union[ModelId, str]): id of model, if provided as a string, the
+                format must be of the form `owner`/`name`. Where `owner` is the wallet
+                address of the uploader and `name` is the model's name.
             base_path (str, optional): Directory to download to. Defaults to current
                 directory.
+            force_download (bool, optional): If True, will download files even if they
+                already exist. Defaults to False.
 
         Raises:
-            ValueError: if ARWEAVE_WALLET_FILE_PATH not specified
+            ValueError: if wallet file path is not specified or wallet file is not found.
             ValueError: if matching model manifest not found
 
         Returns:
             list[str]: downloaded file paths
         """
+        if isinstance(model_id, str):
+            model_id = ModelId.from_str(model_id)
+        owners = [model_id.owner]
         base = Path(base_path)
         if not Path.exists(base):
             os.makedirs(base)
-
-        if len(owners) == 0:
-            # default to current wallet address
-            if not (wallet_file_path := os.getenv("ARWEAVE_WALLET_FILE_PATH")):
-                raise ValueError(
-                    "ARWEAVE_WALLET_FILE_PATH environment variable not set"
-                )
-
-            owners = [Wallet(wallet_file_path).address]
 
         query_str = """
         query {
@@ -281,7 +306,7 @@ class ModelManager(FileManager):
                         values: ["Ritual"]
                     },
                     {
-                        name: "Model-Id",
+                        name: "Model-Name",
                         values: ["%s"]
                     },
                     {
@@ -311,24 +336,27 @@ class ModelManager(FileManager):
         }
         """ % (
             json.dumps(owners),
-            model_id,
+            model_id.name,
         )
 
-        self.logger(query_str)
+        # self.logger(query_str)
         res = self.peer.graphql(query_str)
 
         # get latest Manifest
 
-        # sort matching manifests by time, get latest
-        res["data"]["transactions"]["edges"].sort(reverse=True, key=edge_unix_ts)
+        manifests = res["data"]["transactions"]["edges"]
+        manifests.sort(reverse=True, key=edge_unix_ts)
+        self.logger(f"found {len(manifests)} manifests for {model_id}")
 
-        if len(res["data"]["transactions"]["edges"]) == 0:
-            raise ValueError("Could not find any matching model manifests from query")
+        if len(manifests) == 0:
+            raise ValueError("Could not find any matching model manifests from query.")
 
-        tx_id = res["data"]["transactions"]["edges"][0]["node"]["id"]
+        manifest = manifests[0]
+
+        tx_id = manifest["node"]["id"]
 
         # download manifest data
-        self.logger(f"found manifest {res['data']['transactions']['edges'][0]['node']}")
+        self.logger(f"found manifest {manifest}")
 
         m = json.loads(self.peer.tx_data(tx_id))
 
