@@ -184,7 +184,7 @@ if __name__ == "__main__":
             "kwargs": {
                 "model_source": ModelSource.HUGGINGFACE_HUB,
                 "load_args": HFLoadArgs(
-                    id="Ritual-Net/iris-classification",
+                    repo_id="Ritual-Net/iris-classification",
                     filename="iris.onnx",
                 ),
             }

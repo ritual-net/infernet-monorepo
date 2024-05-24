@@ -12,6 +12,7 @@ dependencies = [
     "mkdocstrings-python>=1.10.0,<2.0.0",
     "pyyaml>=6.0.1,<7.0.0",
     "types-pyyaml>=6.0.12.20240311,<7.0.0",
+    "dominate>=2.9.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -29,7 +30,7 @@ virtual = true
 dev-dependencies = []
 
 [tool.rye.workspace]
-members = ["projects/*"]
+members = ["libraries/*"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -39,7 +40,7 @@ packages = ["src/infernet_monorepo"]
 
 [tool.isort]
 profile = "black"
-skip = ["projects/ritual_pyarweave", ".venv", "venv", ".gitignore"]
+skip = ["libraries/ritual_pyarweave", ".venv", "venv", ".gitignore"]
 
 [tool.ruff]
 line-length = 89

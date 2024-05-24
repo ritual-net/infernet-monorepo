@@ -15,7 +15,7 @@ ONNX Inference Service!
 
 ### `/service_output"`
 
-Use this endpoint to run the model. It expects a JSON payload with the following schema,
+Use this endpoint to run the model. It expects a JSON payload with the following schema:
 `InfernetInput`:
 
 ```python
@@ -91,12 +91,12 @@ that string is different for each `MODEL_SOURCE`.
     * `model_path`: The path to the onnx model file.
 
 * `ARWEAVE`:
-  * `model_id`: The name of the model on the huggingface hub. e.g. `{wallet_address}/finbert`
+  * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `{wallet_address}/finbert`
   * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
   * `version`: The version of the model to load. e.g. `1.0.0`
 
 * `HUGGINGFACE_HUB`:
-    * `model_id`: The name of the model on the huggingface hub. e.g. `ProsusAI/finbert`
+    * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `ProsusAI/finbert`
     * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
 
 ## Example Environment File
@@ -107,7 +107,7 @@ name in the ONNX model is `output`.
 
 ```bash
 MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"model_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
+MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
 OUTPUT_NAMES=output
 ```
 
@@ -131,7 +131,7 @@ touch onnx_inference_service.env
 ```bash
 # content of onnx_inference_service.env
 MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"model_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
+MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
 ```
 
 Then run the container
