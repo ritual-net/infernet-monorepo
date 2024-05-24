@@ -24,7 +24,7 @@ def test_upload_and_download_repo(fund_account: FixtureType) -> None:
             repo_id=RepoId(name=repo1.name, owner=mm.wallet.address),
             base_path=temp_dir,
         )
-        repo1.check_against(temp_dir)
+        repo1.check_against_directory(temp_dir)
         repo1.check_paths(paths)
 
     repo1.delete()
@@ -63,11 +63,11 @@ def test_uploading_repo_twice_and_downloading_again_should_give_latest_version(
             repo_id=RepoId(name=repo_name, owner=mm.wallet.address),
             base_path=temp_dir,
         )
-        updated_repo.check_against(temp_dir)
+        updated_repo.check_against_directory(temp_dir)
         updated_repo.check_paths(paths)
         # assert that the same check against original repo fails
         try:
-            original_repo.check_against(temp_dir)
+            original_repo.check_against_directory(temp_dir)
             original_repo.check_paths(paths)
             assert False
         except AssertionError:
@@ -180,7 +180,7 @@ def test_download_repo_using_string_id(fund_account: FixtureType) -> None:
             repo_id=f"{mm.wallet.address}/{repo.name}",
             base_path=temp_dir,
         )
-        repo.check_against(temp_dir)
+        repo.check_against_directory(temp_dir)
         repo.check_paths(paths)
 
     # download a specific file

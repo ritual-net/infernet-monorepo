@@ -23,14 +23,36 @@ api_url = f"http://127.0.0.1:{ARLOCAL_DEFAULT_PORT}"
 
 
 def get_test_wallet() -> Wallet:
+    """
+    Loads the test wallet from the wallet.json file in the test directory.
+    """
     return load_wallet(wallet, api_url=api_url)
 
 
 def to_ar(amount: int) -> float:
+    """
+    Converts the given amount from the arweave decimal format to the standard format.
+
+    Args:
+        amount (int): The amount to be converted.
+
+    Returns:
+        float: The converted amount.
+    """
+
     return float(amount / (10**ARWEAVE_DECIMALS))
 
 
 def from_ar(amount: float) -> int:
+    """
+    Converts the given amount from the standard format to the arweave decimal format.
+
+    Args:
+        amount (float): The amount to be converted.
+
+    Returns:
+        int: The converted amount.
+    """
     return int(amount * (10**ARWEAVE_DECIMALS))
 
 
@@ -64,7 +86,27 @@ FixtureType = Callable[[Any], Any]
 
 
 class TemporaryRepo:
+    """
+    A utility testing class to create a temporary directory with files inside it. It's
+    extensively used in our repo upload/download tests.
+
+    It also contains utility methods to compare the contents of the temporary directory
+    with the contents of another directory, a file, or a list of paths. These are used
+    to ensure that the files in the temporary directory are uploaded/downloaded
+    correctly.
+    """
+
     def __init__(self, name: str, files_dict: Dict[str, str]):
+        """
+        Initializes the TemporaryRepo object with the name of the repository and a
+        dictionary containing the filenames as keys and the content of the files as
+        values.
+
+        Args:
+            name (str): The name of the repository.
+            files_dict (Dict[str, str]): A dictionary containing the filenames as keys
+                and the content of the files as values.
+        """
         self.path: str = ""
         self.name: str = name
         self.files_dict: Dict[str, str] = files_dict
@@ -81,7 +123,7 @@ class TemporaryRepo:
                 f.write(content)
         return self
 
-    def check_against(self, directory: str) -> None:
+    def check_against_directory(self, directory: str) -> None:
         """
         Compares the contents of the temporary directory with the contents of the
         directory provided.
@@ -128,6 +170,10 @@ class TemporaryRepo:
 
 
 def mine_block() -> None:
+    """
+    Mines a block in the arlocal blockchain to make the transactions available for
+    download.
+    """
     requests.get(f"{api_url}/mine")
 
 
@@ -135,6 +181,18 @@ def upload_repo(
     model: TemporaryRepo,
     version_mapping: Optional[Dict[str, str]] = None,
 ) -> RepoManager:
+    """
+    Uploads a repository to the arweave network using the RepoManager class.
+
+    Args:
+        model (TemporaryRepo): A TemporaryRepo object containing the repository to be
+            uploaded.
+        version_mapping (Optional[Dict[str, str]]): A dictionary containing the
+            version mapping for the repository. Defaults to None.
+
+    Returns:
+        RepoManager: The RepoManager object that was used to upload the repository.
+    """
     mm = RepoManager(api_url, wallet_path=wallet)
     mm.upload_repo(
         name=model.name,
