@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml" ]
+        library: [ "infernet_ml" ]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
       - name: Build & Generate docs
         env:
           PYTHONPATH: src
-        run: make build-docs generate-docs project=${{ matrix.project }}
+        run: make build-docs generate-docs library=${{ matrix.library }}
 
       - name: Vercel Deploy
         uses: amondnet/vercel-action@v20
