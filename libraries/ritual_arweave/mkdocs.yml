@@ -1,0 +1,19 @@
+site_name: Ritual Arweave docs
+theme:
+  name: material
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        rendering:
+          show_source: true
+nav:
+- Quickstart: quickstart.md
+- Reference:
+  - ritual_arweave:
+    - repo_manager: reference/ritual_arweave/repo_manager.md
+    - types: reference/ritual_arweave/types.md
+    - cli: reference/ritual_arweave/cli.md
+    - utils: reference/ritual_arweave/utils.md
+    - file_manager: reference/ritual_arweave/file_manager.md

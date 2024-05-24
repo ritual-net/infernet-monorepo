@@ -43,7 +43,7 @@ hypercorn==0.16.0
 hyperframe==6.0.1
 identify==2.5.36
 idna==3.7
-infernet-ml==1.0.0.16
+infernet-ml==1.0.0.21
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0
@@ -93,8 +93,8 @@ requests==2.31.0
 reretry==0.11.8
 reretry==0.11.8
 retry2==0.9.5
-ritual-arweave==0.1.0.0
-ritual-pyarweave==0.1.0.0
+ritual-arweave==0.1.0.26
+ritual-pyarweave==0.1.0.4
 rlp==4.0.1
 rpds-py==0.18.1
 rsa==4.9

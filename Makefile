@@ -12,9 +12,18 @@ SHELL := /bin/bash
 clean:
 	rm -rf dist
 
-pre-commit-project:
-	# repo-wide checks: tools, scripts, etc.
-	pre-commit run --files $$(git ls-files | grep -vE '^infernet_services/' | grep 'projects/$(project)')
+setup-library-env:
+	uv venv -p 3.11 && \
+	source .venv/bin/activate && \
+	uv pip install -r libraries/$(library)/requirements.lock
+
+pre-commit-library:
+	@if [ -n "$(restart_env)" ]; then \
+		$(MAKE) setup-library-env && \
+		uv pip install -r pyproject.toml; \
+	fi
+	PYTHONPATH=libraries/$(library)/src pre-commit run \
+		--files $$(git ls-files | grep -vE '^infernet_services/' | grep 'libraries/$(library)')
 
 pre-commit-services:
 	$(MAKE) pre-commit -C infernet_services
@@ -26,4 +35,9 @@ pre-commit-services:
 	pre-commit run trailing-whitespace --files $$(git ls-files infernet_services)
 
 test-library:
-	PYTHONPATH=projects/$(project)/src pytest projects/$(project)
+ifdef test_name
+	$(eval test_name_cmd := -k $(test_name))
+else
+	$(eval test_name_cmd := )
+endif
+	PYTHONPATH=libraries/$(library)/src pytest libraries/$(library) $(test_name_cmd)
