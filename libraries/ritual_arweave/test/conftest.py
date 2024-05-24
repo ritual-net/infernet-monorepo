@@ -5,7 +5,6 @@ import pytest
 
 from .utils import arweave_node_lifecycle, get_test_wallet, mint_ar
 
-
 log = logging.getLogger(__name__)
 
 
