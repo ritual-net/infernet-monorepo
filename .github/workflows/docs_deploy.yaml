@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_ml", "ritual_arweave" ]
+        library: [ "infernet_ml", "ritual_arweave" ]
       fail-fast: false
     steps:
       - name: Checkout code
@@ -33,14 +33,14 @@ jobs:
       - name: Build & Generate docs
         env:
           PYTHONPATH: src
-        run: make generate-docs build-docs project=${{ matrix.project }}
+        run: make generate-docs build-docs library=${{ matrix.library }}
 
 
       - name: Upload docs as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: docs-${{ matrix.project }}
-          path: projects/${{ matrix.project }}/site
+          name: docs-${{ matrix.library }}
+          path: libraries/${{ matrix.library }}/site
 
   deploy:
     runs-on: ubuntu-latest
