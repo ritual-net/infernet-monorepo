@@ -57,11 +57,11 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
                 with open(doc_file_path, "w") as md_file:
                     print(f"Writing documentation for {module_name} to {doc_file_path}")
-                    md_file.write(f"# Documentation for {module_name}\n\n")
+                    md_file.write(f"# Module: `{module_name}`\n")
                     md_file.write(f"::: {module_path.strip('.')}\n")
 
                 # Add entry to the current directory's list in the navigation structure
-                current_dir_list[f"{module_name}.md"] = doc_relative_path.replace(
+                current_dir_list[f"{module_name}.md"] = "reference/" + doc_relative_path.replace(
                     os.sep, "/"
                 )
 
