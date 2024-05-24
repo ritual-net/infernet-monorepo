@@ -36,7 +36,7 @@ stop-node:
 
 filter ?= ""
 
-run-tests: stop-node
+test-service: stop-node
 	# kill anything running on 3000
 	kill $(lsof -i :3000 | tail -n 1  | awk '{print $2}') || true
 	pytest -vvv -s $(toplevel_dir)/tests/$(service)

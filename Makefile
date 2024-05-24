@@ -14,6 +14,7 @@ clean:
 
 pre-commit-project:
 	# repo-wide checks: tools, scripts, etc.
+	PYTHONPATH=projects/$(project)/src \
 	pre-commit run --files $$(git ls-files | grep -vE '^infernet_services/' | grep 'projects/$(project)')
 
 pre-commit-services:

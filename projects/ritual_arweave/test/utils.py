@@ -1,3 +1,4 @@
+import filecmp
 import os
 import shlex
 import shutil
@@ -7,12 +8,12 @@ import tempfile
 from typing import Any, Callable, Dict, Generator, Optional
 
 import requests
-from ar import DEFAULT_API_URL, Wallet  # type: ignore
+from ar import Wallet  # type: ignore
 from retry import retry
-
-from .common import ritual_arweave_dir
 from ritual_arweave.model_manager import ModelManager
 from ritual_arweave.utils import load_wallet
+
+from .common import ritual_arweave_dir
 
 ARWEAVE_DECIMALS: int = 12
 ARLOCAL_DEFAULT_PORT = 3069
@@ -87,8 +88,10 @@ class TemporaryModel:
         """
         for filename, content in self.files_dict.items():
             assert os.path.exists(os.path.join(directory, filename))
-            with open(os.path.join(directory, filename), "r") as f:
-                assert f.read() == content
+            assert filecmp.cmp(
+                os.path.join(directory, filename), os.path.join(self.path, filename)
+            )
+
         # assert no other files are present in the directory
         assert len(os.listdir(directory)) == len(self.files_dict)
 
@@ -100,8 +103,7 @@ class TemporaryModel:
         assert os.path.exists(filepath)
         filename = os.path.basename(filepath)
         assert filename in self.files_dict
-        with open(filepath, "r") as f:
-            assert f.read() == self.files_dict[filename]
+        assert filecmp.cmp(filepath, os.path.join(self.path, filename))
 
     def check_paths(self, paths: list[str]) -> None:
         """
