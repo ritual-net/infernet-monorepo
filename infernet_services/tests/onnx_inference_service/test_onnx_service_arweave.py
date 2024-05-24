@@ -23,7 +23,7 @@ def arweave_setup() -> Generator[None, None, None]:
             "MODEL_SOURCE": ModelSource.ARWEAVE.value,
             "LOAD_ARGS": json.dumps(
                 {
-                    "model_id": f"{os.environ['MODEL_OWNER']}/iris-classification",
+                    "repo_id": f"{os.environ['MODEL_OWNER']}/iris-classification",
                     "filename": "iris.onnx",
                 }
             ),

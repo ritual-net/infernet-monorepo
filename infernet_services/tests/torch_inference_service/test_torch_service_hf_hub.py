@@ -22,7 +22,7 @@ def hf_hub_setup() -> Generator[None, None, None]:
             "MODEL_SOURCE": ModelSource.HUGGINGFACE_HUB.value,
             "LOAD_ARGS": json.dumps(
                 {
-                    "model_id": "Ritual-Net/california-housing",
+                    "repo_id": "Ritual-Net/california-housing",
                     "filename": "california_housing.torch",
                 }
             ),

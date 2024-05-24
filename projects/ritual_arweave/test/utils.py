@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Generator, Optional
 import requests
 from ar import Wallet  # type: ignore
 from retry import retry
-from ritual_arweave.model_manager import ModelManager
+from ritual_arweave.repo_manager import RepoManager
 from ritual_arweave.utils import load_wallet
 
 from .common import ritual_arweave_dir
@@ -63,13 +63,13 @@ def stop_arlocal(port: int = ARLOCAL_DEFAULT_PORT) -> None:
 FixtureType = Callable[[Any], Any]
 
 
-class TemporaryModel:
+class TemporaryRepo:
     def __init__(self, name: str, files_dict: Dict[str, str]):
         self.path: str = ""
         self.name: str = name
         self.files_dict: Dict[str, str] = files_dict
 
-    def create(self) -> "TemporaryModel":
+    def create(self) -> "TemporaryRepo":
         """
         Creates a temporary directory, inside that directory creates files with the
         content provided in the files_dict, and stores the path of the temporary
@@ -131,12 +131,12 @@ def mine_block() -> None:
     requests.get(f"{api_url}/mine")
 
 
-def upload_model(
-    model: TemporaryModel,
+def upload_repo(
+    model: TemporaryRepo,
     version_mapping: Optional[Dict[str, str]] = None,
-) -> ModelManager:
-    mm = ModelManager(api_url, wallet_path=wallet)
-    mm.upload_model(
+) -> RepoManager:
+    mm = RepoManager(api_url, wallet_path=wallet)
+    mm.upload_repo(
         name=model.name,
         path=model.path,
         version_mapping=version_mapping,

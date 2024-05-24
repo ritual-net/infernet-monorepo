@@ -10,23 +10,23 @@ from infernet_ml.utils.model_loader import (
 def test_parse_load_args_hf_hub() -> None:
     model_source = ModelSource.HUGGINGFACE_HUB
     cfg = {
-        "model_id": "Ritual-Net/iris-classification",
+        "repo_id": "Ritual-Net/iris-classification",
         "filename": "iris.onnx",
     }
     assert parse_load_args(model_source, cfg) == HFLoadArgs(
-        id="Ritual-Net/iris-classification", filename="iris.onnx"
+        repo_id="Ritual-Net/iris-classification", filename="iris.onnx"
     )
 
 
 def test_parse_load_args_arweave() -> None:
     model_source = ModelSource.ARWEAVE
     cfg = {
-        "model_id": "0x1234/iris-classification",
+        "repo_id": "0x1234/iris-classification",
         "filename": "iris.onnx",
         "version": "1.0.0",
     }
     assert parse_load_args(model_source, cfg) == ArweaveLoadArgs(
-        id="0x1234/iris-classification",
+        repo_id="0x1234/iris-classification",
         filename="iris.onnx",
         version="1.0.0",
     )

@@ -1,10 +1,12 @@
 """
-Utility functions for uploading/downloading models to/from Arweave.
+Utility functions for uploading/downloading repositories to/from Arweave. Each repository
+contains multiple artifact files.
 
-Model files are logically grouped together via a Manifest file, which maps individual
-transaction data to named files.
 
-When uploading a model directory, a version mapping dictionary file is expected to be
+Repository files (artifacts) are logically grouped together via a Manifest file, which
+maps individual transaction data to named files.
+
+When uploading a repo directory, a version mapping dictionary file is expected to be
 provided. The mapping should contain a map of filename to version tag. The version tag
 is useful if a specific version of a file is meant to be downloaded. If no mapping is
 specified, version will be an empty string.
@@ -24,7 +26,7 @@ from ar.manifest import Manifest  # type: ignore
 from pydantic import BaseModel
 from requests.exceptions import HTTPError
 from ritual_arweave.file_manager import FileManager
-from ritual_arweave.types import ModelId, Tags
+from ritual_arweave.types import RepoId, Tags
 from ritual_arweave.utils import edge_unix_ts, get_sha256_digest
 
 log = logging.getLogger(__name__)
@@ -34,28 +36,28 @@ class NotFinalizedException(Exception):
     pass
 
 
-class UploadModelResult(BaseModel):
-    id: ModelId
+class UploadRepoResult(BaseModel):
+    repo_id: RepoId
     transaction_id: str
     manifest_url: str
 
 
-class ModelManager(FileManager):
-    def download_model_file(
+class RepoManager(FileManager):
+    def download_artifact_file(
         self,
-        model_id: Union[ModelId, str],
+        repo_id: Union[RepoId, str],
         file_name: str,
         version: Optional[str] = None,
         force_download: bool = False,
         base_path: str = ".",
     ) -> str:
-        """Downloads a specific model file from Arweave.
+        """Downloads a specific artifact from Arweave.
 
         Args:
-            model_id (Union[ModelId, str]): id of model, if provided as a string, the
+            repo_id (Union[RepoId, str]): id of the repo, if provided as a string, the
                 format must be of the form `owner`/`name`. Where `owner` is the wallet
-                address of the uploader and `name` is the model's name.
-            file_name (str): name of model file
+                address of the uploader and `name` is the repository's name.
+            file_name (str): name of artifact
             version (Optional[str], optional): Version of file. Defaults to None.
                 If none specified, will fetch the latest version.
             force_download (bool, optional): If True, will download file even if it
@@ -68,13 +70,13 @@ class ModelManager(FileManager):
         Returns:
             str: path of downloaded file
         """
-        if isinstance(model_id, str):
-            model_id = ModelId.from_str(model_id)
+        if isinstance(repo_id, str):
+            repo_id = RepoId.from_str(repo_id)
 
         base = Path(base_path)
         if not Path.exists(base):
             os.makedirs(base)
-        owners = [model_id.owner]
+        owners = [repo_id.owner]
 
         file_version_str = (
             ""
@@ -103,7 +105,7 @@ class ModelManager(FileManager):
                         values: ["%s"]
                     },
                     {
-                        name: "Model-Name",
+                        name: "Repo-Name",
                         values: ["%s"]
                     }
                 ])
@@ -130,7 +132,7 @@ class ModelManager(FileManager):
             json.dumps(owners),
             file_version_str,
             file_name,
-            model_id.name,
+            repo_id.name,
         )
         log.debug(query_str)
 
@@ -142,8 +144,8 @@ class ModelManager(FileManager):
 
         if len(transactions) == 0:
             raise ValueError(
-                f"Could not find any matching model files for: "
-                f"({model_id}, {file_name}, {version or 'latest'})"
+                f"Could not find any matching artifacts for: "
+                f"({repo_id}, {file_name}, {version or 'latest'})"
             )
 
         transaction = transactions[0]
@@ -159,23 +161,23 @@ class ModelManager(FileManager):
             log.info(f"not downloading {tx_metadata} because it already exists")
             return os.path.abspath(file_path)
 
-    def upload_model(
+    def upload_repo(
         self,
         name: str,
         path: str,
         version_mapping_file: Optional[str] = None,
         version_mapping: Optional[Dict[str, str]] = None,
         extra_file_tags: Optional[Dict[str, Tags]] = None,
-    ) -> UploadModelResult:
+    ) -> UploadRepoResult:
         """
-        Uploads a model directory to Arweave. For every model upload, a manifest
+        Uploads a repo directory to Arweave. For every repository upload, a manifest
         mapping is created.
 
         Args:
-            name (str): Name of model. Once uploaded, the model will be
-                accessible via the model Id: owner/name. Where `owner` is the wallet
-                address of the uploader and `name` is the model's name.
-            path (str): Path to the directory containing the model files.
+            name (str): Name of the repository. Once uploaded, the repo will be
+                accessible via the repo Id: `owner/name`. Where `owner` is the wallet
+                address of the uploader and `name` is the repository's name.
+            path (str): Path to the directory containing the artifacts.
             version_mapping_file (str): Path to a json dict file mapping file names to
                 specific versions. If a specific mapping is found, the File-Version
                 attribute is tagged with the value. This is to facilitate uploading and
@@ -222,7 +224,7 @@ class ModelManager(FileManager):
             "App-Name": "Ritual",
             "App-Version": "0.1.0",
             "Unix-Time": str(timestamp),
-            "Model-Name": str(name),
+            "Repo-Name": str(name),
         }
 
         for f in files:
@@ -275,24 +277,24 @@ class ModelManager(FileManager):
 
         self.logger(f"uploaded manifest with tx id {t.id}")
 
-        return UploadModelResult(
-            id=ModelId(owner=self.wallet.address, name=name),
+        return UploadRepoResult(
+            repo_id=RepoId(owner=self.wallet.address, name=name),
             transaction_id=t.id,
             manifest_url=f"{t.api_url}/{t.id}",
         )
 
-    def download_model(
+    def download_repo(
         self,
-        model_id: Union[ModelId, str],
+        repo_id: Union[RepoId, str],
         base_path: str = ".",
         force_download: bool = False,
     ) -> list[str]:
-        """Downloads a model from Arweave to a given directory.
+        """Downloads a repo from Arweave to a given directory.
 
         Args:
-            model_id (Union[ModelId, str]): id of model, if provided as a string, the
+            repo_id (Union[RepoId, str]): id of the repo, if provided as a string, the
                 format must be of the form `owner`/`name`. Where `owner` is the wallet
-                address of the uploader and `name` is the model's name.
+                address of the uploader and `name` is the respository's name.
             base_path (str, optional): Directory to download to. Defaults to current
                 directory.
             force_download (bool, optional): If True, will download files even if they
@@ -300,14 +302,14 @@ class ModelManager(FileManager):
 
         Raises:
             ValueError: if wallet file path is not specified or wallet file is not found.
-            ValueError: if matching model manifest not found
+            ValueError: if matching repo manifest not found
 
         Returns:
             list[str]: downloaded file paths
         """
-        if isinstance(model_id, str):
-            model_id = ModelId.from_str(model_id)
-        owners = [model_id.owner]
+        if isinstance(repo_id, str):
+            repo_id = RepoId.from_str(repo_id)
+        owners = [repo_id.owner]
         base = Path(base_path)
         if not Path.exists(base):
             os.makedirs(base)
@@ -323,7 +325,7 @@ class ModelManager(FileManager):
                         values: ["Ritual"]
                     },
                     {
-                        name: "Model-Name",
+                        name: "Repo-Name",
                         values: ["%s"]
                     },
                     {
@@ -353,7 +355,7 @@ class ModelManager(FileManager):
         }
         """ % (
             json.dumps(owners),
-            model_id.name,
+            repo_id.name,
         )
 
         # self.logger(query_str)
@@ -361,17 +363,17 @@ class ModelManager(FileManager):
         try:
             res = self.peer.graphql(query_str)
         except HTTPError as e:
-            raise ValueError(f"Error querying model manifests: {e}")
+            raise ValueError(f"Error querying repo manifests: {e}")
         log.info("done getting first query")
 
         # get latest Manifest
 
         manifests = res["data"]["transactions"]["edges"]
         manifests.sort(reverse=True, key=edge_unix_ts)
-        self.logger(f"found {len(manifests)} manifests for {model_id}")
+        self.logger(f"found {len(manifests)} manifests for {repo_id}")
 
         if len(manifests) == 0:
-            raise ValueError("Could not find any matching model manifests from query.")
+            raise ValueError("Could not find any matching repo manifests from query.")
 
         manifest = manifests[0]
 

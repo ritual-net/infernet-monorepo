@@ -30,7 +30,7 @@ class HFLoadArgs(BaseModel):
     Arguments for loading the model
     """
 
-    id: str
+    repo_id: str
     filename: str
 
 
@@ -39,7 +39,7 @@ class ArweaveLoadArgs(BaseModel):
     Arguments for loading the model
     """
 
-    id: str
+    repo_id: str
     filename: str
     version: Optional[str] = None
 
@@ -76,11 +76,11 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
             return LocalLoadArgs(path=config["model_path"])
         # parse the load arguments for the model from Hugging Face Hub
         case ModelSource.HUGGINGFACE_HUB:
-            return HFLoadArgs(id=config["model_id"], filename=config["filename"])
+            return HFLoadArgs(repo_id=config["repo_id"], filename=config["filename"])
         # parse the load arguments for the model from Arweave
         case ModelSource.ARWEAVE:
             return ArweaveLoadArgs(
-                id=config["model_id"],
+                repo_id=config["repo_id"],
                 filename=config["filename"],
                 version=config.get("version"),
             )
@@ -115,18 +115,18 @@ def load_model(
         case ModelSource.HUGGINGFACE_HUB:
             hf_args = cast(HFLoadArgs, load_args)
             logging.info(
-                f"Downloading model from Hugging Face Hub {hf_args.id}"
+                f"Downloading model from Hugging Face Hub {hf_args.repo_id}"
                 f" with filename {hf_args.filename}"
             )
-            return cast(str, hf_hub_download(hf_args.id, hf_args.filename))
+            return cast(str, hf_hub_download(hf_args.repo_id, hf_args.filename))
         case ModelSource.ARWEAVE:
             arweave_args = cast(ArweaveLoadArgs, load_args)
             logging.info(
-                f"Downloading model from Arweave {arweave_args.id}"
+                f"Downloading model from Arweave {arweave_args.repo_id}"
                 f" with filename {arweave_args.filename}"
             )
-            return ModelManager().download_model_file(
-                model_id=arweave_args.id,
+            return ModelManager().download_artifact_file(
+                model_id=arweave_args.repo_id,
                 file_name=arweave_args.filename,
                 version=arweave_args.version,
             )

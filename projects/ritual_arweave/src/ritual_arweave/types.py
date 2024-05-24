@@ -12,11 +12,11 @@ ArTransactionId = NewType("ArTransactionId", str)
 Tags = Dict[str, str]
 
 
-class ModelId(BaseModel):
+class RepoId(BaseModel):
     owner: ArAddress
     name: str
 
     @classmethod
-    def from_str(cls, _id: str) -> "ModelId":
+    def from_str(cls, _id: str) -> "RepoId":
         owner, name = _id.split("/")
         return cls(owner=ArAddress(owner), name=name)
