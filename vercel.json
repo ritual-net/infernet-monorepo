@@ -2,14 +2,38 @@
   "version": 2,
   "builds": [
     {
-      "src": "libraries/infernet_ml/site/**/*",
+      "src": "docs-infernet_ml/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "docs-ritual_arweave/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "docs-infernet_client/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "index.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "libraries/infernet_ml/site/$1"
+      "src": "/infernet_ml/(.*)",
+      "dest": "docs-infernet_ml/$1"
+    },
+    {
+      "src": "/ritual_arweave/(.*)",
+      "dest": "docs-ritual_arweave/$1"
+    },
+    {
+      "src": "/infernet_client/(.*)",
+      "dest": "docs-infernet_client/$1"
+    },
+    {
+      "src": "/",
+      "dest": "index.html"
     }
   ]
 }
