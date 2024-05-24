@@ -14,7 +14,7 @@ def monorepo_dir() -> str:
     return top_level_dir
 
 
-def project_dir(project_name: str) -> str:
+def library_dir(project_name: str) -> str:
     """
     Get the path to the project directory under the infernet monorepo.
 
@@ -24,7 +24,7 @@ def project_dir(project_name: str) -> str:
     Returns:
         The path to the project directory
     """
-    return os.path.join(monorepo_dir(), "projects", project_name)
+    return os.path.join(monorepo_dir(), "libraries", project_name)
 
 
 def ritual_arweave_dir() -> str:
@@ -34,4 +34,4 @@ def ritual_arweave_dir() -> str:
     Returns:
         The path to the `ritual_arweave` directory
     """
-    return project_dir("ritual_arweave")
+    return library_dir("ritual_arweave")
