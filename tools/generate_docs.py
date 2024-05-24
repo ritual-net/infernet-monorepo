@@ -85,6 +85,7 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
             else:
                 name = key.split("/")[-1].replace(".md", "")
                 nav_list.append({name: value})
+
         return nav_list
 
     def update_mkdocs_nav_file(nav_entries: Dict[str, str], config_path: str) -> None:
@@ -99,7 +100,17 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
             config = yaml.safe_load(file)  # Load existing config
 
         # Generate new nav structure and update config
-        config["nav"] = write_nav_entries(nav_entries)
+        nav_list = write_nav_entries(nav_entries)
+        navigation = config["nav"]
+
+        # delete "reference" under navigation
+        for n in navigation.copy():
+            if "reference" in (a.lower() for a in n.keys()):
+                navigation.remove(n)
+
+        navigation.append({"Reference": nav_list})
+
+        config["nav"] = navigation
 
         with open(config_path, "w") as file:
             yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
@@ -124,6 +135,6 @@ if __name__ == "__main__":
 
     generate_docs(
         f"./libraries/{library}/src",
-        f"./libraries/{library}/docs",
+        f"./libraries/{library}/docs/reference",
         f"./libraries/{library}/mkdocs.yml",
     )

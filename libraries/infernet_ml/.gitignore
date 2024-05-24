@@ -2,4 +2,4 @@
 **/*.onnx
 **/*.torch
 
-docs/infernet_ml
+docs/reference

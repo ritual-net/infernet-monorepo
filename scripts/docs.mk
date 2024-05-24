@@ -12,7 +12,10 @@ serve-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
 
 build-docs:
-	cd libraries/$(library) && mkdocs build
+	cd libraries/$(library) && PYTHONPATH=src mkdocs build
+
+clean-docs:
+	rm -rf libraries/$(library)/site
 
 build-docs-index:
 	$(PYTHON) tools/build_docs_index.py

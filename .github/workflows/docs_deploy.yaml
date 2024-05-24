@@ -67,8 +67,6 @@ jobs:
           uv pip install -r pyproject.toml
 
       - name: Build & Generate docs
-        env:
-          PYTHONPATH: src
         run: make build-docs-index
 
       - name: Vercel Deploy
