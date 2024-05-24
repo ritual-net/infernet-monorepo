@@ -1,6 +1,12 @@
 site_name: Infernet Client Docs
 theme:
   name: material
+  features:
+    - content.tabs.link
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
 plugins:
 - search
 - mkdocstrings:
@@ -12,10 +18,10 @@ nav:
 - Quickstart: quickstart.md
 - Reference:
   - infernet_client:
-    - error: infernet_client/error.md
-    - client: infernet_client/client.md
-    - types: infernet_client/types.md
-    - chain_utils: infernet_client/chain_utils.md
+    - error: reference/infernet_client/error.md
+    - client: reference/infernet_client/client.md
+    - types: reference/infernet_client/types.md
+    - chain_utils: reference/infernet_client/chain_utils.md
     - cli:
-      - options: infernet_client/cli/options.md
+      - options: reference/infernet_client/cli/options.md
       - sample_inputs: []
