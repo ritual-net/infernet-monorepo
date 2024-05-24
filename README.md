@@ -22,7 +22,7 @@ Currently, the structure is as follows:
 └── requirements.lock
 ```
 
-* `projects/`: This directory contains all of the python projects. Currently, the `infernet_ml` library has been ported
+* `libraries/`: This directory contains all of the python projects. Currently, the `infernet_ml` library has been ported
   over from its own standalone repo to here. Other python projects to be included here are: `ritual-arweave`,
   `ritual-celestia`, `infernet-client` & `ritual-pyarweave`.
 * `scripts/`: Contains various makefile scripts used for setting up the GCP environment, building & publishing python
@@ -42,7 +42,7 @@ to follow a monorepo structure where we have multiple python libraries in the sa
 
 ### Python Projects
 
-Each project is listed under the `projects/` directory along with its own `pyproject.toml`.
+Each project is listed under the `libraries/` directory along with its own `pyproject.toml`.
 
 To create a new python project use `rye init`:
 
@@ -91,7 +91,7 @@ To build a library run:
 make build-library project=$(library_name)
 ```
 
-`library_name` here should match the directory name of the library under `projects/`.
+`library_name` here should match the directory name of the library under `libraries/`.
 
 ## GCP Setup
 
@@ -172,7 +172,7 @@ Then you can run:
 make publish project=$(library_name)
 ```
 
-`library_name` here should match the directory name of the library under `projects/`.
+`library_name` here should match the directory name of the library under `libraries/`.
 
 ### Troubleshooting Publishing Packages
 1. **Package Version**: You can't overwrite a version when publishing to the pypi repository. Either bump the minor

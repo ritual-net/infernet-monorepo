@@ -15,7 +15,7 @@ ONNX Inference Service!
 
 ### `/service_output"`
 
-Use this endpoint to run the model. It expects a JSON payload with the following schema,
+Use this endpoint to run the model. It expects a JSON payload with the following schema:
 `InfernetInput`:
 
 ```python

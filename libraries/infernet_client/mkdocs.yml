@@ -1,0 +1,21 @@
+site_name: Infernet Client Docs
+theme:
+  name: material
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        rendering:
+          show_source: true
+nav:
+- Quickstart: quickstart.md
+- Reference:
+  - infernet_client:
+    - error: infernet_client/error.md
+    - client: infernet_client/client.md
+    - types: infernet_client/types.md
+    - chain_utils: infernet_client/chain_utils.md
+    - cli:
+      - options: infernet_client/cli/options.md
+      - sample_inputs: []

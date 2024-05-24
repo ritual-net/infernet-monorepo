@@ -1,11 +1,11 @@
 # pre-commit workflow for Infernet Monorepo
 
-name: Python Projects CI
+name: Python Libraries CI
 
 on:
   pull_request:
     paths:
-      - 'projects/**'
+      - 'libraries/**'
       - '.github/workflows/python_projects_ci.yaml'
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
+        library: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 
@@ -27,12 +27,12 @@ jobs:
 
       # needed for ritual_arweave
       - name: Setup bun & install lsof
-        if: matrix.project == 'ritual_arweave'
+        if: matrix.library == 'ritual_arweave'
         uses: oven-sh/setup-bun@v1
 
       # needed for ritual_arweave
       - name: Install arlocal
-        if: matrix.project == 'ritual_arweave'
+        if: matrix.library == 'ritual_arweave'
         run: sudo $(which bun) i -g arlocal
 
       # pull submodules manually since some are private
@@ -77,20 +77,20 @@ jobs:
       # first line is the project's specific dependencies,
       - name: Install dependencies
         run: |
-          uv pip install -r projects/${{ matrix.project }}/requirements.lock
+          uv pip install -r libraries/${{ matrix.library }}/requirements.lock
           uv pip install -r pyproject.toml
 
       - name: Run pre-commit hooks
-        run: make pre-commit-project project=${{ matrix.project }}
+        run: make pre-commit-library library=${{ matrix.library }}
 
       - name: Run tests
         env:
           # We need to list the env vars here again for them to get filtered out in logs
-          PYTHONPATH: projects/${{ matrix.project }}/src
+          PYTHONPATH: libraries/${{ matrix.library }}/src
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
           GOOSEAI_API_KEY: ${{ secrets.GOOSEAI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
 
-        run: make test-library project=${{ matrix.project }}
+        run: make test-library library=${{ matrix.library }}
