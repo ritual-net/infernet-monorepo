@@ -91,12 +91,12 @@ that string is different for each `MODEL_SOURCE`.
     * `model_path`: The path to the onnx model file.
 
 * `ARWEAVE`:
-  * `repo_id`: The name of the model on the huggingface hub. e.g. `{wallet_address}/finbert`
+  * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `{wallet_address}/finbert`
   * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
   * `version`: The version of the model to load. e.g. `1.0.0`
 
 * `HUGGINGFACE_HUB`:
-    * `repo_id`: The name of the model on the huggingface hub. e.g. `ProsusAI/finbert`
+    * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `ProsusAI/finbert`
     * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
 
 ## Example Environment File
