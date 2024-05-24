@@ -14,5 +14,8 @@ serve-docs:
 build-docs:
 	cd libraries/$(library) && mkdocs build
 
+build-docs-index:
+	$(PYTHON) tools/build_docs_index.py
+
 deploy-docs:
 	vercel --prod
