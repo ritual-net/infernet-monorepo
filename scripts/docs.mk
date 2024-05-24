@@ -20,5 +20,9 @@ clean-docs:
 build-docs-index:
 	$(PYTHON) tools/build_docs_index.py
 
+build-docs-index:
+	$(PYTHON) tools/build_docs_index.py
+
 deploy-docs:
 	vercel --prod
+  
