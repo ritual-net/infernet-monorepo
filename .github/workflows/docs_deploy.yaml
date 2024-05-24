@@ -3,7 +3,7 @@ name: Deploy to Vercel
 on:
   pull_request:
     paths:
-      - 'projects/**'
+      - 'libraries/**'
 
 jobs:
   deploy:

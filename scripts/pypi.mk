@@ -12,13 +12,13 @@ else
     SED := sed
 endif
 
-# setting the python project version.
-# modifies the pyproject.toml file for the project at projects/$(project)
+# setting the python library version.
+# modifies the pyproject.toml file for the library at libraries/$(library)
 set-version:
-	$(SED) -i 's/version = .*/version = "$(version)"/' projects/$(project)/pyproject.toml
+	$(SED) -i 's/version = .*/version = "$(version)"/' libraries/$(library)/pyproject.toml
 
 build-library:
-	rye build --pyproject projects/$(project)/pyproject.toml
+	rye build --pyproject libraries/$(library)/pyproject.toml
 
 repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/
 
@@ -40,28 +40,28 @@ show-index-url: get_index_url
 uv-install: get_index_url
 	uv venv; \
 	source .venv/bin/activate; \
-	uv pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(project)
+	uv pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(library)
 
 # explicit install command to test pip installation
 pip-install: get_index_url
-	pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(project)
+	pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(library)
 
 # utility to create, install & activate an environment
 setup-env:
-	uv venv && source .venv/bin/activate && uv pip install -r projects/$(project)/requirements.lock
+	uv venv && source .venv/bin/activate && uv pip install -r libraries/$(library)/requirements.lock
 
-# updates the python lockfile of the specific project
+# updates the python lockfile of the specific library
 update-lockfile:
-	make -C projects/$(project) update-lockfile
+	make -C libraries/$(library) update-lockfile
 
-publish: get_index_url
+publish-library: get_index_url
 	rye publish --repository ritual-pypi \
 		--repository-url $(repository_url) \
 		--username $(username) \
 		--token $(token) \
 		--yes \
 		--verbose \
-	 	dist/$$(ls dist | grep "$(project).*.tar.gz")
+	 	dist/$$(ls dist | grep "$(library).*.tar.gz")
 
 # show the pypi registry settings (useful for modifying the ~/.pypirc file)
 show-artifact-settings:

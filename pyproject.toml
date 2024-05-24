@@ -29,7 +29,7 @@ virtual = true
 dev-dependencies = []
 
 [tool.rye.workspace]
-members = ["projects/*"]
+members = ["libraries/*"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -39,7 +39,7 @@ packages = ["src/infernet_monorepo"]
 
 [tool.isort]
 profile = "black"
-skip = ["projects/ritual_pyarweave", ".venv", "venv", ".gitignore"]
+skip = ["libraries/ritual_pyarweave", ".venv", "venv", ".gitignore"]
 
 [tool.ruff]
 line-length = 89

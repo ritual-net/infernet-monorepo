@@ -6,13 +6,13 @@ SHELL := /bin/bash
 PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 
 generate-docs:
-	$(PYTHON) tools/generate_docs.py $(project)
+	$(PYTHON) tools/generate_docs.py $(library)
 
 serve-docs:
-	cd projects/$(project) && PYTHONPATH=src mkdocs serve
+	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
 
 build-docs:
-	cd projects/$(project) && mkdocs build
+	cd libraries/$(library) && mkdocs build
 
 deploy-docs:
 	vercel --prod

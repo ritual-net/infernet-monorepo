@@ -109,21 +109,21 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
 if __name__ == "__main__":
     """
-    read 'project' from arguments
+    read 'library' from arguments
     """
     import sys
 
     if len(sys.argv) < 2:
         print(
             "Usage:\n"
-            "python generate_docs.py <project> <src_root> <docs_root> <nav_file_path>"
+            "python generate_docs.py <library> <src_root> <docs_root> <nav_file_path>"
         )
         sys.exit(1)
 
-    project = sys.argv[1]
+    library = sys.argv[1]
 
     generate_docs(
-        f"./projects/{project}/src",
-        f"./projects/{project}/docs",
-        f"./projects/{project}/mkdocs.yml",
+        f"./libraries/{library}/src",
+        f"./libraries/{library}/docs",
+        f"./libraries/{library}/mkdocs.yml",
     )
