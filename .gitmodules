@@ -7,3 +7,6 @@
 [submodule "infernet_services/consumer-contracts/lib/infernet-sdk"]
 	path = infernet_services/consumer-contracts/lib/infernet-sdk
 	url = https://github.com/ritual-net/infernet-sdk
+[submodule "libraries/ritual_pyarweave/src"]
+	path = libraries/ritual_pyarweave/src
+	url = git@github.com:ritual-net/pyarweave-internal.git
