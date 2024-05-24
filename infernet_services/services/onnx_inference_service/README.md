@@ -15,7 +15,7 @@ ONNX Inference Service!
 
 ### `/service_output"`
 
-Use this endpoint to run the model. It expects a JSON payload with the following schema,
+Use this endpoint to run the model. It expects a JSON payload with the following schema:
 `InfernetInput`:
 
 ```python
@@ -76,12 +76,11 @@ In our request that would look like:
 
 ### `OUTPUT_NAMES`
 
-A comma separated list of output names in the onnx model.
+A comma separated list of output names in the `ONNX` model.
 
 ### `MODEL_SOURCE`
 
-How you want the model to be loaded. Options are `LOCAL`, `ARWEAVE` or
-`HUGGINGFACE_HUB`.
+How you want the model to be loaded. Options are `LOCAL`, `ARWEAVE` or `HUGGINGFACE_HUB`.
 
 ### `MODEL_ARGS`
 
@@ -90,11 +89,15 @@ that string is different for each `MODEL_SOURCE`.
 
 * `LOCAL`:
     * `model_path`: The path to the onnx model file.
-* `ARWEAVE`: TODO -
-  pending [PR#4](https://github.com/origin-research/infernet-ml/pull/4) to be merged.
+
+* `ARWEAVE`:
+  * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `{wallet_address}/finbert`
+  * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
+  * `version`: The version of the model to load. e.g. `1.0.0`
+
 * `HUGGINGFACE_HUB`:
-    * `repo_id`: The name of the model on the huggingface hub. i.e. `ProsusAI/finbert`
-    * `filename`: Name of the file in the model repo. i.e. `onnx_model.onnx`
+    * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `ProsusAI/finbert`
+    * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
 
 ## Example Environment File
 

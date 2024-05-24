@@ -10,6 +10,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "docs-infernet_client/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "index.html",
       "use": "@vercel/static"
     }
@@ -22,6 +26,10 @@
     {
       "src": "/ritual_arweave/(.*)",
       "dest": "docs-ritual_arweave/$1"
+    },
+    {
+      "src": "/infernet_client/(.*)",
+      "dest": "docs-infernet_client/$1"
     },
     {
       "src": "/",

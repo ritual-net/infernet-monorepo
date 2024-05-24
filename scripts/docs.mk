@@ -6,13 +6,19 @@ SHELL := /bin/bash
 PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 
 generate-docs:
-	$(PYTHON) tools/generate_docs.py $(project)
+	$(PYTHON) tools/generate_docs.py $(library)
 
 serve-docs:
-	cd projects/$(project) && PYTHONPATH=src mkdocs serve
+	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
 
 build-docs:
-	cd projects/$(project) && mkdocs build
+	cd libraries/$(library) && PYTHONPATH=src mkdocs build
+
+clean-docs:
+	rm -rf libraries/$(library)/site
+
+build-docs-index:
+	$(PYTHON) tools/build_docs_index.py
 
 build-docs-index:
 	$(PYTHON) tools/build_docs_index.py

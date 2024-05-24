@@ -57,11 +57,11 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
                 with open(doc_file_path, "w") as md_file:
                     print(f"Writing documentation for {module_name} to {doc_file_path}")
-                    md_file.write(f"# Documentation for {module_name}\n\n")
+                    md_file.write(f"# Module: `{module_name}`\n")
                     md_file.write(f"::: {module_path.strip('.')}\n")
 
                 # Add entry to the current directory's list in the navigation structure
-                current_dir_list[f"{module_name}.md"] = doc_relative_path.replace(
+                current_dir_list[f"{module_name}.md"] = "reference/" + doc_relative_path.replace(
                     os.sep, "/"
                 )
 
@@ -85,6 +85,7 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
             else:
                 name = key.split("/")[-1].replace(".md", "")
                 nav_list.append({name: value})
+
         return nav_list
 
     def update_mkdocs_nav_file(nav_entries: Dict[str, str], config_path: str) -> None:
@@ -99,7 +100,17 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
             config = yaml.safe_load(file)  # Load existing config
 
         # Generate new nav structure and update config
-        config["nav"] = write_nav_entries(nav_entries)
+        nav_list = write_nav_entries(nav_entries)
+        navigation = config["nav"]
+
+        # delete "reference" under navigation
+        for n in navigation.copy():
+            if "reference" in (a.lower() for a in n.keys()):
+                navigation.remove(n)
+
+        navigation.append({"Reference": nav_list})
+
+        config["nav"] = navigation
 
         with open(config_path, "w") as file:
             yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
@@ -109,21 +120,21 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
 if __name__ == "__main__":
     """
-    read 'project' from arguments
+    read 'library' from arguments
     """
     import sys
 
     if len(sys.argv) < 2:
         print(
             "Usage:\n"
-            "python generate_docs.py <project> <src_root> <docs_root> <nav_file_path>"
+            "python generate_docs.py <library> <src_root> <docs_root> <nav_file_path>"
         )
         sys.exit(1)
 
-    project = sys.argv[1]
+    library = sys.argv[1]
 
     generate_docs(
-        f"./projects/{project}/src",
-        f"./projects/{project}/docs",
-        f"./projects/{project}/mkdocs.yml",
+        f"./libraries/{library}/src",
+        f"./libraries/{library}/docs/reference",
+        f"./libraries/{library}/mkdocs.yml",
     )

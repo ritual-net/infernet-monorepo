@@ -23,9 +23,8 @@ def arweave_setup() -> Generator[None, None, None]:
             "MODEL_SOURCE": ModelSource.ARWEAVE.value,
             "LOAD_ARGS": json.dumps(
                 {
-                    "repo_id": "Ritual-Net/california-housing",
+                    "repo_id": f"{os.environ['MODEL_OWNER']}/california-housing",
                     "filename": "california_housing.torch",
-                    "owners": [os.environ["MODEL_OWNER"]],
                 }
             ),
         },

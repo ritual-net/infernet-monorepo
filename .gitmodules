@@ -1,6 +1,3 @@
-[submodule "projects/ritual_pyarweave/src"]
-	path = projects/ritual_pyarweave/src
-	url = git@github.com:ritual-net/pyarweave-internal.git
 [submodule "infernet_services/consumer-contracts/lib/better-deployer"]
 	path = infernet_services/consumer-contracts/lib/better-deployer
 	url = https://github.com/arshankhanifar/better-deployer
@@ -10,3 +7,6 @@
 [submodule "infernet_services/consumer-contracts/lib/infernet-sdk"]
 	path = infernet_services/consumer-contracts/lib/infernet-sdk
 	url = https://github.com/ritual-net/infernet-sdk
+[submodule "libraries/ritual_pyarweave/src"]
+	path = libraries/ritual_pyarweave/src
+	url = git@github.com:ritual-net/pyarweave-internal.git
