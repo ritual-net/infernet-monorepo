@@ -9,15 +9,20 @@ from typing import Any, Callable, Dict, Generator, Optional
 import requests
 from ar import DEFAULT_API_URL, Wallet  # type: ignore
 from retry import retry
+
+from .common import ritual_arweave_dir
 from ritual_arweave.model_manager import ModelManager
 from ritual_arweave.utils import load_wallet
+
+ARWEAVE_DECIMALS: int = 12
+ARLOCAL_DEFAULT_PORT = 3069
+
+wallet = f"{ritual_arweave_dir()}/test/wallet.json"
+api_url = f"http://127.0.0.1:{ARLOCAL_DEFAULT_PORT}"
 
 
 def get_test_wallet() -> Wallet:
     return load_wallet(wallet, api_url=api_url)
-
-
-ARWEAVE_DECIMALS: int = 12
 
 
 def to_ar(amount: int) -> float:
@@ -31,15 +36,6 @@ def from_ar(amount: float) -> int:
 @retry(tries=100, delay=0.1)
 def mint_ar(address: str, balance: int = from_ar(69)) -> None:
     requests.get(f"{api_url}/mint/{address}/{balance}")
-
-
-base_path = "./projects/ritual_arweave/test"
-
-ARLOCAL_DEFAULT_PORT = 3069
-wallet = f"{base_path}/keyfile-arweave.json"
-wallet = f"{base_path}/wallet.json"
-api_url = DEFAULT_API_URL
-api_url = f"http://127.0.0.1:{ARLOCAL_DEFAULT_PORT}"
 
 
 def arweave_node_lifecycle(
