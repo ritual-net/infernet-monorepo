@@ -13,17 +13,15 @@ from infernet_ml.workflows.inference.onnx_inference_workflow import (
 hf_args = {
     "model_source": ModelSource.HUGGINGFACE_HUB,
     "load_args": HFLoadArgs(
-        **{
-            "id": "Ritual-Net/iris-classification",
-            "filename": "iris.onnx",
-        },
+        repo_id="Ritual-Net/iris-classification",
+        filename="iris.onnx",
     ),
 }
 
 arweave_args = {
     "model_source": ModelSource.ARWEAVE,
     "load_args": ArweaveLoadArgs(
-        id=f"{os.environ['MODEL_OWNER']}/iris-classification",
+        repo_id=f"{os.environ['MODEL_OWNER']}/iris-classification",
         filename="iris.onnx",
     ),
 }

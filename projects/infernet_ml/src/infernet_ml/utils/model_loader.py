@@ -9,7 +9,7 @@ from typing import Any, Optional, Union, cast
 
 from huggingface_hub import hf_hub_download  # type: ignore
 from pydantic import BaseModel
-from ritual_arweave.model_manager import ModelManager
+from ritual_arweave.repo_manager import RepoManager
 
 
 class ModelSource(IntEnum):
@@ -125,8 +125,8 @@ def load_model(
                 f"Downloading model from Arweave {arweave_args.repo_id}"
                 f" with filename {arweave_args.filename}"
             )
-            return ModelManager().download_artifact_file(
-                model_id=arweave_args.repo_id,
+            return RepoManager().download_artifact_file(
+                repo_id=arweave_args.repo_id,
                 file_name=arweave_args.filename,
                 version=arweave_args.version,
             )
