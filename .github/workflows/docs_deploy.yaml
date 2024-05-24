@@ -5,6 +5,7 @@ on:
     paths:
       - 'libraries/**'
       - '.github/workflows/docs_deploy.yaml'
+  workflow_dispatch:
 
 jobs:
   build:
