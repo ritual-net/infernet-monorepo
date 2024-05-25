@@ -1,9 +1,17 @@
 site_name: Infernet Client Docs
+extra_css:
+- stylesheets/extra.css
 theme:
+  logo: assets/logo.svg
   name: material
+  palette:
+  - scheme: slate
+    primary: custom
   features:
   - content.tabs.link
   - content.code.copy
+  - search.highlight
+  - search.suggest
 markdown_extensions:
 - pymdownx.highlight:
     anchor_linenums: true
