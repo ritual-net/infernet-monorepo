@@ -14,6 +14,7 @@ from typing import Any, Callable, Optional
 
 import click
 from ar import PUBLIC_GATEWAYS  # type: ignore
+
 from ritual_arweave.file_manager import FileManager
 from ritual_arweave.repo_manager import NotFinalizedException, RepoManager
 
@@ -174,6 +175,12 @@ def download_repo(
     base path where the repo files will be saved.
     Use the --force-download flag to override existing files.
 
+    Parameters:
+        repo_id: The ID of the repository to download.
+        base_path: The base path to save the repo files. Defaults to the current directory.
+        force_download: If set, it will override the existing repo files if they exist.
+        api_url: Arweave gateway URL. Default is `https://arweave.net`.
+
     Examples:
 
     To download a repo with ID <repo-id> and owner <owner-address>:
@@ -220,14 +227,18 @@ def download_file(
     api_url: str = DEFAULT_ARWEAVE_GATEWAY,
 ) -> None:
     """
-    function to download a file from arweave using the transaction id
+    Downloads a file from Arweave using the transaction ID.
+
+    Parameters:
+        file_path: Path to the file to download.
+        tx_id: Transaction ID of the file to download.
+        api_url: Arweave gateway URL. Default is `https://arweave.net`.
 
     Examples:
 
     To download a file with transaction id <tx-id> to the path <file-path>:
 
     ritual-arweave download-file --file-path <file-path> --tx-id <tx-id>
-
     """
     fm = FileManager(api_url=api_url)
     fm.download(file_path, tx_id)
@@ -258,7 +269,13 @@ def upload_file(
     tags: str = "{}",
 ) -> None:
     """
-    function to upload a file to arweave
+    Uploads a file to Arweave.
+
+    Parameters:
+        file_path: Path to the file to upload.
+        api_url: Arweave gateway URL. Default is `https://arweave.net`.
+        wallet: Path to the wallet file. Default is `wallet.json`.
+        tags: Dictionary of tags to attach to the file. Must be a JSON string.
 
     Examples:
 
