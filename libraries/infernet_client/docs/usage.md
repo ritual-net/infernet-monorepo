@@ -4,7 +4,7 @@ Retrieve information about the node. See [NodeInfo](./api#nodeinfo).
 
 === "Python"
 
-    ```python 
+    ```python
     from infernet_client import NodeClient
 
     client = NodeClient("http://localhost:4000")
@@ -558,7 +558,7 @@ and [DelegatedSubscriptionRequest](./api#delegatedsubscriptionrequest).
 
 === "Python"
 
-    ```python 
+    ```python
     from infernet_client import NodeClient
     from infernet_client.chain_utils import Subscription
 
