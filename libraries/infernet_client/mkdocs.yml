@@ -2,11 +2,19 @@ site_name: Infernet Client Docs
 theme:
   name: material
   features:
-    - content.tabs.link
+  - content.tabs.link
+  - content.code.copy
 markdown_extensions:
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+- pymdownx.superfences
+- pymdownx.inlinehilite
+- pymdownx.snippets
+- pymdownx.tabbed:
+    alternate_style: true
+- admonition
 plugins:
 - search
 - mkdocstrings:
@@ -15,7 +23,7 @@ plugins:
         rendering:
           show_source: true
 nav:
-- Quickstart: quickstart.md
+- Usage: usage.md
 - Reference:
   - infernet_client:
     - error: reference/infernet_client/error.md

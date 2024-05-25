@@ -1,32 +1,57 @@
-# REST Client
+# Infernet Client
 
-We recommend interacting with the node's REST API via the [Infernet Client](https://github.com/ritual-net/infernet-monorepo-internal/tree/main/projects/infernet_client)
-Python library or CLI.
+Infernet Client is a python library as well as a CLI tool to interact with the Infernet node's REST API.
 
-## Health
+## Installation
+You can either install `infernet-client` via [`uv` (Recommended)](https://astral.sh/blog/uv) or via `pip`.
 
-Check the server's health. See [HealthInfo](./api#healthinfo).
+=== "uv"
+
+    ``` bash
+    uv pip install infernet-client
+    ```
+
+=== "pip"
+
+    ``` bash
+    pip install infernet-client
+    ```
+
+## Quickstart
+
+With your infernet node running, you can interact with it using either the CLI tool or the python library.
+
+Here's how you can check the [server's health](https://docs.ritual.net/infernet/node/api#healthinfo):
 
 === "Python"
 
-    ``` c
-    #include <stdio.h>
+    ```python
+    from infernet_client import NodeClient
 
-    int main(void) {
-      printf("Hello world!\n");
-      return 0;
-    }
+    client = NodeClient("http://localhost:4000")
+    is_healthy = await client.health()
+
+    print(is_healthy)
+    ```
+    **Expected Output:**
+    ```bash
+    True
     ```
 
 === "CLI"
 
-    ``` c++
-    #include <iostream>
+    ```bash
+    export SERVER_URL=http://localhost:4000
 
-    int main(void) {
-      std::cout << "Hello world!" << std::endl;
-      return 0;
-    }
+    infernet-client health
+    ```
+    **Expected Output:**
+    ```bash
+    healthy
     ```
 
-=== "cURL"
+## More Options
+
+To see all the available commands and options, head over to the [Usage](usage.md) documentation.
+
+Consult [API Reference](reference/infernet_client/client.md) for detailed information on the available methods.
