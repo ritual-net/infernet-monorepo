@@ -97,7 +97,7 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
             raise ValueError(f"Invalid model source {model_source}")
 
 
-def load_model(
+def download_model(
     model_source: ModelSource,
     load_args: LoadArgs,
 ) -> str:
