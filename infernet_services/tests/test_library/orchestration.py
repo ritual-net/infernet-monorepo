@@ -1,3 +1,4 @@
+import json
 import logging
 import shlex
 import subprocess
@@ -66,6 +67,19 @@ async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:
     return await _wait()
 
 
+def log_debug_deploy_cmd(
+    cmd: str,
+    env_vars: ServiceEnvVars,
+    deploy_env_vars: Optional[ServiceEnvVars] = None,
+):
+    if env_vars:
+        cmd += f" create_config=true env='{json.dumps(env_vars)}'"
+    if deploy_env_vars:
+        for k, v in deploy_env_vars.items():
+            cmd += f" {k}={v}"
+    log.info(f"DEBUG: deploy command:\n{cmd}\n")
+
+
 def deploy_node(
     service: str,
     env_vars: ServiceEnvVars,
@@ -93,16 +107,18 @@ def deploy_node(
     )
     if developer_mode:
         """
-        In developer mode, we stop the node, build the node, deploy the node & start the
-        node. This enables faster iteration for developers.
+        In developer mode, we stop the node, build the service, deploy the node & start 
+        the node. This enables faster iteration for developers.
         """
         cmd = f"make stop-node build-service deploy-node service={service}"
     else:
         cmd = f"make deploy-node service={service}"
+    log_debug_deploy_cmd(cmd, env_vars, deploy_env_vars)
     if deploy_env_vars:
         for k, v in deploy_env_vars.items():
             cmd += f" {k}={v}"
     log.info(f"Running command: {cmd}")
+
     result = subprocess.run([*shlex.split(cmd)])
     if result.returncode != 0:
         msg = f"Error deploying the node: {result}"

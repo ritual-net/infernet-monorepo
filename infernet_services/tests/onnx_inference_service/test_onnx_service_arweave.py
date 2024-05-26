@@ -29,6 +29,9 @@ def arweave_setup() -> Generator[None, None, None]:
             ),
         },
         service_wait_timeout=30,
+        # skip_deploying=True,
+        # skip_contract=True,
+        skip_teardown=True,
     )
 
 

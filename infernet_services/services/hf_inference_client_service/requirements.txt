@@ -1,6 +1,6 @@
 quart==0.19.4
 pydantic==2.5.3
 huggingface-hub==0.17.3
-infernet_ml==1.0.0.21
+infernet_ml==1.0.0.23
 click==8.1.7
 eth-abi==5.0.1

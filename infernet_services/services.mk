@@ -10,11 +10,15 @@ run:
 
 filename ?= "GenericCallbackConsumer.sol"
 contract ?= "GenericCallbackConsumer"
+coordinator ?= "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
 service ?= hf_inference_client_service
 
 deploy-contract:
-	$(MAKE) deploy-contract -C $(toplevel_dir)/consumer-contracts filename=$(filename) contract=$(contract)
+	$(MAKE) deploy-contract -C $(toplevel_dir)/consumer-contracts \
+		filename=$(filename) \
+		coordinator=$(coordinator) \
+		contract=$(contract)
 
 save-image:
 	docker save ritualnetwork/$(service):latest -o $(service).tar
@@ -26,6 +30,11 @@ deploy-node:
 	jq '.containers[0].env = $(shell echo $(env))' \
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
+
+swap-service:
+	docker kill $(service) infernet-node || true
+	docker rm $(service) infernet-node || true
+	$(MAKE) deploy-node
 
 stop-node:
 	@docker compose -f $(deploy_dir)/docker-compose.yaml kill || true

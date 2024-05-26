@@ -5,7 +5,7 @@ from enum import IntEnum
 import pytest
 from test_library.constants import ANVIL_NODE, NODE_LOG_CMD
 from test_library.log_collector import LogCollector
-from test_library.web3 import get_consumer_contract
+from test_library.web3_utils import get_consumer_contract
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 SERVICE_NAME = "echo"

@@ -32,3 +32,7 @@ DEFAULT_CONTRACT: str = "GenericCallbackConsumer"
 MAX_GAS_PRICE = int(20e9)
 MAX_GAS_LIMIT = 1_000_000
 NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"
+
+skip_contract = False
+skip_teardown = False
+skip_deploying = False

@@ -13,7 +13,7 @@ from test_library.test_config import (
     default_network_config,
     global_config,
 )
-from test_library.web3 import deploy_smart_contract
+from test_library.web3_utils import deploy_smart_contract
 
 FixtureType = Callable[[], Generator[None, None, None]]
 

@@ -8,7 +8,7 @@ from infernet_ml.utils.codec.vector import (
 )
 from test_library.constants import ANVIL_NODE
 from test_library.web2_utils import get_job, request_job
-from test_library.web3 import (
+from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )

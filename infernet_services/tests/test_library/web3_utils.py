@@ -5,9 +5,20 @@ import subprocess
 from typing import Any, Callable, Dict, List, cast
 from uuid import uuid4
 
+import torch
+from eth_abi import encode, decode
+
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import HexAddress
 from reretry import retry  # type: ignore
+
+from infernet_ml.utils.codec.vector import (
+    DataType,
+    encode_vector,
+    TORCH_VALUE_LOOKUP,
+    decode_vector,
+)
+from infernet_ml.utils.model_loader import ModelSource
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
     ANVIL_NODE,
@@ -213,3 +224,40 @@ async def request_web3_compute(service_id: str, input: bytes) -> bytes:
     log.info(f"awaiting transaction {tx.hex()}")
     await (await get_w3()).eth.wait_for_transaction_receipt(tx)
     return cast(bytes, gen_id)
+
+
+async def assert_web3_inference_with_vector_output(
+    service_name: str,
+    dtype: DataType,
+    values: Any,
+    shape: tuple[int, ...],
+    model_source: ModelSource = ModelSource.ARWEAVE,
+    repo_id: str = "",
+    filename: str = "",
+    version: str = "",
+) -> None:
+    task_id = await request_web3_compute(
+        service_name,
+        encode(
+            ["uint8", "string", "string", "string", "bytes"],
+            [
+                model_source,
+                repo_id,
+                filename,
+                version,
+                encode_vector(
+                    dtype, shape, torch.tensor(values, dtype=TORCH_VALUE_LOOKUP[dtype])
+                ),
+            ],
+        ),
+    )
+
+    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
+        assert output != b""
+        raw, processed = decode(["bytes", "bytes"], output)
+        dtype, shape, values = decode_vector(raw)
+        assert dtype == DataType.double
+        assert shape == (1,)
+        assert abs(values[0] - 4.151943055154582) < 1e-6
+
+    await assert_generic_callback_consumer_output(task_id, _assertions)

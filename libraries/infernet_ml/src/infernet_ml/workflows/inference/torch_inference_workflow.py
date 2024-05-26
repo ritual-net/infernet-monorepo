@@ -95,7 +95,7 @@ def load_torch_model(path: str, use_jit: bool = False) -> torch.nn.Module:
     Returns:
         torch.nn.Module: Loaded model
     """
-    logger.info(f"Loading model from path & starting session: {path}")
+    logger.info(f"Loading model from path: {path}")
 
     model = torch.jit.load(path) if use_jit else torch.load(path)  # type: ignore
 

@@ -3,7 +3,7 @@ from typing import Generator
 import pytest
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.test_config import global_config
-from test_library.web3 import deploy_smart_contract, get_account
+from test_library.web3_utils import deploy_smart_contract, get_account
 
 
 def _deploy_smart_contract(contract_name: str) -> None:

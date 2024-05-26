@@ -9,7 +9,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from reretry import retry  # type: ignore
 from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
 from test_library.log_collector import LogCollector
-from test_library.web3 import get_consumer_contract, get_w3
+from test_library.web3_utils import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 

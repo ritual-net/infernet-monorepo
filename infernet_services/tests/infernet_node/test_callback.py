@@ -6,7 +6,7 @@ from eth_abi import decode, encode  # type: ignore
 from infernet_node.test_subscriptions import SERVICE_NAME
 from test_library.constants import NODE_LOG_CMD
 from test_library.log_collector import LogCollector
-from test_library.web3 import (
+from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )
