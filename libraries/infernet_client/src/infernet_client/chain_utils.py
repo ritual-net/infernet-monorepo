@@ -3,7 +3,6 @@ from typing import Any
 from eth_account.messages import SignableMessage, encode_typed_data
 from eth_typing import ChecksumAddress
 from web3 import AsyncHTTPProvider, AsyncWeb3
-from web3.types import Nonce
 
 
 class Subscription:
@@ -181,17 +180,6 @@ class RPC:
             ChecksumAddress: checksum-validated Ethereum address
         """
         return self._web3.to_checksum_address(address)
-
-    async def get_nonce(self, address: ChecksumAddress) -> Nonce:
-        """Collects nonce for an address
-
-        Args:
-            address (ChecksumAddress): address to collect tx count
-
-        Returns:
-            Nonce: transaction count (nonce)
-        """
-        return await self._web3.eth.get_transaction_count(address)
 
     async def get_chain_id(self) -> int:
         """Collects connected RPC's chain ID
