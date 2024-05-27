@@ -8,6 +8,7 @@ from infernet_ml.utils.codec.vector import (
     decode_vector,
     encode_vector,
 )
+from onnx_inference_service.conftest import ONNX_ARWEAVE_PRELOADED
 from test_library.constants import ANVIL_NODE
 from test_library.web2_utils import get_job, request_job
 from test_library.web3_utils import (
@@ -16,9 +17,6 @@ from test_library.web3_utils import (
 )
 from torch import Tensor
 from web3 import AsyncHTTPProvider, AsyncWeb3
-
-SERVICE_NAME = "onnx_inference_service"
-
 
 w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 
@@ -42,7 +40,7 @@ iris_input_vector_params: Any = {
 
 async def assert_web2_inference() -> None:
     task = await request_job(
-        SERVICE_NAME,
+        ONNX_ARWEAVE_PRELOADED,
         {
             "input": {
                 "values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
@@ -67,7 +65,7 @@ async def assert_web3_inference() -> None:
     shape = (1, 4)
 
     task_id = await request_web3_compute(
-        SERVICE_NAME,
+        ONNX_ARWEAVE_PRELOADED,
         encode_vector(
             dtype, shape, torch.tensor(values, dtype=TORCH_VALUE_LOOKUP[dtype])
         ),

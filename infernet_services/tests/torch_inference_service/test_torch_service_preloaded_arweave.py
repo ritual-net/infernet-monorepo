@@ -1,15 +1,8 @@
-import json
 import logging
-import os
-from typing import Generator
 
 import pytest
-from dotenv import load_dotenv
 from eth_abi.abi import encode
 from infernet_ml.utils.codec.vector import encode_vector
-from infernet_ml.utils.model_loader import ModelSource
-from test_library.constants import skip_contract, skip_deploying, skip_teardown
-from test_library.infernet_fixture import FixtureType, handle_lifecycle
 from test_library.web2_utils import get_job, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -17,41 +10,18 @@ from test_library.web3_utils import (
     request_web3_compute,
 )
 from torch_inference_service.common import (
-    SERVICE_NAME,
     california_housing_vector_params,
     california_housing_web2_assertions,
 )
-
-load_dotenv()
-
-
-@pytest.fixture(scope="module", autouse=True)
-def arweave_setup() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
-        {
-            "MODEL_SOURCE": ModelSource.ARWEAVE.value,
-            "LOAD_ARGS": json.dumps(
-                {
-                    "repo_id": f"{os.environ['MODEL_OWNER']}/california-housing",
-                    "filename": "california_housing.torch",
-                }
-            ),
-        },
-        service_wait_timeout=30,
-        skip_deploying=skip_deploying,
-        skip_contract=skip_contract,
-        skip_teardown=skip_teardown,
-    )
-
+from torch_inference_service.conftest import TORCH_ARWEAVE_PRELOADED
 
 log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_web2_inference_from_arweave(arweave_setup: FixtureType) -> None:
+async def test_web2_inference_from_arweave() -> None:
     task = await request_job(
-        SERVICE_NAME,
+        TORCH_ARWEAVE_PRELOADED,
         {
             "model_source": None,
             "load_args": None,
@@ -68,9 +38,9 @@ async def test_web2_inference_from_arweave(arweave_setup: FixtureType) -> None:
 
 
 @pytest.mark.asyncio
-async def test_web3_inference_from_arweave(arweave_setup: FixtureType) -> None:
+async def test_web3_inference_from_arweave() -> None:
     task_id = await request_web3_compute(
-        SERVICE_NAME,
+        TORCH_ARWEAVE_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
             [

@@ -1,8 +1,9 @@
 import json
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel
 from test_library.constants import (
     DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_INFERNET_RPC_URL,
@@ -27,19 +28,7 @@ base_config = {
     "docker": {"username": "your-username", "password": ""},
     "redis": {"host": "redis", "port": 6379},
     "forward_stats": True,
-    "containers": [
-        {
-            "id": "onnx_inference_service",
-            "image": "ritualnetwork/onnx_inference_service:latest",
-            "external": True,
-            "port": "3000",
-            "allowed_delegate_addresses": [],
-            "allowed_addresses": [],
-            "allowed_ips": [],
-            "command": "--bind=0.0.0.0:3000 --workers=2",
-            "env": {},
-        }
-    ],
+    "containers": [],
 }
 
 
@@ -48,19 +37,47 @@ ServiceEnvVars = Dict[str, Any]
 log = logging.getLogger(__name__)
 
 
+class ServiceConfig(BaseModel):
+    """
+    A Pydantic model for the service configuration.
+
+    Args:
+        name: The name of the service
+        image_id: The image ID of the service
+        env_vars: A dictionary of environment variables
+        port: The port on which the service will run
+    """
+
+    name: str
+    image_id: str
+    env_vars: ServiceEnvVars = {}
+    port: int
+
+    @classmethod
+    def build_service(
+        cls,
+        name: str,
+        image_id: str = "",
+        port: int = 3000,
+        env_vars: Optional[ServiceEnvVars] = None,
+    ) -> "ServiceConfig":
+        return cls(
+            name=name,
+            image_id=image_id or f"ritualnetwork/{name}:latest",
+            env_vars=env_vars if env_vars else {},
+            port=port,
+        )
+
+
 def create_config_file(
-    service_name: str,
-    image_id: str,
-    env_vars: ServiceEnvVars = {},
+    services: List[ServiceConfig],
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> None:
-    log.info(f"Creating config file for service {service_name}")
+    log.info(f"Creating config file for services {services}")
     cfg = get_config(
-        service_name,
-        image_id,
-        env_vars=env_vars,
+        services,
         private_key=private_key,
         coordinator_address=coordinator_address,
         rpc_url=rpc_url,
@@ -69,10 +86,28 @@ def create_config_file(
         f.write(json.dumps(cfg, indent=4))
 
 
+def get_service_port(service_name: str) -> int:
+    """
+    Get the port for the service with the given name.
+    Reads it from the default `config.json` file. Use this function after generating the
+    config file.
+
+    Args:
+        service_name: The name of the service
+
+    Returns:
+        The port number
+    """
+    with open(config_path(), "r") as f:
+        cfg = json.load(f)
+    for container in cfg["containers"]:
+        if container["id"] == service_name:
+            return int(container["port"])
+    raise ValueError(f"Service {service_name} not found in config file")
+
+
 def get_config(
-    service_name: str,
-    image_id: str,
-    env_vars: ServiceEnvVars = {},
+    services: List[ServiceConfig],
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
@@ -81,9 +116,7 @@ def get_config(
     Create an infernet config.json dictionary with the given parameters.
 
     Args:
-        service_name: The name of the service
-        image_id: The image ID of the service
-        env_vars: A dictionary of environment variables
+        services: A list of ServiceConfig objects.
         private_key: The private key of the wallet
         coordinator_address: The coordinator address
         rpc_url: The RPC URL of the chain
@@ -93,9 +126,20 @@ def get_config(
     """
 
     cfg: Dict[str, Any] = base_config.copy()
-    cfg["containers"][0]["id"] = service_name
-    cfg["containers"][0]["image"] = image_id
-    cfg["containers"][0]["env"] = env_vars
+    for service in services:
+        cfg["containers"].append(
+            {
+                "id": service.name,
+                "image": service.image_id,
+                "env": service.env_vars,
+                "port": service.port,
+                "allowed_delegate_addresses": [],
+                "allowed_addresses": [],
+                "allowed_ips": [],
+                "command": "--bind=0.0.0.0:3000 --workers=2",
+                "external": True,
+            }
+        )
     cfg["chain"]["wallet"]["private_key"] = private_key
     cfg["chain"]["coordinator_address"] = coordinator_address
     cfg["chain"]["rpc_url"] = rpc_url

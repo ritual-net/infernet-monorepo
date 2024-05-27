@@ -46,3 +46,7 @@ def arweave_model_id(model_id: str) -> str:
 skip_deploying = False
 skip_contract = False
 skip_teardown = False
+
+# skip_deploying = True
+# skip_contract = True
+skip_teardown = True

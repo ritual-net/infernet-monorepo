@@ -1,6 +1,7 @@
 from typing import Generator
 
 import pytest
+from test_library.config_creator import ServiceConfig
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.test_config import global_config
 from test_library.web3_utils import deploy_smart_contract, get_account
@@ -31,9 +32,12 @@ SERVICE_NAME = "echo"
 @pytest.fixture(scope="session", autouse=True)
 def delegate_subscription_consumer() -> Generator[None, None, None]:
     yield from handle_lifecycle(
-        SERVICE_NAME,
-        {},
-        deploy_env_vars={"service_dir": "infernet_services/test_services"},
+        [
+            ServiceConfig.build_service(
+                SERVICE_NAME,
+                env_vars={"service_dir": "infernet_services/test_services"},
+            )
+        ],
         post_node_deploy_hook=deploy_contracts,
         skip_contract=True,
     )

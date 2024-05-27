@@ -1,9 +1,8 @@
 import logging
-import os
-from typing import Any, Generator
+from typing import Any
 
 import pytest
-from dotenv import load_dotenv
+from css_inference_service.conftest import SERVICE_NAME
 from eth_abi.abi import decode
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
@@ -11,29 +10,13 @@ from infernet_ml.utils.codec.css import (
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from test_library.infernet_fixture import handle_lifecycle
 from test_library.web2_utils import get_job, request_job, request_streaming_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )
 
-SERVICE_NAME = "css_inference_service"
 log = logging.getLogger(__name__)
-
-load_dotenv()
-
-
-@pytest.fixture(scope="module", autouse=True)
-def node_lifecycle() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
-        {
-            "PERPLEXITYAI_API_KEY": os.environ["PERPLEXITYAI_API_KEY"],
-            "GOOSEAI_API_KEY": os.environ["GOOSEAI_API_KEY"],
-            "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
-        },
-    )
 
 
 @pytest.mark.parametrize(

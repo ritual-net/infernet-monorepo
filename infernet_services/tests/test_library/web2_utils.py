@@ -6,6 +6,7 @@ from infernet_ml.utils.codec.vector import DataType
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
+from test_library.config_creator import get_service_port
 from test_library.constants import DEFAULT_NODE_URL
 from test_library.infernet_fixture import log
 
@@ -54,6 +55,10 @@ async def get_job(job_id: str, timeout: int = 10) -> JobResult:
 
     _r: JobResult = await _get()
     return _r
+
+
+def get_service_url(service_name: str) -> str:
+    return f"http://127.0.0.1:{get_service_port(service_name)}"
 
 
 async def request_job(

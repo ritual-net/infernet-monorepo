@@ -26,6 +26,11 @@ pre-commit-library:
 		--files $$(git ls-files | grep -vE '^infernet_services/' | grep 'libraries/$(library)')
 
 pre-commit-services:
+	@if [ -n "$(restart_env)" ]; then \
+		uv venv -p 3.11 && \
+		source .venv/bin/activate && \
+		uv pip install -r infernet_services/requirements-precommit.lock; \
+	fi
 	$(MAKE) pre-commit -C infernet_services
 	pre-commit run ruff  --files $$(git ls-files infernet_services)
 	pre-commit run black --files $$(git ls-files infernet_services)

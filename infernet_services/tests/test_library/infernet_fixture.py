@@ -3,11 +3,15 @@ import logging
 import os
 import shlex
 import subprocess
-from typing import Callable, Generator, Optional
+from typing import Callable, Generator, List, Optional
 
-from test_library.config_creator import ServiceEnvVars, create_config_file
+from test_library.config_creator import (
+    ServiceConfig,
+    ServiceEnvVars,
+    create_config_file,
+)
 from test_library.constants import DEFAULT_CONTRACT, DEFAULT_CONTRACT_FILENAME
-from test_library.orchestration import await_node, await_service, deploy_node
+from test_library.orchestration import await_node, await_services, deploy_node
 from test_library.test_config import (
     NetworkConfig,
     default_network_config,
@@ -30,8 +34,15 @@ def setup_logging() -> None:
     )
 
 
-def stop_node(service: str) -> None:
-    subprocess.run(shlex.split(f"make stop-node service={service}"))
+def stop_services(services: List[ServiceConfig]) -> None:
+    names = " ".join([service.name for service in services])
+    subprocess.run(shlex.split(f"docker kill {names}"))
+    subprocess.run(shlex.split(f"docker rm {names}"))
+
+
+def stop_node(services: List[ServiceConfig]) -> None:
+    stop_services(services)
+    subprocess.run(shlex.split("make stop-node"))
 
 
 def dump_logs(docker_id: str) -> None:
@@ -39,9 +50,10 @@ def dump_logs(docker_id: str) -> None:
     log.info(f"{docker_id} logs\n{n}")
 
 
-def dump_all_logs(service: str) -> None:
+def dump_all_logs(services: List[ServiceConfig]) -> None:
     log.info("dumping all logs below")
-    dump_logs(service)
+    for service in services:
+        dump_logs(service.name)
     dump_logs("anvil-node")
     dump_logs("infernet-node")
 
@@ -61,14 +73,12 @@ InfernetFixtureType = Callable[[], Generator[None, None, None]]
 
 
 def handle_lifecycle(
-    service: str,
-    service_env_vars: ServiceEnvVars,
+    services: List[ServiceConfig],
     skip_contract: bool = False,
     filename: str = DEFAULT_CONTRACT_FILENAME,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     post_node_deploy_hook: Optional[Callable[[], None]] = None,
-    developer_mode: bool = False,
     skip_deploying: bool = False,
     skip_teardown: bool = False,
     node_wait_timeout: int = 10,
@@ -79,27 +89,21 @@ def handle_lifecycle(
         populate_global_config(network_config)
         log.info(f"global config: {global_config}")
         create_config_file(
-            service,
-            f"ritualnetwork/{service}:latest",
-            service_env_vars,
+            services,
             global_config.private_key,
             global_config.coordinator_address,
             global_config.infernet_rpc_url,
         )
         if not skip_deploying:
             deploy_node(
-                service,
                 deploy_env_vars,
-                developer_mode,
             )
         if post_node_deploy_hook:
             post_node_deploy_hook()
         log.info(f"waiting up to {node_wait_timeout}s for node to be ready")
         asyncio.run(await_node(timeout=node_wait_timeout))
         log.info("✅ node is ready")
-        log.info(f"waiting up to {service_wait_timeout}s for {service} to be ready")
-        asyncio.run(await_service(timeout=service_wait_timeout))
-        log.info(f"✅ {service} is ready")
+        asyncio.run(await_services(services, service_wait_timeout))
         if not skip_contract:
             deploy_smart_contract(
                 filename=filename,
@@ -111,11 +115,11 @@ def handle_lifecycle(
         yield
     except Exception as e:
         log.error(f"Error in lifecycle: {e}")
-        dump_all_logs(service)
+        dump_all_logs(services)
         raise e
     finally:
-        dump_all_logs(service)
+        dump_all_logs(services)
         if skip_teardown:
             log.info("skipping tear down")
             return
-        stop_node(service)
+        stop_node(services)

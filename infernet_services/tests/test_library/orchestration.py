@@ -1,15 +1,32 @@
 import logging
 import shlex
 import subprocess
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
 from reretry import retry  # type: ignore
-from test_library.config_creator import ServiceEnvVars
+from test_library.config_creator import ServiceConfig, ServiceEnvVars, get_service_port
 from test_library.constants import DEFAULT_NODE_URL, DEFAULT_TIMEOUT
 
 log = logging.getLogger(__name__)
+
+
+async def await_services(
+    services: List[ServiceConfig], service_wait_timeout: int = 10
+) -> None:
+    """
+    Wait for the services to be up and running.
+
+    Args:
+        services (List[ServiceConfig]): The services to wait for.
+    """
+    for service in services:
+        log.info(
+            f"waiting up to {service_wait_timeout}s for {service.name} to be ready"
+        )
+        await await_service(get_service_port(service.name), service_wait_timeout)
+        log.info(f"✅ {service.name} is ready")
 
 
 async def await_service(
@@ -66,28 +83,16 @@ async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:
 
 
 def deploy_node(
-    service: str,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
-    developer_mode: bool = False,
 ) -> None:
     """
     Deploy an infernet node, along with the service.
 
     Args:
-        service (str): The name of the service to deploy.
         deploy_env_vars (Optional[ServiceEnvVars]): The environment variables for the
         deployment command.
-        developer_mode (bool): Whether to deploy the node in developer mode.
-
     """
-    if developer_mode:
-        """
-        In developer mode, we stop the node, build the service, deploy the node & start
-        the node. This enables faster iteration for developers.
-        """
-        cmd = f"make stop-node build-service deploy-node service={service}"
-    else:
-        cmd = "make deploy-node"
+    cmd = "make deploy-node"
     if deploy_env_vars:
         for k, v in deploy_env_vars.items():
             cmd += f" {k}={v}"
