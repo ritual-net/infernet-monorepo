@@ -3,29 +3,26 @@ from typing import Generator
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import encode
-
 from infernet_ml.utils.codec.vector import encode_vector
 from infernet_ml.utils.model_loader import ModelSource
 from onnx_inference_service.common import (
     SERVICE_NAME,
-    iris_input_vector_params,
     iris_classification_web2_assertions_fn,
+    iris_input_vector_params,
 )
 from test_library.constants import (
-    skip_deploying,
-    skip_contract,
-    skip_teardown,
     arweave_model_id,
     hf_model_id,
+    skip_contract,
+    skip_deploying,
+    skip_teardown,
 )
 from test_library.infernet_fixture import handle_lifecycle
-from test_library.web2_utils import (
-    request_job,
-    get_job,
-)
+from test_library.web2_utils import get_job, request_job
 from test_library.web3_utils import (
+    assert_generic_callback_consumer_output,
+    iris_web3_assertions,
     request_web3_compute,
-    assert_generic_callback_consumer_output, iris_web3_assertions,
 )
 
 load_dotenv()
