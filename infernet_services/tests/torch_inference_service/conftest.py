@@ -3,15 +3,14 @@ from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
-
 from infernet_ml.utils.model_loader import ModelSource
 from test_library.config_creator import ServiceConfig
 from test_library.constants import (
-    skip_deploying,
-    skip_contract,
-    skip_teardown,
-    hf_model_id,
     arweave_model_id,
+    hf_model_id,
+    skip_contract,
+    skip_deploying,
+    skip_teardown,
 )
 from test_library.infernet_fixture import handle_lifecycle
 

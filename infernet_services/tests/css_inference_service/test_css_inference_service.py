@@ -30,14 +30,14 @@ log = logging.getLogger(__name__)
         ),
         (
             CSSProvider.PERPLEXITYAI,
-            "sonar-small-online",
+            "mistral-7b-instruct",
             CSSEndpoint.completions,
             [ConvoMessage(role="user", content="does 2+2=4? return yes or no")],
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_completion(
+async def test_completion_web3(
     provider: CSSProvider,
     model: str,
     endpoint: CSSEndpoint,
@@ -73,7 +73,7 @@ parameters: Any = [
         ),
         (
             "PERPLEXITYAI",
-            "sonar-small-online",
+            "mistral-7b-instruct",
             {
                 "endpoint": "completions",
                 "messages": [{"role": "user", "content": apple_prompt}],
@@ -85,7 +85,7 @@ parameters: Any = [
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-async def test_css_inference_service(
+async def test_css_inference_service_web2(
     provider: str,
     model: str,
     params: dict[str, Any],

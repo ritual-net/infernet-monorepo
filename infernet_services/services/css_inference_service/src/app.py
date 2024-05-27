@@ -14,6 +14,7 @@ from infernet_ml.utils.codec.css import (
     decode_css_completion_request,
     decode_css_request,
 )
+from infernet_ml.utils.common_types import RetryParams
 from infernet_ml.utils.css_mux import ApiKeys, CSSCompletionParams, CSSRequest, Provider
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
@@ -24,7 +25,6 @@ from quart import request as req
 from quart.utils import run_sync
 from werkzeug.exceptions import HTTPException
 
-SERVICE_PREFIX = "CSS_INF"
 load_dotenv()
 
 
@@ -40,18 +40,6 @@ def create_app() -> Quart:
     """
 
     app: Quart = Quart(__name__)
-    app.config.from_prefixed_env(prefix=SERVICE_PREFIX)
-
-    LLM_WORKFLOW_CLASS = CSSInferenceWorkflow
-    LLM_WORKFLOW_POSITIONAL_ARGS = app.config.get("WORKFLOW_POSITIONAL_ARGS", [])
-    LLM_WORKFLOW_KW_ARGS = app.config.get("WORKFLOW_KW_ARGS", {})
-
-    logging.info(
-        "%s %s %s",
-        LLM_WORKFLOW_CLASS,
-        LLM_WORKFLOW_POSITIONAL_ARGS,
-        LLM_WORKFLOW_KW_ARGS,
-    )
 
     api_keys: ApiKeys = {
         Provider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
@@ -59,13 +47,14 @@ def create_app() -> Quart:
         Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
     }
 
+    _retry_params = os.getenv("RETRY_PARAMS")
+    retry_params = RetryParams(**json.loads(_retry_params)) if _retry_params else None
+
     # create workflow instance from class, using specified arguments
-    LLM_WORKFLOW = CSSInferenceWorkflow(
-        api_keys, *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
-    )
+    workflow = CSSInferenceWorkflow(api_keys, retry_params=retry_params)
 
     # setup workflow
-    LLM_WORKFLOW.setup()
+    workflow.setup()
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -100,7 +89,7 @@ def create_app() -> Quart:
                         css_request = CSSRequest(**cast(dict[str, Any], input_data))
 
                         # send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
+                        result = await run_sync(workflow.inference)(
                             input_data=css_request
                         )
 
@@ -118,7 +107,7 @@ def create_app() -> Quart:
                         css_request = CSSRequest(**cast(dict[str, Any], input_data))
 
                         async def stream_generator() -> AsyncGenerator[str, None]:
-                            for r in LLM_WORKFLOW.stream(input_data=css_request):
+                            for r in workflow.stream(input_data=css_request):
                                 yield r
 
                         return stream_generator()
@@ -145,7 +134,7 @@ def create_app() -> Quart:
                                     params=CSSCompletionParams(messages=messages),
                                 )
 
-                                result = await run_sync(LLM_WORKFLOW.inference)(
+                                result = await run_sync(workflow.inference)(
                                     input_data=css_request
                                 )
 

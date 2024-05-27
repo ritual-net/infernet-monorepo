@@ -2,13 +2,13 @@ import logging
 
 import pytest
 from eth_abi.abi import encode
-
-from .conftest import SERVICE_NAME
-from test_library.web2_utils import request_job, get_job
+from test_library.web2_utils import get_job, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )
+
+from .conftest import SERVICE_NAME
 
 log = logging.getLogger(__name__)
 

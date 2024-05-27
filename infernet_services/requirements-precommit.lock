@@ -43,7 +43,7 @@ hypercorn==0.16.0
 hyperframe==6.0.1
 identify==2.5.36
 idna==3.7
-infernet-ml==1.0.0.31
+infernet-ml==1.0.0.32
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0

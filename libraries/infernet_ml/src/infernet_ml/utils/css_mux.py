@@ -87,7 +87,7 @@ class CSSRequest(BaseModel):
     stream: bool = False
 
 
-def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
+def open_ai_request_generator(req: CSSRequest) -> tuple[str, dict[str, Any]]:
     """Returns base url & json input for OpenAI API.
 
     Args:
@@ -117,7 +117,7 @@ def open_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
             raise InfernetMLException(f"Unsupported request {req}")
 
 
-def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
+def perplexity_ai_request_generator(req: CSSRequest) -> tuple[str, dict[str, Any]]:
     """Returns base url & json input for Perplexity AI API.
 
     Args:
@@ -141,7 +141,7 @@ def ppl_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
             raise InfernetMLException(f"Unsupported request {req}")
 
 
-def goose_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
+def goose_ai_request_generator(req: CSSRequest) -> tuple[str, dict[str, Any]]:
     """
     Returns base url & json input for Goose AI API.
 
@@ -168,15 +168,21 @@ def goose_ai_helper(req: CSSRequest) -> tuple[str, dict[str, Any]]:
             raise InfernetMLException(f"Unsupported request {req}")
 
 
+def extract_completions(result: Dict[str, Any]):
+    return result["choices"][0]["message"]["content"]
+
+
+def extract_completions_gooseai(result: Dict[str, Any]):
+    return result["choices"][0]["text"]
+
+
 PROVIDERS: dict[Provider, Any] = {
     Provider.OPENAI: {
-        "input_func": open_ai_helper,
+        "input_func": open_ai_request_generator,
         "endpoints": {
             "completions": {
                 "real_endpoint": "chat/completions",
-                "post_process": lambda result: result["choices"][0]["message"][
-                    "content"
-                ],
+                "post_process": extract_completions,
             },
             "embeddings": {
                 "real_endpoint": "embeddings",
@@ -185,22 +191,20 @@ PROVIDERS: dict[Provider, Any] = {
         },
     },
     Provider.PERPLEXITYAI: {
-        "input_func": ppl_ai_helper,
+        "input_func": perplexity_ai_request_generator,
         "endpoints": {
             "completions": {
                 "real_endpoint": "chat/completions",
-                "post_process": lambda result: result["choices"][0]["message"][
-                    "content"
-                ],
+                "post_process": extract_completions,
             }
         },
     },
     Provider.GOOSEAI: {
-        "input_func": goose_ai_helper,
+        "input_func": goose_ai_request_generator,
         "endpoints": {
             "completions": {
                 "real_endpoint": "completions",
-                "post_process": lambda result: result["choices"][0]["text"],
+                "post_process": extract_completions_gooseai,
             }
         },
     },
