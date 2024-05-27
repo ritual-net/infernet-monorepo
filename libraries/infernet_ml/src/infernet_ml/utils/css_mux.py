@@ -168,12 +168,12 @@ def goose_ai_request_generator(req: CSSRequest) -> tuple[str, dict[str, Any]]:
             raise InfernetMLException(f"Unsupported request {req}")
 
 
-def extract_completions(result: Dict[str, Any]):
-    return result["choices"][0]["message"]["content"]
+def extract_completions(result: Dict[str, Any]) -> str:
+    return cast(str, result["choices"][0]["message"]["content"])
 
 
-def extract_completions_gooseai(result: Dict[str, Any]):
-    return result["choices"][0]["text"]
+def extract_completions_gooseai(result: Dict[str, Any]) -> str:
+    return cast(str, result["choices"][0]["text"])
 
 
 PROVIDERS: dict[Provider, Any] = {
