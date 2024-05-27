@@ -1,12 +1,11 @@
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Callable, Dict, List, Optional, cast
 
 import aiohttp
 from aiohttp import ServerDisconnectedError
+from infernet_ml.utils.codec.vector import DataType
+from infernet_ml.utils.model_loader import LoadArgs, ModelSource
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
-
-from infernet_ml.utils.codec.vector import DataType
-from infernet_ml.utils.model_loader import ModelSource
 from test_library.constants import DEFAULT_NODE_URL
 from test_library.infernet_fixture import log
 
@@ -102,44 +101,31 @@ class JobFailed(Exception):
     pass
 
 
-async def assert_web2_inference_with_vector_output(
-    service_name: str,
+VectorReqBuilderFn = Callable[
+    [
+        ModelSource,
+        LoadArgs,
+        DataType,
+        Any,
+        tuple[int, ...],
+    ],
+    Dict[str, Any],
+]
+
+
+def torch_req_builder_fn(
+    model_source: ModelSource,
+    load_args: LoadArgs,
     dtype: DataType,
     values: Any,
     shape: tuple[int, ...],
-    model_source: ModelSource = ModelSource.ARWEAVE,
-    repo_id: Optional[str] = None,
-    filename: Optional[str] = None,
-    version: Optional[str] = None,
-) -> None:
-    model_source, load_args = (
-        (
-            model_source,
-            {
-                "repo_id": repo_id,
-                "filename": filename,
-                "version": version,
-            },
-        )
-        if repo_id and filename
-        else (None, None)
-    )
-
-    task = await request_job(
-        service_name,
-        {
-            "model_source": model_source,
-            "load_args": load_args,
-            "input": {
-                "values": values,
-                "shape": shape,
-                "dtype": dtype.name,
-            },
+) -> Dict[str, Any]:
+    return {
+        "model_source": model_source,
+        "load_args": load_args,
+        "input": {
+            "values": values,
+            "shape": shape,
+            "dtype": dtype.name,
         },
-    )
-    job_result = await get_job(task.id)
-    r = job_result.result.output
-    assert r["dtype"] == "double"
-    assert r["shape"] == [1]
-    # assert values are close
-    assert abs(r["values"][0] - 4.151943055154582) < 1e-6
+    }

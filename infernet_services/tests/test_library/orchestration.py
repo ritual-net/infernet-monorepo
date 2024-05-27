@@ -1,4 +1,3 @@
-import json
 import logging
 import shlex
 import subprocess
@@ -7,9 +6,8 @@ from typing import Any, Optional
 import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
 from reretry import retry  # type: ignore
-from test_library.config_creator import ServiceEnvVars, create_config_file
+from test_library.config_creator import ServiceEnvVars
 from test_library.constants import DEFAULT_NODE_URL, DEFAULT_TIMEOUT
-from test_library.test_config import global_config
 
 log = logging.getLogger(__name__)
 
@@ -67,22 +65,8 @@ async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:
     return await _wait()
 
 
-def log_debug_deploy_cmd(
-    cmd: str,
-    env_vars: ServiceEnvVars,
-    deploy_env_vars: Optional[ServiceEnvVars] = None,
-):
-    if env_vars:
-        cmd += f" create_config=true env='{json.dumps(env_vars)}'"
-    if deploy_env_vars:
-        for k, v in deploy_env_vars.items():
-            cmd += f" {k}={v}"
-    log.info(f"DEBUG: deploy command:\n{cmd}\n")
-
-
 def deploy_node(
     service: str,
-    env_vars: ServiceEnvVars,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     developer_mode: bool = False,
 ) -> None:
@@ -91,29 +75,19 @@ def deploy_node(
 
     Args:
         service (str): The name of the service to deploy.
-        env_vars (ServiceEnvVars): The environment variables for the service.
         deploy_env_vars (Optional[ServiceEnvVars]): The environment variables for the
         deployment command.
         developer_mode (bool): Whether to deploy the node in developer mode.
 
     """
-    create_config_file(
-        service,
-        f"ritualnetwork/{service}:latest",
-        env_vars,
-        global_config.private_key,
-        global_config.coordinator_address,
-        global_config.infernet_rpc_url,
-    )
     if developer_mode:
         """
-        In developer mode, we stop the node, build the service, deploy the node & start 
+        In developer mode, we stop the node, build the service, deploy the node & start
         the node. This enables faster iteration for developers.
         """
         cmd = f"make stop-node build-service deploy-node service={service}"
     else:
-        cmd = f"make deploy-node service={service}"
-    log_debug_deploy_cmd(cmd, env_vars, deploy_env_vars)
+        cmd = "make deploy-node"
     if deploy_env_vars:
         for k, v in deploy_env_vars.items():
             cmd += f" {k}={v}"

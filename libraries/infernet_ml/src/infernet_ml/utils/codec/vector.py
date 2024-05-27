@@ -1,7 +1,8 @@
 import struct
 from enum import IntEnum
-from typing import Callable, List, Tuple, Union, cast
+from typing import Any, Callable, List, Tuple, Union, cast
 
+import numpy as np
 import torch
 from eth_abi.abi import decode, encode
 from torch import Tensor
@@ -132,13 +133,17 @@ def _map(
     return [fn(v) for v in values]
 
 
-def encode_vector(dtype: DataType, shape: Tuple[int, ...], values: Tensor) -> bytes:
+def encode_vector(
+    dtype: DataType, shape: Tuple[int, ...], values: Union[Tensor, List[Any]]
+) -> bytes:
     """
-    for all floating point datatypes, we'll multiply all the values by 1e18
-    and convert them to integers. Shape of the tensor will flattened and
-    values will be converted to list of integers.
+    Shape of the tensor will be flattened.
     """
-    _values = values.flatten().tolist()
+    if isinstance(values, Tensor):
+        _values = values.flatten().tolist()
+    else:
+        _values = np.array(values).flatten().tolist()
+
     map_fn_lookup = {
         DataType.float: float_to_u32,
         DataType.double: double_to_u64,

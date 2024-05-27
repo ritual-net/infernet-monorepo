@@ -5,23 +5,23 @@ This module serves as the driver for torch infernet_ml inference service.
 import json
 import logging
 import os
-from eth_abi.abi import decode
 from typing import Any, Optional, Tuple, Union, cast
 
 import numpy as np
+from eth_abi.abi import decode
 from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 from infernet_ml.utils.common_types import TensorInput
 from infernet_ml.utils.model_loader import (
-    HFLoadArgs,
     ArweaveLoadArgs,
+    HFLoadArgs,
+    LoadArgs,
     ModelSource,
     parse_load_args,
-    LoadArgs,
 )
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.inference.torch_inference_workflow import (
-    TorchInferenceWorkflow,
     TorchInferenceInput,
+    TorchInferenceWorkflow,
 )
 from quart import Quart, abort
 from quart import request as req
@@ -80,7 +80,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         None
         if load_args_env is None
         else parse_load_args(
-            default_model_source, json.loads(load_args_env.strip('"').strip("'"))
+            cast(ModelSource, default_model_source),
+            json.loads(load_args_env.strip('"').strip("'")),
         )
     )
 
@@ -111,10 +112,13 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             bytes.fromhex(hex_input),
         )
 
-        if repo_id == "" and filename == "" and version == "":
-            return cast(ModelSource, default_model_source), cast(None, None)
+        if version == "":
+            version = None
+
+        if repo_id == "" and filename == "" and version is None:
+            return cast(ModelSource, default_model_source), None
         else:
-            load_args = None
+            load_args: LoadArgs
             match source:
                 case ModelSource.HUGGINGFACE_HUB:
                     load_args = HFLoadArgs(
@@ -155,7 +159,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
         data: dict[str, Any] = cast(dict[str, Any], input.data)
         hex_input = ""
-        inference_input = None
         match input.source:
             case JobLocation.ONCHAIN:
                 hex_input = cast(str, input.data)

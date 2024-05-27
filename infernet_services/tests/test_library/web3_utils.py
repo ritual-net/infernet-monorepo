@@ -5,20 +5,11 @@ import subprocess
 from typing import Any, Callable, Dict, List, cast
 from uuid import uuid4
 
-import torch
-from eth_abi import encode, decode
-
+from eth_abi.abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_typing import HexAddress
+from eth_typing import ChecksumAddress, HexAddress
+from infernet_ml.utils.codec.vector import DataType, decode_vector
 from reretry import retry  # type: ignore
-
-from infernet_ml.utils.codec.vector import (
-    DataType,
-    encode_vector,
-    TORCH_VALUE_LOOKUP,
-    decode_vector,
-)
-from infernet_ml.utils.model_loader import ModelSource
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
     ANVIL_NODE,
@@ -150,12 +141,12 @@ def get_account() -> HexAddress:
     return cast(HexAddress, account.address)
 
 
-def get_deployed_contract_address(deployment_name: str) -> HexAddress:
+def get_deployed_contract_address(deployment_name: str) -> ChecksumAddress:
     with open(
         f"{infernet_services_dir()}/consumer-contracts/deployments/deployments.json"
     ) as f:
         deployments = json.load(f)
-    return cast(HexAddress, deployments[deployment_name])
+    return cast(ChecksumAddress, deployments[deployment_name])
 
 
 async def get_consumer_contract(
@@ -174,18 +165,22 @@ async def get_consumer_contract(
     Returns:
         AsyncContract: The consumer contract.
     """
-    contract_address = global_config.contract_address or get_deployed_contract_address(
-        consumer_contract
-    )
+    if global_config.contract_address:
+        log.info(
+            f"using global config contract address {global_config.contract_address}"
+        )
+        contract_address = global_config.contract_address
+    else:
+        log.info(f"getting deployed contract address for {consumer_contract}")
+        contract_address = get_deployed_contract_address(consumer_contract)
+
+    log.info(f"querying consumer contract at address {contract_address}")
 
     w3 = await get_w3()
 
-    return cast(
-        AsyncContract,
-        w3.eth.contract(  # type: ignore
-            address=contract_address,
-            abi=get_abi(filename, consumer_contract),
-        ),
+    return w3.eth.contract(
+        address=contract_address,
+        abi=get_abi(filename, consumer_contract),
     )
 
 
@@ -226,38 +221,21 @@ async def request_web3_compute(service_id: str, input: bytes) -> bytes:
     return cast(bytes, gen_id)
 
 
-async def assert_web3_inference_with_vector_output(
-    service_name: str,
-    dtype: DataType,
-    values: Any,
-    shape: tuple[int, ...],
-    model_source: ModelSource = ModelSource.ARWEAVE,
-    repo_id: str = "",
-    filename: str = "",
-    version: str = "",
+def california_housing_web3_assertions(
+    input: bytes, output: bytes, proof: bytes
 ) -> None:
-    task_id = await request_web3_compute(
-        service_name,
-        encode(
-            ["uint8", "string", "string", "string", "bytes"],
-            [
-                model_source,
-                repo_id,
-                filename,
-                version,
-                encode_vector(
-                    dtype, shape, torch.tensor(values, dtype=TORCH_VALUE_LOOKUP[dtype])
-                ),
-            ],
-        ),
-    )
+    assert output != b""
+    raw, processed = decode(["bytes", "bytes"], output)
+    dtype, shape, values = decode_vector(raw)
+    assert dtype == DataType.double
+    assert shape == (1,)
+    assert abs(values[0] - 4.151943055154582) < 1e-6
 
-    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        assert output != b""
-        raw, processed = decode(["bytes", "bytes"], output)
-        dtype, shape, values = decode_vector(raw)
-        assert dtype == DataType.double
-        assert shape == (1,)
-        assert abs(values[0] - 4.151943055154582) < 1e-6
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
+    assert output != b""
+    raw, processed = decode(["bytes", "bytes"], output)
+    dtype, shape, values = decode_vector(raw)
+    assert dtype == DataType.float
+    assert shape == (1, 3)
+    assert values.argmax() == 2

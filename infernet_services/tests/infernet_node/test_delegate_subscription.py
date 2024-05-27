@@ -13,7 +13,10 @@ from infernet_node.test_subscriptions import assert_next_output, set_next_input
 from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
 from test_library.log_collector import LogCollector
 from test_library.test_config import global_config
-from test_library.web3_utils import get_coordinator_contract, get_deployed_contract_address
+from test_library.web3_utils import (
+    get_coordinator_contract,
+    get_deployed_contract_address,
+)
 
 SERVICE_NAME = "echo"
 

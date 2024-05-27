@@ -5,7 +5,7 @@ import shlex
 import subprocess
 from typing import Callable, Generator, Optional
 
-from test_library.config_creator import ServiceEnvVars
+from test_library.config_creator import ServiceEnvVars, create_config_file
 from test_library.constants import DEFAULT_CONTRACT, DEFAULT_CONTRACT_FILENAME
 from test_library.orchestration import await_node, await_service, deploy_node
 from test_library.test_config import (
@@ -78,10 +78,17 @@ def handle_lifecycle(
     try:
         populate_global_config(network_config)
         log.info(f"global config: {global_config}")
+        create_config_file(
+            service,
+            f"ritualnetwork/{service}:latest",
+            service_env_vars,
+            global_config.private_key,
+            global_config.coordinator_address,
+            global_config.infernet_rpc_url,
+        )
         if not skip_deploying:
             deploy_node(
                 service,
-                service_env_vars,
                 deploy_env_vars,
                 developer_mode,
             )

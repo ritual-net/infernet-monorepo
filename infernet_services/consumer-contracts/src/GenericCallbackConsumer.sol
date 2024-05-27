@@ -18,6 +18,8 @@ contract GenericCallbackConsumer is CallbackConsumer {
     {
         bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
         _requestCompute(containerId, abi.encodePacked(inputs, randomness), 20 gwei, 2_000_000, 1);
+        console2.log("generated task id");
+        console2.logBytes32(generatedTaskId);
         return generatedTaskId;
     }
 

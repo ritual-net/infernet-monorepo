@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import Any, Dict
 
@@ -44,6 +45,8 @@ base_config = {
 
 ServiceEnvVars = Dict[str, Any]
 
+log = logging.getLogger(__name__)
+
 
 def create_config_file(
     service_name: str,
@@ -53,6 +56,7 @@ def create_config_file(
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> None:
+    log.info(f"Creating config file for service {service_name}")
     cfg = get_config(
         service_name,
         image_id,

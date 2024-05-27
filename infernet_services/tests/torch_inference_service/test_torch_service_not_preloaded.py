@@ -1,19 +1,29 @@
+import logging
 from typing import Generator
 
-
 import pytest
-import os
 from dotenv import load_dotenv
-
+from eth_abi.abi import encode
+from infernet_ml.utils.codec.vector import encode_vector
 from infernet_ml.utils.model_loader import ModelSource
+from test_library.constants import (
+    arweave_model_id,
+    skip_contract,
+    skip_deploying,
+    skip_teardown,
+)
 from test_library.infernet_fixture import FixtureType, handle_lifecycle
+from test_library.web2_utils import get_job, request_job
+from test_library.web3_utils import (
+    assert_generic_callback_consumer_output,
+    california_housing_web3_assertions,
+    request_web3_compute,
+)
 from torch_inference_service.common import (
     SERVICE_NAME,
-    california_housing_input,
+    california_housing_vector_params,
+    california_housing_web2_assertions,
 )
-from test_library.constants import skip_contract, skip_teardown, skip_deploying
-from test_library.web2_utils import assert_web2_inference_with_vector_output
-from test_library.web3_utils import assert_web3_inference_with_vector_output
 
 load_dotenv()
 
@@ -29,23 +39,56 @@ def hf_hub_setup() -> Generator[None, None, None]:
     )
 
 
+log = logging.getLogger(__name__)
+
+
+model_source, load_args = (
+    ModelSource.ARWEAVE,
+    {
+        "repo_id": arweave_model_id("california-housing"),
+        "filename": "california_housing.torch",
+        "version": None,
+    },
+)
+
+
 @pytest.mark.asyncio
 async def test_basic_web2_inference_from_hf_hub(hf_hub_setup: FixtureType) -> None:
-    await assert_web2_inference_with_vector_output(
+    task = await request_job(
         SERVICE_NAME,
-        **california_housing_input,
-        model_source=ModelSource.ARWEAVE,
-        repo_id=f"{os.environ['MODEL_OWNER']}/california-housing",
-        filename="california_housing.torch",
+        {
+            "model_source": model_source,
+            "load_args": load_args,
+            "input": {
+                **california_housing_vector_params,
+                "dtype": "double",
+            },
+        },
     )
+
+    job_result = await get_job(task.id)
+    log.info(f"job_result: {job_result}")
+    california_housing_web2_assertions(job_result.result.output)
 
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_hf_hub(hf_hub_setup: FixtureType) -> None:
-    await assert_web3_inference_with_vector_output(
+    task_id = await request_web3_compute(
         SERVICE_NAME,
-        model_source=ModelSource.ARWEAVE,
-        repo_id=f"{os.environ['MODEL_OWNER']}/california-housing",
-        filename="california_housing.torch",
-        **california_housing_input,
+        encode(
+            ["uint8", "string", "string", "string", "bytes"],
+            [
+                model_source,
+                load_args["repo_id"],
+                load_args["filename"],
+                "",
+                encode_vector(
+                    **california_housing_vector_params,
+                ),
+            ],
+        ),
+    )
+
+    await assert_generic_callback_consumer_output(
+        task_id, california_housing_web3_assertions
     )
