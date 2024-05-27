@@ -5,6 +5,7 @@ Ritual Arweave is a Python library and CLI tool designed to facilitate the uploa
 ## Key Features
 - Upload and Download Individual Files: Easily manage single files on the Arweave network.
 - Upload and Download Repositories: Handle entire directories containing multiple files, ideal for managing grouped artifacts.
+- Version mapping: Enables versioning for files when uploading/downloading repositories via tags.
 - CLI Support: Use command-line interface for streamlined operations without writing additional code.
 
 ## Main Components
