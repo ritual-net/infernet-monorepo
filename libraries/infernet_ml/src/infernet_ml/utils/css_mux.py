@@ -60,11 +60,15 @@ class CSSRequest(BaseModel):
     """A CSSRequest, meant for querying closed source models.
 
     Attributes:
-        provider: Provider
-        endpoint: str
-        model: str
-        api_keys: ApiKeys
-        params: Union[CSSCompletionParams, CSSEmbeddingParams]
+        provider: Provider Closed source model provider
+        endpoint: str Endpoint to query
+        model: str Id of model to use: e.g. "gpt-3.5-turbo"
+        api_keys: ApiKeys API keys to use, it's a mapping of provider to api key
+        params: Union[CSSCompletionParams, CSSEmbeddingParams] Parameters associated
+            with the request
+        stream: bool Flag to indicate if the API should stream the response
+        extra_args: Optional[Dict[str, Any]] Extra arguments to pass to the API. They
+            are appended to the body of the request: i.e. `{ temperate: 0.5 }` etc.
     """
 
     model_config = ConfigDict(protected_namespaces=())
@@ -222,7 +226,7 @@ def validate(req: CSSRequest) -> None:
 
     Raises:
         InfernetMLException: if API Key not specified or an unsupported
-        provider or endpoint specified.
+            provider or endpoint specified.
     """
     if req.provider not in PROVIDERS:
         raise InfernetMLException("Provider not supported!")
@@ -268,8 +272,6 @@ def css_mux(req: CSSRequest) -> str:
 
     Args:
         req: CSSRequest
-        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
-        API, they are getting merged with the input body.
 
     Returns:
         response: processed output from api
@@ -311,8 +313,6 @@ def css_streaming_mux(req: CSSRequest) -> Iterator[str]:
 
     Args:
         req: CSSRequest
-        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
-        API, they are getting merged with the input body.
 
     Returns:
         Iterator[str]: a generator that yields the response in chunks
