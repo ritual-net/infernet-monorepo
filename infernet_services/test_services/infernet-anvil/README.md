@@ -1,66 +1,30 @@
-## Foundry
+## Infernet Anvil
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This is a simple anvil node docker image that has all of the infernet-sdk contracts
+pre-deployed. This is useful for testing and development purposes.
 
-Foundry consists of:
+### Contracts
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+The contracts have been deployed to the following addresses:
 
-## Documentation
+| Contract               | Address                                    |
+|------------------------|--------------------------------------------|
+| Registry               | 0x663F3ad617193148711d28f5334eE4Ed07016602 |
+| Coordinator Address    | 0x2E983A1Ba5e8b38AAAeC4B440B9dDcFBf72E15d1 |
+| Inbox Address          | 0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f |
+| Reader Address         | 0xBC9129Dc0487fc2E169941C75aABC539f208fb01 |
+| Fee Address            | 0x6e989C01a3e3A94C973A62280a72EC335598490e |
+| Wallet Factory Address | 0xF6168876932289D073567f347121A267095f3DD6 |
 
-https://book.getfoundry.sh/
+### How it's built
 
-## Usage
+Refer to the [`build`](./Makefile#L38) to see how this docker image is built:
 
-### Build
+First, a state file has been generated: [`make generate-state-file`](./Makefile#L29)
 
-```shell
-$ forge build
-```
+1. An anvil node is started: `make start-anvil`
+2. The infernet-sdk contracts are deployed: `make deploy-infernet`
+3. The anvil node is stopped: `make stop-anvil`. Uplon exit, anvil will save the state 
+   of the blockchain to a file: `infernet_deployed.json`.
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Then, the docker image is built: `make build`.
