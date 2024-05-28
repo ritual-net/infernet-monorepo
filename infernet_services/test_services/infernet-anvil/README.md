@@ -24,7 +24,7 @@ First, a state file has been generated: [`make generate-state-file`](./Makefile#
 
 1. An anvil node is started: `make start-anvil`
 2. The infernet-sdk contracts are deployed: `make deploy-infernet`
-3. The anvil node is stopped: `make stop-anvil`. Uplon exit, anvil will save the state 
+3. The anvil node is stopped: `make stop-anvil`. Uplon exit, anvil will save the state
    of the blockchain to a file: `infernet_deployed.json`.
 
 Then, the docker image is built: `make build`.

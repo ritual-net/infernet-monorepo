@@ -61,4 +61,3 @@ check-contracts-exist:
 # refer to https://docs.docker.com/build/building/multi-platform/#building-multi-platform-images for more info
 build-multiplatform: generate-state-file
 	docker buildx build --platform linux/amd64,linux/arm64 -t $(TAG) --push .
-
