@@ -15,4 +15,4 @@
 	url = https://github.com/foundry-rs/forge-std
 [submodule "infernet_services/test_services/infernet-anvil/lib/infernet-sdk-internal"]
 	path = infernet_services/test_services/infernet-anvil/lib/infernet-sdk-internal
-	url = https://github.com/ritual-net/infernet-sdk-internal
+	url = git@github.com:ritual-net/infernet-sdk-internal
