@@ -102,6 +102,8 @@ def encode_hf_inference_output(
             return encode(["string"], [summary])
         case HFTaskId.TEXT_GENERATION:
             return encode(["string"], [_output])
+        case _:
+            raise Exception(f"Unsupported task_id: {input.task_id}")
 
 
 def create_app() -> Quart:
