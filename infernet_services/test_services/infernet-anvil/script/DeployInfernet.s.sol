@@ -44,6 +44,11 @@ contract DeployInfernet is Script {
         console.log("Deployed Fee: ", address(fee));
         console.log("Deployed WalletFactory: ", address(walletFactory));
 
+        address initialOwner = vm.envAddress("payment_wallet_owner");
+
+        address wallet = walletFactory.createWallet(initialOwner);
+        console.log("Deployed Wallet: ", wallet);
+
         // Execute
         vm.stopBroadcast();
     }

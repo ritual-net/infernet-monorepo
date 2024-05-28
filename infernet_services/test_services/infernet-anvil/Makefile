@@ -2,15 +2,16 @@
 
 # anvil's third default address
 sender := 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
-signer := 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 rpc_url := http://localhost:8545
 state_file := infernet_deployed.json
+# anvil's second default address
+node_address := 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 
 # deploying the contract
 deploy-infernet:
 	forge build
 	PRIVATE_KEY=$(sender) \
-	signer=$(signer) \
+	payment_wallet_owner=$(node_address) \
 	forge script \
 	script/DeployInfernet.s.sol:DeployInfernet --broadcast --rpc-url $(rpc_url)
 
@@ -47,6 +48,7 @@ inbox_address := 0x8438Ad1C834623CfF278AB6829a248E37C2D7E3f
 reader_address := 0xBC9129Dc0487fc2E169941C75aABC539f208fb01
 fee_address := 0x6e989C01a3e3A94C973A62280a72EC335598490e
 wallet_factory_address := 0xF6168876932289D073567f347121A267095f3DD6
+wallet_address := 0x60985ee8192B322c3CAbA97A9A9f7298bdc4335C
 
 check-contracts-exist:
 	cast co $(registry)
@@ -55,6 +57,7 @@ check-contracts-exist:
 	cast co $(reader_address)
 	cast co $(fee_address)
 	cast co $(wallet_factory_address)
+	cast co $(wallet_address)
 
 # You may need to set up a docker builder, to do so run:
 # docker buildx create --name mybuilder --bootstrap --use
