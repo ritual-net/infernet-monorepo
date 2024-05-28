@@ -18,9 +18,7 @@ def node_lifecycle() -> Generator[None, None, None]:
             ServiceConfig.build_service(
                 SERVICE_NAME,
                 env_vars={
-                    "HF_INF_TASK": "text_generation",
-                    "HF_INF_MODEL": "HuggingFaceH4/zephyr-7b-beta",
-                    "HF_INF_TOKEN": os.environ["HF_TOKEN"],
+                    "HF_TOKEN": os.environ["HF_TOKEN"],
                 },
             )
         ],
