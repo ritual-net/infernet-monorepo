@@ -1,6 +1,9 @@
+import random
+from time import time
 from typing import Any, Callable, Dict, cast
 
 from aiohttp import ServerDisconnectedError
+from infernet_client.chain_utils import RPC, Subscription
 from infernet_client.client import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.utils.codec.vector import DataType
@@ -8,8 +11,15 @@ from infernet_ml.utils.model_loader import LoadArgs, ModelSource
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
 from test_library.config_creator import get_service_port
-from test_library.constants import DEFAULT_NODE_URL
+from test_library.constants import (
+    DEFAULT_CONTRACT,
+    DEFAULT_NODE_URL,
+    MAX_GAS_LIMIT,
+    MAX_GAS_PRICE,
+)
 from test_library.infernet_fixture import log
+from test_library.test_config import global_config
+from test_library.web3_utils import get_deployed_contract_address
 
 
 class CreateJobResult(BaseModel):
@@ -59,8 +69,46 @@ async def request_job(
     return cast(JobID, await _post())
 
 
-async def request_streaming_job(
+async def request_delegated_subscription(
     service_name: str, data: Dict[str, Any], timeout: int = 3
+) -> None:
+    @retry(
+        exceptions=(AssertionError, ServerDisconnectedError),
+        tries=timeout,
+        delay=1,
+    )  # type: ignore
+    async def _post() -> None:
+        sub = Subscription(
+            owner=get_deployed_contract_address(DEFAULT_CONTRACT),
+            active_at=int(time()),
+            period=0,
+            frequency=1,
+            redundancy=1,
+            max_gas_price=MAX_GAS_PRICE,
+            max_gas_limit=MAX_GAS_LIMIT,
+            container_id=service_name,
+            inputs="",
+        )
+
+        client = NodeClient(global_config.node_url)
+        nonce = random.randint(0, 2**32 - 1)
+        log.info("nonce: %s", nonce)
+
+        await client.request_delegated_subscription(
+            subscription=sub,
+            rpc=RPC(global_config.rpc_url),
+            coordinator_address=global_config.coordinator_address,
+            expiry=int(time() + 10),
+            nonce=nonce,
+            private_key=global_config.private_key,
+            data=data,
+        )
+
+    await _post()
+
+
+async def request_streaming_job(
+    service_name: str, data: Dict[str, Any], timeout: int = 10
 ) -> bytes:
     total = b""
     async for chunk in NodeClient(DEFAULT_NODE_URL).request_stream(

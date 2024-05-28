@@ -29,9 +29,13 @@ deploy-node:
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
 
-swap-service:
-	docker kill $(service) infernet-node || true
-	docker rm $(service) infernet-node || true
+stop-service:
+	services=`docker ps -q --filter "name=$(service)*"` && \
+	docker kill $$services || true && \
+	docker rm $$services || true
+
+swap-service: stop-service
+	docker kill infernet-node || true && docker rm infernet-node || true
 	$(MAKE) deploy-node
 
 stop-node:

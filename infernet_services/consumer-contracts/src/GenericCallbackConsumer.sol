@@ -4,13 +4,18 @@ pragma solidity ^0.8.13;
 import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {SubscriptionConsumer} from "infernet-sdk/consumer/Subscription.sol";
 import {console2} from "forge-std/console2.sol";
+import {Delegator} from "infernet-sdk/pattern/Delegator.sol";
 
-contract GenericCallbackConsumer is CallbackConsumer {
+contract GenericCallbackConsumer is CallbackConsumer, Delegator {
     mapping(bytes32 => bytes) public receivedInput;
     mapping(bytes32 => bytes) public receivedOutput;
     mapping(bytes32 => bytes) public receivedProof;
 
-    constructor(address coordinator) CallbackConsumer(coordinator) {}
+    // Flag to check if the compute was received since the last request
+    bool public receivedToggle;
+    bytes public lastOutput;
+
+    constructor(address coordinator, address signer) CallbackConsumer(coordinator) Delegator(signer) {}
 
     function requestCompute(string calldata containerId, string memory randomness, bytes calldata inputs)
         public
@@ -36,6 +41,8 @@ contract GenericCallbackConsumer is CallbackConsumer {
         bytes32 taskId = keccak256(raw);
         console2.log("Received compute");
         console2.logBytes32(taskId);
+        receivedToggle = !receivedToggle;
+        lastOutput = output;
         receivedInput[taskId] = input;
         receivedOutput[taskId] = output;
         receivedProof[taskId] = proof;

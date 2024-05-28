@@ -10,7 +10,12 @@ from infernet_ml.utils.codec.css import (
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from test_library.web2_utils import get_job, request_job, request_streaming_job
+from test_library.web2_utils import (
+    get_job,
+    request_delegated_subscription,
+    request_job,
+    request_streaming_job,
+)
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
@@ -26,13 +31,13 @@ log = logging.getLogger(__name__)
             CSSProvider.OPENAI,
             "gpt-3.5-turbo-16k",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="does 2+2=4? return yes or no")],
+            [ConvoMessage(role="user", content="does 2 + 2 = 4? return yes or no")],
         ),
         (
             CSSProvider.PERPLEXITYAI,
             "mistral-7b-instruct",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="does 2+2=4? return yes or no")],
+            [ConvoMessage(role="user", content="Is the sky blue? return yes or no")],
         ),
     ],
 )
@@ -50,7 +55,7 @@ async def test_completion_web3(
     )
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        result: str = decode(["string"], output, strict=False)[0]
+        (result,) = decode(["string"], output, strict=False)
         assert (
             "yes" in result.lower() or "no" in result.lower()
         ), f"yes or no should be in result, instead got {result}"
@@ -103,6 +108,33 @@ async def test_css_inference_service_web2(
     assert "steve" in result.lower(), (
         f"steve jobs should be in result, instead got " f"{result}"
     )
+
+
+@pytest.mark.parametrize(*parameters)
+@pytest.mark.asyncio
+async def test_delegate_subscription(
+    provider: str,
+    model: str,
+    params: dict[str, Any],
+) -> None:
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "provider": provider,
+            "endpoint": "completions",
+            "model": model,
+            "params": params,
+        },
+    )
+
+    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
+        (result,) = decode(["string"], output, strict=False)
+        log.info(f"got result: {result}")
+        assert (
+            "steve" in result.lower()
+        ), f"yes or no should be in result, instead got {result}"
+
+    await assert_generic_callback_consumer_output(None, _assertions)
 
 
 @pytest.mark.parametrize(*parameters)

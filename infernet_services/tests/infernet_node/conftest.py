@@ -3,27 +3,15 @@ from typing import Generator
 import pytest
 from test_library.config_creator import ServiceConfig
 from test_library.infernet_fixture import handle_lifecycle
-from test_library.test_config import global_config
-from test_library.web3_utils import deploy_smart_contract, get_account
-
-
-def _deploy_smart_contract(contract_name: str) -> None:
-    deploy_smart_contract(
-        filename=f"{contract_name}.sol",
-        consumer_contract=contract_name,
-        sender=global_config.private_key,
-        rpc_url=global_config.rpc_url,
-        coordinator_address=global_config.coordinator_address,
-        extra_params={"signer": get_account()},
-    )
+from test_library.web3_utils import deploy_smart_contract_with_sane_defaults
 
 
 def deploy_contracts() -> None:
-    _deploy_smart_contract("GenericCallbackConsumer")
-    _deploy_smart_contract("InfernetErrors")
-    _deploy_smart_contract("GenericSubscriptionConsumer")
-    _deploy_smart_contract("FailingSubscriptionConsumer")
-    _deploy_smart_contract("DelegateSubscriptionConsumer")
+    deploy_smart_contract_with_sane_defaults("GenericCallbackConsumer")
+    deploy_smart_contract_with_sane_defaults("InfernetErrors")
+    deploy_smart_contract_with_sane_defaults("GenericSubscriptionConsumer")
+    deploy_smart_contract_with_sane_defaults("FailingSubscriptionConsumer")
+    deploy_smart_contract_with_sane_defaults("DelegateSubscriptionConsumer")
 
 
 SERVICE_NAME = "echo"

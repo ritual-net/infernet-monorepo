@@ -2,7 +2,7 @@ import json
 import logging
 import shlex
 import subprocess
-from typing import Any, Callable, Dict, List, cast
+from typing import Any, Callable, Dict, List, Optional, cast
 from uuid import uuid4
 
 from eth_abi.abi import decode
@@ -87,7 +87,7 @@ def get_abi(filename: str, contract_name: str) -> ABIType:
 
 
 async def assert_generic_callback_consumer_output(
-    task_id: bytes,
+    task_id: Optional[bytes],
     assertions: Callable[[bytes, bytes, bytes], None],
     timeout: int = 20,
 ) -> None:
@@ -96,29 +96,42 @@ async def assert_generic_callback_consumer_output(
     fails.
 
     Args:
-        index (int): The index of the output.
+        task_id (Optional[bytes]): The task ID. If None, the function will attempt to get
+            the task ID from the `lastTaskId()` method on the contract.
         assertions (Callable[[bytes, bytes, bytes], None]): The assertion
-        function.
-        task_id (bytes): The task id.
+            function.
         timeout (int, optional): The timeout. Defaults to 10 seconds.
 
     """
+    consumer = await get_consumer_contract()
+
+    if not task_id:
+        received_toggle = await consumer.functions.receivedToggle().call()
+
+        @retry(  # type: ignore
+            exceptions=(AssertionError,), tries=timeout * 2, delay=1 / 2
+        )
+        async def _wait_till_next_output():
+            assert await consumer.functions.receivedToggle().call() != received_toggle
+
+        await _wait_till_next_output()
+
+        return assertions(b"", await consumer.functions.lastOutput().call(), b"")
 
     @retry(
         exceptions=(AssertionError, InsufficientDataBytes, ContractLogicError),
         tries=timeout * 2,
         delay=1 / 2,
     )  # type: ignore
-    async def _assert():
-        log.info(f"querying consumer contract for task id {task_id.hex()}")
-        consumer = await get_consumer_contract()
-        _input = await consumer.functions.receivedInput(task_id).call()
-        _output = await consumer.functions.receivedOutput(task_id).call()
-        _proof = await consumer.functions.receivedProof(task_id).call()
+    async def _assert(_task_id: bytes) -> None:
+        log.info(f"querying consumer contract for task id {_task_id.hex()}")
+        _input = await consumer.functions.receivedInput(_task_id).call()
+        _output = await consumer.functions.receivedOutput(_task_id).call()
+        _proof = await consumer.functions.receivedProof(_task_id).call()
         log.info(f"consumer contract call: {_input} {_output} {_proof}")
         assertions(_input, _output, _proof)
 
-    await _assert()
+    await _assert(task_id)
 
 
 async def get_w3() -> AsyncWeb3:
@@ -239,3 +252,21 @@ def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
     assert dtype == DataType.float
     assert shape == (1, 3)
     assert values.argmax() == 2
+
+
+def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
+    """
+    Deploys a smart contract with sane defaults. Uses the global config for
+    private key, rpc url, and coordinator address.
+
+    Args:
+        contract_name (str): The contract name.
+    """
+    deploy_smart_contract(
+        filename=f"{contract_name}.sol",
+        consumer_contract=contract_name,
+        sender=global_config.private_key,
+        rpc_url=global_config.rpc_url,
+        coordinator_address=global_config.coordinator_address,
+        extra_params={"signer": get_account()},
+    )

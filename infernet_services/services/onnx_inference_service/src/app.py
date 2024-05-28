@@ -152,7 +152,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 # load data into model for validation
                 inf_input = InfernetInput(**req_data)
                 hex_input = ""
-                dtype = None
                 match inf_input:
                     case InfernetInput(source=JobLocation.ONCHAIN, data=_in):
                         hex_input = cast(str, _in)
@@ -182,10 +181,10 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         inference_input = ONNXInferenceInput(
                             **cast(Dict[str, Any], data)
                         )
+                        dtype = DataType[list(inference_input.inputs.values())[0].dtype]
                     case _:
-                        raise PydValError(
-                            "Invalid InferentInput type: expected mapping for offchain "
-                            "input type"
+                        raise HTTPException(
+                            f"Invalid infernet input source: {inf_input.source}"
                         )
 
                 logging.info(f"inference_input: {inference_input}")
@@ -206,13 +205,18 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                             "raw_input": hex_input,
                             "processed_input": "",
                             "raw_output": encode_vector(
-                                cast(DataType, dtype),
+                                dtype,
                                 first.shape,
                                 first.values,
                             ).hex(),
                             "processed_output": "",
                             "proof": "",
                         }
+                    case _:
+                        raise HTTPException(
+                            f"Invalid infernet input destination: "
+                            f"{inf_input.destination}"
+                        )
 
             except ServiceException as e:
                 abort(500, e)

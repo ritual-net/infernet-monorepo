@@ -10,14 +10,14 @@ from test_library.config_creator import (
     ServiceEnvVars,
     create_config_file,
 )
-from test_library.constants import DEFAULT_CONTRACT, DEFAULT_CONTRACT_FILENAME
+from test_library.constants import DEFAULT_CONTRACT
 from test_library.orchestration import await_node, await_services, deploy_node
 from test_library.test_config import (
     NetworkConfig,
     default_network_config,
     global_config,
 )
-from test_library.web3_utils import deploy_smart_contract
+from test_library.web3_utils import deploy_smart_contract_with_sane_defaults
 
 FixtureType = Callable[[], Generator[None, None, None]]
 
@@ -59,7 +59,13 @@ def dump_all_logs(services: List[ServiceConfig]) -> None:
 
 
 def populate_global_config(network_config: NetworkConfig) -> None:
-    # iterate over the network config and set the global config
+    """
+    Populate the global config with the network config
+
+    Args:
+        network_config (NetworkConfig): the network config to populate the global config
+            with.
+    """
     for attr_name, attr_value in network_config.model_dump().items():
         if hasattr(global_config, attr_name):
             setattr(global_config, attr_name, attr_value)
@@ -75,7 +81,6 @@ InfernetFixtureType = Callable[[], Generator[None, None, None]]
 def handle_lifecycle(
     services: List[ServiceConfig],
     skip_contract: bool = False,
-    filename: str = DEFAULT_CONTRACT_FILENAME,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     post_node_deploy_hook: Optional[Callable[[], None]] = None,
@@ -105,13 +110,7 @@ def handle_lifecycle(
         log.info("✅ node is ready")
         asyncio.run(await_services(services, service_wait_timeout))
         if not skip_contract:
-            deploy_smart_contract(
-                filename=filename,
-                consumer_contract=contract,
-                sender=global_config.private_key,
-                rpc_url=global_config.rpc_url,
-                coordinator_address=global_config.coordinator_address,
-            )
+            deploy_smart_contract_with_sane_defaults(contract)
         yield
     except Exception as e:
         log.error(f"Error in lifecycle: {e}")
