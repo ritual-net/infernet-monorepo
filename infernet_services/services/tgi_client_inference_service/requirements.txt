@@ -1,6 +1,6 @@
 quart==0.19.4
 pydantic==2.5.3
-infernet-ml==1.0.0.34
+infernet-ml==1.0.0.37
 text-generation==0.6.1
 retry2==0.9.5
 eth-abi==5.0.1

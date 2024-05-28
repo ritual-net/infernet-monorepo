@@ -110,6 +110,30 @@ async def test_css_inference_service_web2(
     )
 
 
+@pytest.mark.asyncio
+async def test_css_inference_service_custom_parameters() -> None:
+    task_id = await request_job(
+        SERVICE_NAME,
+        {
+            "provider": "OPENAI",
+            "endpoint": "completions",
+            "model": "gpt-4",
+            "params": {
+                "endpoint": "completions",
+                "messages": [
+                    {"role": "user", "content": "give me an essay about cats"}
+                ],
+            },
+            "extra_args": {
+                "max_tokens": 10,
+                "temperature": 0.5,
+            },
+        },
+    )
+    result: str = (await get_job(task_id)).get("output")
+    assert len(result.split(" ")) < 10
+
+
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
 async def test_delegate_subscription(
@@ -154,6 +178,4 @@ async def test_css_service_streaming_inference(
         },
     )
     result = task.decode()
-    assert "steve" in result.lower(), (
-        f"steve jobs should be in result, instead got " f"{result}"
-    )
+    assert "steve" in result.lower()

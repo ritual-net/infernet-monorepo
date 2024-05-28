@@ -129,16 +129,7 @@ def create_app() -> Quart:
                     case _:
                         abort(400, f"Invalid InferentInput source: {inf_input.source}")
 
-                result = await run_sync(workflow.inference)(input_data=css_request)
-
-                logging.info(f"received result from workflow: {result}")
-
                 match inf_input:
-                    case InfernetInput(
-                        destination=JobLocation.OFFCHAIN,
-                    ):
-                        # send parsed output back
-                        return {"output": result}
                     case InfernetInput(
                         destination=JobLocation.STREAM,
                     ):
@@ -150,6 +141,17 @@ def create_app() -> Quart:
                                 yield r
 
                         return stream_generator()
+
+                result = await run_sync(workflow.inference)(input_data=css_request)
+
+                logging.info(f"received result from workflow: {result}")
+
+                match inf_input:
+                    case InfernetInput(
+                        destination=JobLocation.OFFCHAIN,
+                    ):
+                        # send parsed output back
+                        return {"output": result}
                     case InfernetInput(
                         destination=JobLocation.ONCHAIN,
                         data=hex_input,
