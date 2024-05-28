@@ -10,3 +10,6 @@
 [submodule "libraries/ritual_pyarweave/src"]
 	path = libraries/ritual_pyarweave/src
 	url = git@github.com:ritual-net/pyarweave-internal.git
+[submodule "infernet_services/test_services/infernet-anvil/lib/forge-std"]
+	path = infernet_services/test_services/infernet-anvil/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
