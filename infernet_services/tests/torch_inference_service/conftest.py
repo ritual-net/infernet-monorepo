@@ -60,7 +60,7 @@ def torch_setup() -> Generator[None, None, None]:
                 port=3002,
             ),
         ],
-        service_wait_timeout=30,
+        service_wait_timeout=60,
         skip_deploying=skip_deploying,
         skip_contract=skip_contract,
         skip_teardown=skip_teardown,
