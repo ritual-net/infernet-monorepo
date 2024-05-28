@@ -90,7 +90,7 @@ async def test_css_inference_service_web2(
     model: str,
     params: dict[str, Any],
 ) -> None:
-    task = await request_job(
+    task_id = await request_job(
         SERVICE_NAME,
         {
             "provider": provider,
@@ -99,7 +99,7 @@ async def test_css_inference_service_web2(
             "params": params,
         },
     )
-    result: str = (await get_job(task.id)).result.output["output"]
+    result: str = (await get_job(task_id)).get("output")
     assert "steve" in result.lower(), (
         f"steve jobs should be in result, instead got " f"{result}"
     )
@@ -107,7 +107,7 @@ async def test_css_inference_service_web2(
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-async def test_tgi_client_streaming_service(
+async def test_css_service_streaming_inference(
     provider: str,
     model: str,
     params: dict[str, Any],

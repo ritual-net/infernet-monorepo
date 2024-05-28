@@ -1,7 +1,8 @@
-from typing import Any, Callable, Dict, List, Optional, cast
+from typing import Any, Callable, Dict, cast
 
-import aiohttp
 from aiohttp import ServerDisconnectedError
+from infernet_client.client import NodeClient
+from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.utils.codec.vector import DataType
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource
 from pydantic import BaseModel, ValidationError
@@ -11,50 +12,28 @@ from test_library.constants import DEFAULT_NODE_URL
 from test_library.infernet_fixture import log
 
 
-class ContainerResult(BaseModel):
-    container: str
-    output: Dict[str, Any]
-
-
-class JobResult(BaseModel):
-    id: str
-    status: str
-    result: ContainerResult
-    intermediate_results: Optional[List[ContainerResult]] = None
-
-
 class CreateJobResult(BaseModel):
     id: str
 
 
-async def get_job(job_id: str, timeout: int = 10) -> JobResult:
+async def get_job(job_id: JobID, timeout: int = 10) -> Any:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError, ValidationError),
         tries=timeout * 10,
         delay=0.1,
     )  # type: ignore
-    async def _get() -> JobResult:
-        async with aiohttp.ClientSession() as session:
-            url = f"{DEFAULT_NODE_URL}/api/jobs?id={job_id}"
-            log.info(f"url: {url}")
-            async with session.get(
-                url,
-            ) as response:
-                assert response.status == 200, f"job: {job_id}"
-                result = await response.json()
-                assert len(result) != 0
-                assert (
-                    result[0].get("result") is not None
-                ), f"got empty job result for job: {job_id}"
-                log.info(f"job result: {result[0]}")
-                status = result[0]["status"]
-                if status == "failed":
-                    log.error(f"Job failed: {result[0]}")
-                    raise JobFailed("Job failed")
-                return JobResult(**result[0])
+    async def _get() -> Any:
+        result = await NodeClient(DEFAULT_NODE_URL).get_job_result_sync(job_id)
+        assert result is not None, f"got empty job result for job: {job_id}"
+        log.info(f"job result: {result}")
+        if result["status"] == "failed":
+            log.error(f"Job failed: {result}")
+            raise JobFailed("Job failed")
+        log.info(f"job result: {result}")
+        container_result = cast(ContainerResult, result.get("result"))
+        return container_result.get("output")
 
-    _r: JobResult = await _get()
-    return _r
+    return await _get()
 
 
 def get_service_url(service_name: str) -> str:
@@ -63,43 +42,39 @@ def get_service_url(service_name: str) -> str:
 
 async def request_job(
     service_name: str, data: Dict[str, Any], timeout: int = 3
-) -> CreateJobResult:
+) -> JobID:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError),
         tries=timeout,
         delay=1,
     )  # type: ignore
-    async def _post() -> CreateJobResult:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f"{DEFAULT_NODE_URL}/api/jobs",
-                json={
-                    "containers": [service_name],
-                    "data": data,
-                },
-            ) as response:
-                assert response.status == 200, response.status
-                r = await response.json()
-                return CreateJobResult(**r)
+    async def _post() -> JobID:
+        return await NodeClient(DEFAULT_NODE_URL).request_job(
+            JobRequest(
+                containers=[service_name],
+                data=data,
+            )
+        )
 
-    return cast(CreateJobResult, await _post())
+    return cast(JobID, await _post())
 
 
 async def request_streaming_job(
     service_name: str, data: Dict[str, Any], timeout: int = 3
 ) -> bytes:
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            f"{DEFAULT_NODE_URL}/api/jobs/stream",
-            json={
-                "containers": [service_name],
-                "data": data,
-            },
-        ) as response:
-            total = b""
-            async for chunk in response.content:
-                total += chunk
-            return total
+    total = b""
+    async for chunk in NodeClient(DEFAULT_NODE_URL).request_stream(
+        JobRequest(
+            containers=[service_name],
+            data=data,
+        ),
+        timeout=timeout,
+    ):
+        if isinstance(chunk, str):
+            total += chunk.encode()
+        else:
+            total += chunk
+    return total
 
 
 class JobFailed(Exception):

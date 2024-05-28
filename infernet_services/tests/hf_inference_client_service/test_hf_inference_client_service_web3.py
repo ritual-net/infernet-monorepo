@@ -21,7 +21,7 @@ async def test_hf_inference_client_service_completion() -> None:
             "prompt": "Can shrimp actually fry rice fr?",
         },
     )
-    result = await get_job(task.id)
+    result = await get_job(task)
     log.info(f"got result: {result}")
 
 

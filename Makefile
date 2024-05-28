@@ -29,6 +29,7 @@ pre-commit-services:
 	@if [ -n "$(restart_env)" ]; then \
 		uv venv -p 3.11 && \
 		source .venv/bin/activate && \
+		$(MAKE) generate-uv-env-file && source uv.env && \
 		uv pip install -r infernet_services/requirements-precommit.lock; \
 	fi
 	$(MAKE) pre-commit -C infernet_services

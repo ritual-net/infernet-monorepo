@@ -32,9 +32,9 @@ async def test_web2_inference_from_arweave() -> None:
         },
     )
 
-    job_result = await get_job(task.id)
+    job_result = await get_job(task)
     log.info(f"job_result: {job_result}")
-    california_housing_web2_assertions(job_result.result.output)
+    california_housing_web2_assertions(job_result)
 
 
 @pytest.mark.asyncio

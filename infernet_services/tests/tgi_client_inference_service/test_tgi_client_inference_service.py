@@ -38,7 +38,7 @@ async def test_tgi_client_inference_service() -> None:
             "text": "Can shrimp actually fry rice fr?",
         },
     )
-    result: str = (await get_job(task.id, timeout=15)).result.output["output"]
+    result: str = (await get_job(task, timeout=15))["output"]
 
     assert (
         "yes" or "no" in result.lower()
