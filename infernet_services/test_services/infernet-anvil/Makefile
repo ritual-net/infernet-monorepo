@@ -33,7 +33,7 @@ generate-state-file:
 	$(MAKE) deploy-infernet
 	$(MAKE) stop-anvil
 
-tag := 1.0.0
+tag := 1.0.1
 img_name := ritualnetwork/infernet-anvil-internal:$(tag)
 
 build: generate-state-file
