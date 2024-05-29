@@ -13,8 +13,6 @@ from test_library.web3_utils import run_forge_script
 
 
 def deploy_contracts() -> None:
-    # todo: remove
-    return
     run_forge_script(
         script_name="Deploy",
         script_contract_name="DeployEverything",
