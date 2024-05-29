@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import {console2} from "forge-std/console2.sol";
 import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {EIP712Coordinator} from "infernet-sdk/EIP712Coordinator.sol";
+import {Registry} from "infernet-sdk/Registry.sol";
 
 /// @title InfernetErrors
 /// @notice Contract to test Infernet error handling.
@@ -17,14 +18,22 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator {
         "| | \\ \\ _| |_   | |  | |__| / ____ \\| |____        \n"
         "|_|  \\_\\_____|  |_|   \\____/_/    \\_\\______|   \n\n";
 
-    constructor(address coordinator) CallbackConsumer(coordinator) {}
+    constructor(Registry registry) CallbackConsumer(address(registry)) EIP712Coordinator(registry) {}
 
     /// @notice Request a compute job to echo the errorId.
     /// @param errorId The errorId to echo.
     /// @dev Based on the returned errorId, the contract will revert with the corresponding error. This is then
     /// caught by our tests.
     function echoThis(uint8 errorId) public {
-        _requestCompute("echo", abi.encode(errorId), 20 gwei, 1_000_000, 1);
+        _requestCompute(
+            "echo",
+            abi.encode(errorId),
+            1, // redundancy
+            address(0), // paymentToken
+            0, // paymentAmount
+            address(0), // wallet
+            address(0) // prover
+        );
     }
 
     function _receiveCompute(
@@ -34,36 +43,13 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator {
         address node,
         bytes calldata input,
         bytes calldata output,
-        bytes calldata proof
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
     ) internal override {
         console2.log(EXTREMELY_COOL_BANNER);
         (bytes memory raw_input, bytes memory processed_input) = abi.decode(input, (bytes, bytes));
         (uint8 errorIndex) = abi.decode(raw_input, (uint8));
-
-        // Handle error
-        if (errorIndex == 1) {
-            revert NodeNotActive();
-        }
-
-        if (errorIndex == 2) {
-            revert NodeNotRegisterable(address(this), NodeStatus.Active);
-        }
-
-        if (errorIndex == 3) {
-            revert CooldownActive(uint32(0));
-        }
-
-        if (errorIndex == 4) {
-            revert NodeNotActivateable(NodeStatus.Active);
-        }
-
-        if (errorIndex == 5) {
-            revert GasPriceExceeded();
-        }
-
-        if (errorIndex == 6) {
-            revert GasLimitExceeded();
-        }
 
         if (errorIndex == 7) {
             revert IntervalMismatch();

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from test_library.constants import (
     DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_INFERNET_RPC_URL,
+    DEFAULT_PAYMENT_ADDRESS,
     DEFAULT_PRIVATE_KEY,
 )
 
@@ -30,7 +31,6 @@ base_config = {
     "forward_stats": True,
     "containers": [],
 }
-
 
 ServiceEnvVars = Dict[str, Any]
 
@@ -110,6 +110,7 @@ def get_config(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_PRIVATE_KEY,
     coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    payment_address: str = DEFAULT_PAYMENT_ADDRESS,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> Dict[str, Any]:
     """
@@ -119,6 +120,8 @@ def get_config(
         services: A list of ServiceConfig objects.
         private_key: The private key of the wallet
         coordinator_address: The coordinator address
+        payment_address: The payment address of the node. This is the address that will
+            receive payments.
         rpc_url: The RPC URL of the chain
 
     Returns:
@@ -141,6 +144,7 @@ def get_config(
             }
         )
     cfg["chain"]["wallet"]["private_key"] = private_key
+    cfg["chain"]["wallet"]["payment_address"] = payment_address
     cfg["chain"]["coordinator_address"] = coordinator_address
     cfg["chain"]["rpc_url"] = rpc_url
     return cfg
@@ -154,7 +158,7 @@ def monorepo_dir() -> str:
         The path to the top level directory
     """
     top_level_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    while not os.path.basename(top_level_dir) == "infernet-monorepo-internal":
+    while "infernet-monorepo" not in os.path.basename(top_level_dir):
         top_level_dir = os.path.dirname(top_level_dir)
     return top_level_dir
 

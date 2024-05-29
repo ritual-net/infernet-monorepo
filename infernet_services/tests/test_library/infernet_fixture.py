@@ -10,7 +10,7 @@ from test_library.config_creator import (
     ServiceEnvVars,
     create_config_file,
 )
-from test_library.constants import DEFAULT_CONTRACT
+from test_library.constants import DEFAULT_CONTRACT, suppress_logs
 from test_library.orchestration import await_node, await_services, deploy_node
 from test_library.test_config import (
     NetworkConfig,
@@ -51,6 +51,9 @@ def dump_logs(docker_id: str) -> None:
 
 
 def dump_all_logs(services: List[ServiceConfig]) -> None:
+    if suppress_logs:
+        log.info("suppressing logs")
+        return
     log.info("dumping all logs below")
     for service in services:
         dump_logs(service.name)

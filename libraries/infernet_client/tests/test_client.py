@@ -654,7 +654,7 @@ async def test_request_delegated_subscription(client: NodeClient) -> None:
             rpc,
             ChecksumAddress(HexAddress(HexStr(sub.owner))),
             expiry,
-            0,
+            nonce,
             private_key,
             input_data,
         )

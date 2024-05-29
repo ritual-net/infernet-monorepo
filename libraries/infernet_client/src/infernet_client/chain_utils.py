@@ -1,17 +1,21 @@
-from typing import Any
+from typing import Any, List
 
+from eth_abi.abi import encode
 from eth_account.messages import SignableMessage, encode_typed_data
 from eth_typing import ChecksumAddress
-from web3 import AsyncHTTPProvider, AsyncWeb3
+from hexbytes import HexBytes
+from web3 import AsyncHTTPProvider, AsyncWeb3, Web3
 from web3.types import Nonce
 
 
 class Subscription:
+    # todo: update docstring
     """Infernet Coordinator subscription representation
 
     Public methods:
         get_delegate_subscription_typed_data: Generates EIP-712 DelegateeSubscription
             data
+
 
     Public attributes:
         owner (str): Subscription owner + recipient
@@ -34,10 +38,12 @@ class Subscription:
         period: int,
         frequency: int,
         redundancy: int,
-        max_gas_price: int,
-        max_gas_limit: int,
-        container_id: str,
-        inputs: str,
+        containers: List[str],
+        lazy: bool,
+        prover: str,
+        payment_amount: int,
+        payment_token: str,
+        wallet: str,
     ) -> None:
         """Initializes new Subscription
 
@@ -47,10 +53,13 @@ class Subscription:
             period (int): Time, in seconds, between each subscription interval
             frequency (int): Number of times a subscription is processed
             redundancy (int): Number of unique nodes that can fulfill each interval
-            max_gas_price (int): Max gas price in wei paid by Infernet node
-            max_gas_limit (int): Max gas limit in wei used by Infernet node
-            container_id (str): Comma-delimited container IDs
-            inputs (str): Optional container input parameters (hex-encoded)
+            containers_hash (bytes): Keccak hash of RLP encoding of comma-separated
+                container IDs.
+            lazy (bool): Lazy flag
+            prover (str): Prover address
+            payment_amount (int): Payment amount
+            payment_token (str): Payment token address
+            wallet (str): Wallet address of the subscription owner
         """
 
         self.owner = owner
@@ -58,14 +67,18 @@ class Subscription:
         self._period = period
         self._frequency = frequency
         self._redundancy = redundancy
-        self._max_gas_price = max_gas_price
-        self.max_gas_limit = max_gas_limit
-        self.containers = container_id.split(",")
-        self.inputs = inputs
+        self._containers_hash = Web3.keccak(
+            encode(["string"], [",".join(containers)])
+        ).hex()
+        self.lazy = lazy
+        self.prover = prover
+        self.payment_amount = payment_amount
+        self.payment_token = payment_token
+        self.wallet = wallet
 
     @property
     def serialized(self) -> dict[str, Any]:
-        """Returns serialized subscription data
+        """Returns serialized subscription data.
 
         Returns:
             dict[str, Any]: subscription data
@@ -76,10 +89,12 @@ class Subscription:
             "period": self._period,
             "frequency": self._frequency,
             "redundancy": self._redundancy,
-            "max_gas_price": self._max_gas_price,
-            "max_gas_limit": self.max_gas_limit,
-            "container_id": ",".join(self.containers),
-            "inputs": self.inputs,
+            "containers": self._containers_hash,
+            "lazy": self.lazy,
+            "prover": self.prover,
+            "payment_amount": self.payment_amount,
+            "payment_token": self.payment_token,
+            "wallet": self.wallet,
         }
 
     def get_delegate_subscription_typed_data(
@@ -120,10 +135,12 @@ class Subscription:
                         {"name": "period", "type": "uint32"},
                         {"name": "frequency", "type": "uint32"},
                         {"name": "redundancy", "type": "uint16"},
-                        {"name": "maxGasPrice", "type": "uint48"},
-                        {"name": "maxGasLimit", "type": "uint32"},
-                        {"name": "containerId", "type": "string"},
-                        {"name": "inputs", "type": "bytes"},
+                        {"name": "containerId", "type": "bytes32"},
+                        {"name": "lazy", "type": "bool"},
+                        {"name": "prover", "type": "address"},
+                        {"name": "paymentAmount", "type": "uint256"},
+                        {"name": "paymentToken", "type": "address"},
+                        {"name": "wallet", "type": "address"},
                     ],
                 },
                 "primaryType": "DelegateSubscription",
@@ -142,10 +159,12 @@ class Subscription:
                         "period": self._period,
                         "frequency": self._frequency,
                         "redundancy": self._redundancy,
-                        "maxGasPrice": self._max_gas_price,
-                        "maxGasLimit": self.max_gas_limit,
-                        "containerId": ",".join(self.containers),
-                        "inputs": self.inputs,
+                        "containerId": HexBytes(self._containers_hash),
+                        "lazy": self.lazy,
+                        "prover": self.prover,
+                        "paymentAmount": self.payment_amount,
+                        "paymentToken": self.payment_token,
+                        "wallet": self.wallet,
                     },
                 },
             }

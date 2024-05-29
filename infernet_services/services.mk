@@ -10,13 +10,20 @@ run:
 
 filename ?= "GenericCallbackConsumer.sol"
 contract ?= "GenericCallbackConsumer"
-coordinator ?= "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+registry ?= "0x663F3ad617193148711d28f5334eE4Ed07016602"
 
 deploy-contract:
 	$(MAKE) deploy-contract -C $(toplevel_dir)/consumer-contracts \
 		filename=$(filename) \
-		coordinator=$(coordinator) \
+		registry=$(registry) \
 		contract=$(contract)
+
+deploy-everything:
+	$(MAKE) run-forge-script script_name=Deploy script_contract_name=DeployEverything
+
+run-forge-script:
+	$(MAKE) run-forge-script -C $(toplevel_dir)/consumer-contracts \
+		registry=$(registry)
 
 save-image:
 	docker save ritualnetwork/$(service):latest -o $(service).tar
@@ -33,6 +40,12 @@ stop-service:
 	services=`docker ps -q --filter "name=$(service)*"` && \
 	docker kill $$services || true && \
 	docker rm $$services || true
+
+setup-services-test-env:
+	uv venv -p 3.11 && \
+	source .venv/bin/activate && \
+	$(MAKE) generate-uv-env-file && source uv.env && \
+	uv pip install -r infernet_services/requirements-e2e-tests.lock
 
 swap-service: stop-service
 	docker kill infernet-node || true && docker rm infernet-node || true

@@ -9,9 +9,10 @@ rpc_url := http://localhost:8545
 
 # deploying the contract
 deploy-contract:
+	$(MAKE) run-forge-script script_name=Deploy script_contract_name=Deploy
+
+run-forge-script:
 	mkdir -p deployments
 	forge build
-	PRIVATE_KEY=$(sender) \
-	signer=$(signer) \
-	forge script \
-	script/Deploy.s.sol:Deploy --broadcast --rpc-url $(rpc_url)
+	PRIVATE_KEY=$(sender) signer=$(signer) forge script \
+	script/$(script_name).s.sol:$(script_contract_name) --broadcast --rpc-url $(rpc_url)

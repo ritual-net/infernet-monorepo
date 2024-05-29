@@ -15,8 +15,9 @@ from test_library.constants import (
     ANVIL_NODE,
     DEFAULT_CONTRACT,
     DEFAULT_CONTRACT_FILENAME,
-    DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_PRIVATE_KEY,
+    DEFAULT_REGISTRY_ADDRESS,
+    ZERO_ADDRESS,
 )
 from test_library.test_config import global_config
 from web3 import AsyncHTTPProvider, AsyncWeb3
@@ -32,7 +33,7 @@ def deploy_smart_contract(
     consumer_contract: str = DEFAULT_CONTRACT,
     sender: str = DEFAULT_PRIVATE_KEY,
     rpc_url: str = ANVIL_NODE,
-    coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    registry: str = DEFAULT_REGISTRY_ADDRESS,
     extra_params: Dict[str, str] = {},
 ) -> None:
     """
@@ -47,20 +48,51 @@ def deploy_smart_contract(
         sender (str, optional): The private key of the sender. Defaults to
         DEFAULT_PRIVATE_KEY, which is one of anvil's test private keys.
         rpc_url (str, optional): The RPC URL. Defaults to DEFAULT_INFERNET_RPC_URL.
-        coordinator_address (str, optional): The coordinator address. Defaults to
+        registry (str, optional): The coordinator address. Defaults to
         DEFAULT_COORDINATOR_ADDRESS.
 
     """
     cmd = (
         f"make deploy-contract filename={filename} "
         f"contract={consumer_contract} sender={sender} "
-        f"rpc_url={rpc_url} coordinator={coordinator_address}"
+        f"rpc_url={rpc_url} registry={registry}"
     )
 
     for k, v in extra_params.items():
         cmd += f" {k}={v}"
 
     log.info(f"deploying contract: {cmd}")
+    subprocess.run(shlex.split(cmd))
+
+
+def run_forge_script(
+    script_name: str,
+    script_contract_name: str,
+    sender: str = DEFAULT_PRIVATE_KEY,
+    rpc_url: str = ANVIL_NODE,
+    extra_params: Dict[str, str] = {},
+) -> None:
+    """
+    Runs a forge script. Uses the makefile script under the hood.
+
+    Args:
+        script_name (str): The script's name: i.e. `Deploy` for a `Deploy.s.sol` file.
+        script_contract_name (str): The script's contract name.
+        sender (str, optional): The private key of the sender. Defaults to
+            DEFAULT_PRIVATE_KEY
+        rpc_url (str, optional): The RPC URL. Defaults to DEFAULT_INFERNET_RPC_URL.
+        extra_params (Dict[str, str], optional): Extra parameters. Defaults to {}.
+    """
+    cmd = (
+        f"make run-forge-script script_name={script_name} "
+        f"script_contract_name={script_contract_name} sender={sender} "
+        f"rpc_url={rpc_url}"
+    )
+
+    for k, v in extra_params.items():
+        cmd += f" {k}={v}"
+
+    log.info(f"Running script: {cmd}")
     subprocess.run(shlex.split(cmd))
 
 
@@ -211,13 +243,27 @@ async def get_coordinator_contract() -> AsyncContract:
     )
 
 
-async def request_web3_compute(service_id: str, input: bytes) -> bytes:
+async def request_web3_compute(
+    service_id: str,
+    input: bytes,
+    redundancy: int = 1,
+    payment_token: ChecksumAddress = ZERO_ADDRESS,
+    payment_amount: int = 0,
+    wallet: ChecksumAddress = ZERO_ADDRESS,
+    prover: ChecksumAddress = ZERO_ADDRESS,
+) -> bytes:
     """
     Requests compute from the consumer contract.
 
     Args:
         service_id (str): The service ID.
         input (bytes): The input.
+        redundancy (int, optional): The redundancy. Defaults to 1.
+        payment_token (ChecksumAddress, optional): The payment token. Defaults to
+            ZERO_ADDRESS.
+        payment_amount (int, optional): The payment amount. Defaults to 0.
+        wallet (ChecksumAddress, optional): The wallet. Defaults to ZERO_ADDRESS.
+        prover (ChecksumAddress, optional): The prover. Defaults to ZERO_ADDRESS.
 
     Returns:
         int: The index of the request.
@@ -225,7 +271,16 @@ async def request_web3_compute(service_id: str, input: bytes) -> bytes:
     consumer = await get_consumer_contract()
     randomness = f"{uuid4()}"
     log.info(f"requesting compute {service_id} {randomness} {input!r}")
-    fn = consumer.functions.requestCompute(service_id, randomness, input)
+    fn = consumer.functions.requestCompute(
+        randomness,
+        service_id,
+        input,
+        redundancy,
+        payment_token,
+        payment_amount,
+        wallet,
+        prover,
+    )
     gen_id = await fn.call()
     log.info(f"generated id {gen_id}")
     tx = await fn.transact()
@@ -267,6 +322,6 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
         consumer_contract=contract_name,
         sender=global_config.private_key,
         rpc_url=global_config.rpc_url,
-        coordinator_address=global_config.coordinator_address,
+        registry=DEFAULT_REGISTRY_ADDRESS,
         extra_params={"signer": get_account()},
     )

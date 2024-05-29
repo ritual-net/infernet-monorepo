@@ -10,7 +10,7 @@ from eth_abi import encode  # type: ignore
 from infernet_client import NodeClient
 from infernet_client.chain_utils import RPC, Subscription
 from infernet_node.test_subscriptions import assert_next_output, set_next_input
-from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
+from test_library.constants import NODE_LOG_CMD, ZERO_ADDRESS
 from test_library.log_collector import LogCollector
 from test_library.test_config import global_config
 from test_library.web3_utils import (
@@ -32,7 +32,7 @@ async def get_next_subscription_id() -> int:
 
 
 async def create_delegated_subscription(
-    input: bytes,
+    _input: bytes,
     period: int,
     frequency: int = 1,
     time_to_active: int = 0,
@@ -40,7 +40,7 @@ async def create_delegated_subscription(
     nonce: Optional[int] = None,
     contract_name: str = CONSUMER_CONTRACT,
 ) -> int:
-    hex_input = input.hex()
+    hex_input = _input.hex()
     # create delegated subscription request
     sub = Subscription(
         owner=get_deployed_contract_address(contract_name),
@@ -48,10 +48,12 @@ async def create_delegated_subscription(
         period=period,
         frequency=frequency,
         redundancy=redundancy,
-        max_gas_price=MAX_GAS_PRICE,
-        max_gas_limit=MAX_GAS_LIMIT,
-        container_id=SERVICE_NAME,
-        inputs="",
+        containers=[SERVICE_NAME],
+        lazy=False,
+        prover=ZERO_ADDRESS,
+        payment_amount=0,
+        payment_token=ZERO_ADDRESS,
+        wallet=ZERO_ADDRESS,
     )
 
     log.info(f"generated subscription with input: {hex_input}")

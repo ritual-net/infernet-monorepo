@@ -33,7 +33,7 @@ contract DeployInfernet is Script {
             Reader reader,
             Fee fee,
             WalletFactory walletFactory
-        ) = LibDeploy.deployContracts(initialNonce, deployerAddress, 500);
+        ) = LibDeploy.deployContracts(deployerAddress, initialNonce, deployerAddress, 500);
 
         // Log deployed contracts
         console.log("Using protocol fee: 5%");

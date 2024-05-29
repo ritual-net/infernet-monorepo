@@ -1,6 +1,6 @@
 [project]
 name = "infernet-client"
-version = "0.3.0.2"
+version = "1.0.0.0"
 description = "Infernet Node v0.3.0 REST client"
 authors = [
     { name = "Stelios Rousoglou", email = "stelios@ritual.net" }
@@ -8,8 +8,6 @@ authors = [
 dependencies = [
     "aiohttp>=3.9.2,<4.0.0",
     "click>=8.1.7,<9.0.0",
-    "eth-account>=0.11.0,<1.0.0",
-    "eth-typing>=4.0.0,<5.0.0",
     "web3>=6.11.0,<7.0.0",
 ]
 readme = "README.md"

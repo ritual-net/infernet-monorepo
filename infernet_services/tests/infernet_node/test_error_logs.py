@@ -14,12 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class ErrorId(IntEnum):
-    NodeNotActive = 1
-    NodeNotRegisterable = 2
-    CooldownActive = 3
-    NodeNotActivateable = 4
-    GasPriceExceeded = 5
-    GasLimitExceeded = 6
     IntervalMismatch = 7
     IntervalCompleted = 8
     NodeRespondedAlready = 9
@@ -38,30 +32,6 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 @pytest.mark.parametrize(
     "error_id, expected_log",
     [
-        (
-            ErrorId.NodeNotActive,
-            "Node is not active",
-        ),
-        (
-            ErrorId.NodeNotRegisterable,
-            "Node is not registerable",
-        ),
-        (
-            ErrorId.CooldownActive,
-            "Cooldown is active",
-        ),
-        (
-            ErrorId.NodeNotActivateable,
-            "Node is not activateable",
-        ),
-        (
-            ErrorId.GasPriceExceeded,
-            "Gas price exceeded the subscription's max gas price",
-        ),
-        (
-            ErrorId.GasLimitExceeded,
-            "Gas limit exceeded the subscription's max gas limit",
-        ),
         (
             ErrorId.IntervalMismatch,
             "Interval mismatch. The interval is not the current one.",

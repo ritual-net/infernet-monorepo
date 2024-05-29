@@ -2,23 +2,31 @@ from typing import Generator
 
 import pytest
 from test_library.config_creator import ServiceConfig
+from test_library.constants import (
+    DEFAULT_REGISTRY_ADDRESS,
+    skip_contract,
+    skip_deploying,
+    skip_teardown,
+)
 from test_library.infernet_fixture import handle_lifecycle
-from test_library.web3_utils import deploy_smart_contract_with_sane_defaults
+from test_library.web3_utils import run_forge_script
 
 
 def deploy_contracts() -> None:
-    deploy_smart_contract_with_sane_defaults("GenericCallbackConsumer")
-    deploy_smart_contract_with_sane_defaults("InfernetErrors")
-    deploy_smart_contract_with_sane_defaults("GenericSubscriptionConsumer")
-    deploy_smart_contract_with_sane_defaults("FailingSubscriptionConsumer")
-    deploy_smart_contract_with_sane_defaults("DelegateSubscriptionConsumer")
+    # todo: remove
+    return
+    run_forge_script(
+        script_name="Deploy",
+        script_contract_name="DeployEverything",
+        extra_params={"registry": DEFAULT_REGISTRY_ADDRESS},
+    )
 
 
 SERVICE_NAME = "echo"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def delegate_subscription_consumer() -> Generator[None, None, None]:
+def node_lifecycle() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
             ServiceConfig.build_service(
@@ -27,5 +35,7 @@ def delegate_subscription_consumer() -> Generator[None, None, None]:
             )
         ],
         post_node_deploy_hook=deploy_contracts,
-        skip_contract=True,
+        skip_deploying=skip_deploying,
+        skip_contract=skip_contract,
+        skip_teardown=skip_teardown,
     )
