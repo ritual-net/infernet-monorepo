@@ -64,7 +64,7 @@ jobs:
       - name: Build & Generate docs
         env:
           PYTHONPATH: src
-        run: make generate-services build-services
+        run: make generate-services-docs build-services-docs
 
       - name: Upload docs as artifact
         uses: actions/upload-artifact@v2
