@@ -129,6 +129,7 @@ def get_config(
     """
 
     cfg: Dict[str, Any] = base_config.copy()
+    cfg["containers"] = []
     for service in services:
         cfg["containers"].append(
             {
