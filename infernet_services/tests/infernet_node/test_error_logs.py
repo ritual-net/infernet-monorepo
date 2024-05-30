@@ -14,13 +14,23 @@ log = logging.getLogger(__name__)
 
 
 class ErrorId(IntEnum):
-    IntervalMismatch = 7
-    IntervalCompleted = 8
-    NodeRespondedAlready = 9
-    SubscriptionNotFound = 10
-    NotSubscriptionOwner = 11
-    SubscriptionCompleted = 12
-    SubscriptionNotActive = 13
+    InvalidWallet = 1
+    IntervalMismatch = 2
+    IntervalCompleted = 3
+    UnauthorizedProver = 4
+    NodeRespondedAlready = 5
+    SubscriptionNotFound = 6
+    ProofRequestNotFound = 7
+    NotSubscriptionOwner = 8
+    SubscriptionCompleted = 9
+    SubscriptionNotActive = 10
+    UnsupportedProverToken = 11
+    SignerMismatch = 12
+    SignatureExpired = 13
+    TransferFailed = 14
+    InsufficientFunds = 15
+    InsufficientAllowance = 16
+    NodeNotAllowed = 17
 
 
 contract_name = "InfernetErrors"
@@ -33,6 +43,11 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
     "error_id, expected_log",
     [
         (
+            ErrorId.InvalidWallet,
+            "Invalid wallet, please make sure you're using a "
+            "wallet created from infernet's `WalletFactory`.",
+        ),
+        (
             ErrorId.IntervalMismatch,
             "Interval mismatch. The interval is not the current one.",
         ),
@@ -42,12 +57,20 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
             "current interval",
         ),
         (
+            ErrorId.UnauthorizedProver,
+            "Prover is not authorized.",
+        ),
+        (
             ErrorId.NodeRespondedAlready,
             "Node already responded for this interval",
         ),
         (
             ErrorId.SubscriptionNotFound,
             "Subscription not found",
+        ),
+        (
+            ErrorId.ProofRequestNotFound,
+            "Proof request not found",
         ),
         (
             ErrorId.NotSubscriptionOwner,
@@ -61,6 +84,37 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
         (
             ErrorId.SubscriptionNotActive,
             "Subscription is not active",
+        ),
+        (
+            ErrorId.UnsupportedProverToken,
+            "Unsupported prover token. Attempting to pay a `IProver`-contract in "
+            "a token it does not support receiving payments in",
+        ),
+        (
+            ErrorId.SignerMismatch,
+            "Signer does not match.",
+        ),
+        (
+            ErrorId.SignatureExpired,
+            "EIP-712 Signature has expired.",
+        ),
+        (
+            ErrorId.TransferFailed,
+            "Token transfer failed.",
+        ),
+        (
+            ErrorId.InsufficientFunds,
+            "Insufficient funds. You either are trying to withdraw `amount > "
+            "unlockedBalance` or are trying to escrow `amount > unlockedBalance`"
+            "or attempting to unlock `amount > lockedBalance`",
+        ),
+        (
+            ErrorId.InsufficientAllowance,
+            "Insufficient allowance.",
+        ),
+        (
+            ErrorId.NodeNotAllowed,
+            "Node is not allowed to deliver this subscription.",
         ),
     ],
 )
