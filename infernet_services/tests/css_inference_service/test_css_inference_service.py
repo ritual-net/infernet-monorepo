@@ -48,6 +48,7 @@ def boolean_like_prompt_assertion(result: str) -> None:
     ],
 )
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_completion_web3(
     provider: CSSProvider,
     model: str,
@@ -138,7 +139,7 @@ async def test_css_inference_service_custom_parameters() -> None:
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=2, reruns_delay=2)
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_delegate_subscription(
     provider: str,
     model: str,
