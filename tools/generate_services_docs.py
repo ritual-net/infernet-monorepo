@@ -7,7 +7,7 @@ import yaml
 def generate_service_docs() -> None:
     services_root = "infernet_services/services"
     docs_root = "infernet_services/docs"
-    config_path = "infernet_services/mkdocs.yaml"
+    config_path = "infernet_services/mkdocs.yml"
 
     reference_root = os.path.join(docs_root, "reference")
     services = [name for name in os.listdir(services_root) if os.path.isdir(os.path.join(services_root, name))]
@@ -39,6 +39,7 @@ def generate_service_docs() -> None:
     navigation.append({"Reference": nav_list})
 
     config["nav"] = navigation
+    print(config["nav"])
     # saving updated navigation to mkdocs.yaml
     with open(config_path, "w") as file:
         yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
