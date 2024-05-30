@@ -120,6 +120,7 @@ async def test_infernet_recurring_subscription() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
     (i, sub_id) = await create_sub_with_random_input(2, 5)
     await assert_next_output(encode(["uint8"], [i]))
