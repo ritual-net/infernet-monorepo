@@ -1,0 +1,17 @@
+site_name: Inference Services
+theme:
+  name: material
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        rendering:
+          show_source: true
+nav:
+- Overview: overview.md
+- Reference:
+    css_inference_service: reference/css_inference_service.md
+    onnx_inference_service: reference/onnx_inference_service.md
+    tgi_client_inference_service: reference/tgi_client_inference_service.md
+    torch_inference_service: reference/torch_inference_service.md

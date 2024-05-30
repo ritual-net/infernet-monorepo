@@ -8,11 +8,17 @@ PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 generate-docs:
 	$(PYTHON) tools/generate_docs.py $(library)
 
+generate-services-docs:
+	$(PYTHON) tools/generate_services_docs.py
+
 serve-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
 
 build-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs build
+
+build-services-docs:
+	cd infernet_services && PYTHONPATH=src mkdocs build
 
 clean-docs:
 	rm -rf libraries/$(library)/site
