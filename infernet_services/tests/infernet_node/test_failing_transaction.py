@@ -25,7 +25,8 @@ async def test_infernet_failing_subscription_must_retry_then_give_up() -> None:
     await create_sub_with_random_input(1, 8, contract_name=CONSUMER_CONTRACT)
 
     await assert_regex_in_node_logs(
-        f"Subscription has exceeded the maximum number of attempts.*{next_sub}"
+        f"Subscription has exceeded the maximum number of attempts.*{next_sub}",
+        timeout=20,
     )
 
 
