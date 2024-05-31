@@ -31,9 +31,8 @@ def generate_service_docs() -> None:
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)  # Load existing config
     
-    navigation = config["nav"]
-    navigation.append(nav_list)
-    config["nav"] = navigation
+
+    config["nav"] = [nav_list]
     # saving updated navigation to mkdocs.yaml
     with open(config_path, "w") as file:
         yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
