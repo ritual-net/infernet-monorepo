@@ -147,5 +147,3 @@ It may be helpful to run services locally. To do so, you may call the following 
 ```bash
 make run service=css_inference_service
 ```
-
-

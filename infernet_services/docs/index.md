@@ -8,5 +8,3 @@ The following workflows are currently supported as infernet services:
 - ONNX
 - TGI Client **supports streaming**
 - Torch
-
-
