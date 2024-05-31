@@ -1,19 +1,19 @@
-import json
 import logging
+from typing import Tuple
 
 import pytest
 from eth_abi import decode, encode  # type: ignore
 from infernet_node.conftest import SERVICE_NAME, SERVICE_WITH_PAYMENT_REQUIREMENTS
+from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.constants import (
     DEFAULT_PROTOCOL_FEE_RECIPIENT,
-    NODE_LOG_CMD,
     PROTOCOL_FEE,
     ZERO_ADDRESS,
 )
-from test_library.log_collector import LogCollector
 from test_library.test_config import global_config
 from test_library.web3_utils import (
     Token,
+    Wallet,
     assert_balance,
     assert_generic_callback_consumer_output,
     create_wallet,
@@ -37,25 +37,15 @@ async def assert_output(task_id: bytes) -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_callback_consumer() -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
     task_id = await request_web3_compute(SERVICE_NAME, encode(["uint8"], [12]))
 
-    expected_log = "Sent tx"
-    found, logs = await collector.wait_for_line(expected_log, timeout=4)
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
+    await assert_regex_in_node_logs("Sent tx")
 
     await assert_output(task_id)
-
-    await collector.stop()
 
 
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_insufficient_allowance() -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
     wallet = await create_wallet()
     await request_web3_compute(
         SERVICE_NAME,
@@ -64,15 +54,7 @@ async def test_infernet_basic_payment_insufficient_allowance() -> None:
         wallet=wallet.address,
     )
 
-    expected_log = "Insufficient allowance"
-    found, logs = await collector.wait_for_line(expected_log, timeout=4)
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
-
-    await collector.stop()
+    await assert_regex_in_node_logs(".*insufficient allowance.*")
 
 
 @pytest.mark.asyncio
@@ -122,8 +104,6 @@ async def test_infernet_basic_payment_happy_path() -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_insufficient_balance() -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
     # we don't fund the wallet
     wallet = await create_wallet()
 
@@ -143,23 +123,20 @@ async def test_infernet_basic_payment_insufficient_balance() -> None:
         wallet=wallet.address,
     )
 
-    expected_log = "Token transfer failed"
-    found, logs = await collector.wait_for_line(expected_log, timeout=4)
+    await assert_regex_in_node_logs("Token transfer failed")
 
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
+
+async def setup_wallet_with_accepted_token(amount: int) -> Tuple[Wallet, Token]:
+    wallet = await create_wallet()
+    mock_token = Token(get_deployed_contract_address("AcceptedMoney"), await get_w3())
+    await mock_token.mint(wallet.address, amount)
+    return wallet, mock_token
 
 
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_custom_token() -> None:
-    wallet = await create_wallet()
-    mock_token = Token(get_deployed_contract_address("AcceptedMoney"), await get_w3())
-
     amount = int(0.5e18)
-
-    await mock_token.mint(wallet.address, amount * 3)
+    wallet, mock_token = await setup_wallet_with_accepted_token(amount)
 
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
@@ -196,8 +173,6 @@ async def test_infernet_basic_payment_custom_token() -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_unaccepted_token() -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
     wallet = await create_wallet()
     rejected_money = get_deployed_contract_address("RejectedMoney")
     mock_token = Token(rejected_money, await get_w3())
@@ -220,20 +195,14 @@ async def test_infernet_basic_payment_unaccepted_token() -> None:
         wallet=wallet.address,
     )
 
-    expected_log = f"skipping subscription.*token {rejected_money} not accepted"
-    found, logs = await collector.wait_for_line(regex_pattern=expected_log, timeout=4)
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
+    await assert_regex_in_node_logs(
+        f"skipping subscription.*token {rejected_money} not accepted"
     )
 
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_ignore_subscription_with_low_bid() -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
     funding = int(1e18)
     wallet = await create_wallet()
 
@@ -254,13 +223,7 @@ async def test_infernet_ignore_subscription_with_low_bid() -> None:
         wallet=wallet.address,
     )
 
-    expected_log = (
+    await assert_regex_in_node_logs(
         f"skipping subscription.*token {ZERO_ADDRESS} below minimum payment "
         f"requirements"
-    )
-    found, logs = await collector.wait_for_line(regex_pattern=expected_log, timeout=4)
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
     )

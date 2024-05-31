@@ -1,15 +1,13 @@
-import json
 import logging
 import random
-import re
 
 import pytest
 from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
 from infernet_node.conftest import SERVICE_NAME
 from reretry import retry  # type: ignore
-from test_library.constants import NODE_LOG_CMD, ZERO_ADDRESS
-from test_library.log_collector import LogCollector
+from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.constants import ZERO_ADDRESS
 from test_library.web3_utils import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
@@ -126,21 +124,8 @@ async def test_infernet_cancelled_subscription() -> None:
 
     consumer = await get_subscription_consumer_contract()
 
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
     tx = await consumer.functions.cancelSubscription(sub_id).transact()
     w3 = await get_w3()
     await w3.eth.wait_for_transaction_receipt(tx)
 
-    expected_log = f"subscription cancelled.*{sub_id}"
-
-    found, logs = await collector.wait_for_line(
-        expected_log, timeout=15, regex_flags=re.IGNORECASE
-    )
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
-
-    await collector.stop()
+    await assert_regex_in_node_logs(f"subscription cancelled.*{sub_id}")

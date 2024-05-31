@@ -44,7 +44,7 @@ stop-infernet-anvil:
 	docker-compose -f $(deploy_dir)/docker-compose.yaml rm -f anvil-node || true
 
 stop-service:
-	services=`docker ps -q --filter "name=$(service)*"` && \
+	services=`docker ps -aq --filter "name=$(service)*"` && \
 	docker kill $$services || true && \
 	docker rm $$services || true
 

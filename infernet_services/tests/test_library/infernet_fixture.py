@@ -92,14 +92,14 @@ InfernetFixtureType = Callable[[], Generator[None, None, None]]
 
 def handle_lifecycle(
     services: List[ServiceConfig],
+    skip_deploying: bool = False,
     skip_contract: bool = False,
+    skip_teardown: bool = False,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     post_chain_start_hook: Callable[[], None] = lambda: None,
     post_config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
     post_node_deploy_hook: Callable[[], None] = lambda: None,
-    skip_deploying: bool = False,
-    skip_teardown: bool = False,
     node_wait_timeout: int = 10,
     service_wait_timeout: int = 10,
     network_config: NetworkConfig = default_network_config,
