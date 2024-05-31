@@ -1,9 +1,10 @@
-# TGI inference service
-A simple service that serves models via an TGIClientInferenceWorkflow object. In particular, the backend as well as preprocessing / postprocessing logic is encapsulated in the workflow.
+# TGI Inference Service
 
-# End point
+This service serves models via a `TGIClientInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
 
-Infernet services are expected to implement a end point at `/service_output` that takes a json payload that conforms to the InfernetInput model. For more information on Infernet-compatible containers, refer to [our docs](https://docs.ritual.net/infernet/node/containers).
+## Endpoint
+
+Infernet services implement an endpoint at `/service_output` that accepts a JSON payload conforming to the `InfernetInput` model. For more details on Infernet-compatible containers, refer to [our documentation](https://docs.ritual.net/infernet/node/containers).
 
 ```python
 HexStr = Annotated[
@@ -21,9 +22,9 @@ class InfernetInput(BaseModel):
 For more info, see [Infernet Containers documentation](https://docs.ritual.net/infernet/node/containers#input-format).
 
 ## Input
-### data field (offchain)
+### Data Field (offchain)
 
-#### service specific data schema
+#### Service Specific Data Schema
 For TGI, we expect a JSON object that conforms to this schema for the data field:
 
 ```python
@@ -33,28 +34,26 @@ class TgiInferenceRequest(BaseModel):
     """
     text: str  # query to the LLM backend
 ```
-#### data field (chain)
-For chain input we expect data to be a single eth-abi ecoded hex string
+#### Data Field (chain)
+For chain input we expect data to be a single eth-abi encoded hex string
 that represents the query text.
 
 ## Output
 ### offchain
-The data returned
-is a JSON dictionary in the format:
+The data returned is a JSON dictionary in the format:
 
 ```bash
 {
     "output" : LLM_PAYLOAD
 }
 ```
-### Output chain
-For chain output the data returned is a single hex encoded string that
-represents the query inference result.
+### chain
+For chain output the data returned is a single hex encoded string that represents the query inference result.
 
 # Environment Arguments
 
-TGI_INF_WORKFLOW_POSITIONAL_ARGS - any positional args required to instantiate the tgi client inference workflow (List is expected)
-TGI_INF_WORKFLOW_KW_ARGS - any keyword arguments required to instatiate the llm inference workflow. (Dict is expected)
+`TGI_INF_WORKFLOW_POSITIONAL_ARGS` - any positional args required to instantiate the tgi client inference workflow (List is expected)
+`TGI_INF_WORKFLOW_KW_ARGS` - any keyword arguments required to instatiate the llm inference workflow. (Dict is expected)
 
 ## config.json
 
@@ -63,9 +62,7 @@ To configure general container attributes, you will need to modify the config.js
 
 # Launching a Deployment
 
-With an image built, you can deploy a minimal deployment of your service and the corresponding infernet node by
-using the Makefile in the repo root directory as follows:
-
+With an image built, you can deploy a minimal deployment of your service and the corresponding infernet node by using the Makefile in the repo root directory as follows:
 
 ```bash
 make deploy-node service=tgi_client_inference_service

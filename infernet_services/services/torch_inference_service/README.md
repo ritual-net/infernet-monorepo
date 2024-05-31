@@ -1,12 +1,13 @@
-# torch ml inference service
+# Torch Inference Service
 
-A simple service that serves models via the corresponding BaseMLInferenceWorflow.
+A simple service that serves models via the corresponding TorchInferenceWorkflow.
 
 
-# End points
-**/service_output** - main end point that is used to make inference requests.
+## Endpoint
 
-Infernet services are expected to implement a end point at `/service_output` that takes a json payload that conforms to the InfernetInput model:
+Infernet services implement an endpoint at `/service_output` that accepts a JSON payload conforming to the `InfernetInput` model. For more details on Infernet-compatible containers, refer to [our documentation](https://docs.ritual.net/infernet/node/containers).
+
+Use this endpoint to run the model. It expects a JSON payload with the following schema:
 
 ```python
 HexStr = Annotated[
@@ -23,8 +24,6 @@ class InfernetInput(BaseModel):
 ```
 This is meant to let services handle both CHAIN and OFFCHAIN data. For more info, see Infernet Node documentation.
 
-Currently, the torch ml inference service only supports OFFCHAIN data. The data field therefore expects json input. Depending on the Inference Workflow, the schema of the json may vary.
-
 For TorchInferenceWorflow, we expect a json dict that confirms to:
 
 ```python
@@ -37,7 +36,6 @@ For TorchInferenceWorflow, we expect a json dict that confirms to:
 
 # Environment Arguments
 
-
 **CLASSIC_INF_WORKFLOW_CLASS** - fully qualified name of workflow class. For example, "infernet_ml.workflows.inference.llm_inference_workflow.TGIClientInferenceWorkflow" (str is expected)
 **CLASSIC_INF_WORKFLOW_POSITIONAL_ARGS** - any positional args required to instantiate the classic inference workflow (List is expected)
 **CLASSIC_INF_WORKFLOW_KW_ARGS** - any keyword arguments required to instantiate the classic inference workflow. (Dict is expected)
@@ -47,9 +45,9 @@ NOTE: Additional environment arguments may be required depending on the workflow
 
 For example, if you are using the TorchInferenceWorkflow:
 
-    the model filename (defaulted to model.torch) to download from in HF can be sepcified via TORCH_MODEL_FILE_NAME, and jit torchscipt  model loading can be turned on via USE_JIT (defaulted to False).
+- the model filename (defaulted to model.torch) to download from in HF can be sepcified via TORCH_MODEL_FILE_NAME, and jit torchscipt  model loading can be turned on via USE_JIT (defaulted to False).
 
-    By default, uses hugging face to download the model file, which requires HUGGING_FACE_HUB_TOKEN to be set in the env vars to access private models. if the USE_ARWEAVE env var is set to true, will attempt to download models via Arweave, reading env var ALLOWED_ARWEAVE_OWNERS as well.
+- By default, uses hugging face to download the model file, which requires HUGGING_FACE_HUB_TOKEN to be set in the env vars to access private models. if the USE_ARWEAVE env var is set to true, will attempt to download models via Arweave, reading env var ALLOWED_ARWEAVE_OWNERS as well.
 
 
 # Launching
@@ -63,7 +61,7 @@ sudo docker run --name=classic_inf_service -p 4998:3000 --env-file classic_infer
 
 This starts the service via hypercorn with 2 workers at port 4998, reading in environment variables from classic_inference_service.env.
 
-if you have custom workflow dependencies, you should create your own image using the provided one as a base.
+If you have custom workflow dependencies, you should create your own image using the provided one as a base.
 
 Example curl if you are using TorchInferenceWorkflow:
 ```bash
@@ -73,7 +71,7 @@ curl -X POST http://localhost:4998/service_output \
 
 ```
 
-If local deployment is desired, ensure your python path includes the src directory, either by installing the ml project or by manually setting PYTHONPATH, and run the quart dev server:
+If local deployment is desired, ensure your python path includes the src directory, either by installing the ml project or by manually setting `PYTHONPATH`, and run the quart dev server:
 
 ```bash
 pip install -r requirements.txt

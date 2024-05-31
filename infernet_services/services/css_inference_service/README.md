@@ -1,22 +1,23 @@
 # CSS (Closed-Source Software) Inference Service
-A simple service that serves models via a CSSInferenceWorkflow object. In particular, the backend as well as preprocessing / postprocessing logic is encapsulated in the workflow.
 
-Currently, 3 providers are supported, and their API key must be specified as environment variables to the service:
+This service serves models via a `CSSInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
 
-* PERPLEXITYAI_API_KEY - the api key for the PerplexityAI API
-* GOOSEAI_API_KEY - the api key for the GooseAI API
-* OPENAI_API_KEY - the api key for the OPENAI API
+## Supported Providers
 
-# Endpoint
+The service supports three providers, each requiring an API key specified as an environment variable:
 
-Infernet services are expected to implement an end point at `/service_output` that takes a json payload that conforms to the InfernetInput model. For more information on Infernet-compatible containers, refer to [our docs](https://docs.ritual.net/infernet/node/containers).
+- `PERPLEXITYAI_API_KEY` - API key for PerplexityAI
+- `GOOSEAI_API_KEY` - API key for GooseAI
+- `OPENAI_API_KEY` - API key for OpenAI
 
+## Endpoint
 
+Infernet services implement an endpoint at `/service_output` that accepts a JSON payload conforming to the `InfernetInput` model. For more details on Infernet-compatible containers, refer to [our documentation](https://docs.ritual.net/infernet/node/containers).
 
 ## Input
-### data field (offchain)
+### Data Field (offchain)
 
-#### service specific data schema
+#### Service Specific Data Schema
 Example offchain request:
 
 ```python
@@ -44,10 +45,10 @@ Example offchain request:
 }
 ```
 
-#### data field (chain)
-Due to output data size constraints, chain input is only supported for completion end points.
+#### Data Field (chain)
+Due to output data size constraints, onchain input is only supported for the completions endpoint.
 
-We the data payload, we expect a hexstring of the provider, endpoint, model, and messages fields to be ethereum application binary interface encoded.
+The data payload should be a hexstring of the provider, endpoint, model, and messages fields encoded using the Ethereum Application Binary Interface (ABI).
 
 Example python code using the eth-abi API:
 ```python
@@ -73,8 +74,7 @@ Example json input:
 ```
 
 ## Output (Offchain)
-The data returned
-is a JSON dictionary in the format:
+The data returned is a JSON dictionary in the format:
 
 ```json
 {
@@ -102,24 +102,22 @@ You can leverage the Makefile in the repo root directory to build the service's 
 make build service=tgi_client_inference_service
 ```
 
-# Configuring the service
+# Configuring the Service
 
-The service is configured via environment variables and `config.json`.
+The CSS Inference Service can be configured using environment variables and the `config.json` file.
 
-## Environment Arguments
+## Environment Variables
 
-**CSS_INF_WORKFLOW_POSITIONAL_ARGS** - Any positional args required to instantiate the css inference workflow (`List` is expected)
-**CSS_INF_WORKFLOW_KW_ARGS** - Any keyword arguments required to instatiate the llm inference workflow. (`Dict` is expected)
+- **CSS_INF_WORKFLOW_POSITIONAL_ARGS**: A list of positional arguments required to instantiate the CSS Inference Workflow.
+- **CSS_INF_WORKFLOW_KW_ARGS**: A dictionary of keyword arguments required to instantiate the CSS Inference Workflow.
 
 ## config.json
 
-To configure general container attributes, you will need to modify the config.json file in the service folder.
-[Check here for more details on config.json](https://docs.ritual.net/infernet/node/configuration)
+To configure general container attributes, you need to modify the `config.json` file in the service folder. For more details on `config.json`, please refer to the [Infernet Node Configuration documentation](https://docs.ritual.net/infernet/node/configuration).
 
-# Launching a Deployment
+# Deploying the Service
 
-With an image built, you can deploy a minimal deployment of your service along with an Infernet node by running:
-using the Makefile in the repo root directory as follows:
+With an image built, you can deploy a minimal deployment of your service along with an Infernet node by running the following command using the Makefile in the repo root directory:
 
 ```bash
 # Replace XXXX with actual PerplexityAI API Key
@@ -143,8 +141,11 @@ curl -X POST http://localhost:4000/api/jobs \
 ```
 
 # Running Service Locally
+
 It may be helpful to run services locally. To do so, you may call the following make target in your root directory if the image has been built:
 
 ```bash
 make run service=css_inference_service
 ```
+
+
