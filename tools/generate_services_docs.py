@@ -11,7 +11,7 @@ def generate_service_docs() -> None:
 
     reference_root = os.path.join(docs_root, "reference")
     services = [name for name in os.listdir(services_root) if os.path.isdir(os.path.join(services_root, name))]
-    nav_list = {}
+    nav_list = []
     if os.path.exists(reference_root):
         shutil.rmtree(reference_root)
 
@@ -26,13 +26,13 @@ def generate_service_docs() -> None:
                 content = readme_file.read()
             with open(reference_service_path, "w") as reference_file:
                 reference_file.write(content)
-            nav_list[service] = f"reference/{service}.md"
+            nav_list.append({f"{service}": f"reference/{service}.md"})
     
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)  # Load existing config
     
 
-    config["nav"] = [nav_list]
+    config["nav"] = nav_list
     # saving updated navigation to mkdocs.yaml
     with open(config_path, "w") as file:
         yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
