@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import cast
 
 from eth_typing import ChecksumAddress
+from test_library.web3_utils import get_abi, get_deployed_contract_address
 from web3 import AsyncWeb3
 from web3.types import Wei
-
-from test_library.web3_utils import get_abi, get_deployed_contract_address
 
 
 class Token:

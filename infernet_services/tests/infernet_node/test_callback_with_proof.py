@@ -1,27 +1,23 @@
 import logging
 
 import pytest
-
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import (
-    setup_wallet_with_eth_and_approve_contract,
     assert_output,
+    setup_wallet_with_eth_and_approve_contract,
 )
 from test_library.assertion_utils import assert_regex_in_node_logs
-from test_library.chain.utils import protocol_balance, node_balance
+from test_library.chain.utils import node_balance, protocol_balance
 from test_library.chain.verifier import GenericAtomicVerifier
 from test_library.chain.wallet import fund_address_with_eth
-from test_library.constants import (
-    ZERO_ADDRESS,
-    PROTOCOL_FEE,
-)
+from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
 from test_library.test_config import global_config
 from test_library.web3_utils import (
+    assert_balance,
+    echo_input,
     get_deployed_contract_address,
     get_w3,
     request_web3_compute,
-    echo_input,
-    assert_balance,
 )
 
 log = logging.getLogger(__name__)

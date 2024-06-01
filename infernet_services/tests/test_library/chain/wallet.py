@@ -1,21 +1,20 @@
 from __future__ import annotations
 
-from typing import cast, Optional
+from typing import Optional, cast
 
 from eth_typing import ChecksumAddress, HexAddress
-from web3 import AsyncWeb3
-from web3.contract import AsyncContract  # type: ignore
-from web3.types import Wei
-
 from test_library.chain.token import Token
 from test_library.test_config import global_config
 from test_library.web3_utils import (
     get_abi,
-    get_w3,
-    get_deployed_contract_address,
     get_account,
+    get_deployed_contract_address,
+    get_w3,
     log,
 )
+from web3 import AsyncWeb3
+from web3.contract import AsyncContract  # type: ignore
+from web3.types import Wei
 
 
 class Wallet:
