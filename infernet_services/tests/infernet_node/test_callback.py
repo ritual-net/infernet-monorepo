@@ -28,22 +28,22 @@ log = logging.getLogger(__name__)
 encoded_echo_input = echo_input(12)
 
 
-async def assert_output(task_id: bytes) -> None:
+async def assert_output(sub_id: int) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         raw, processed = decode(["bytes", "bytes"], output)
         received = decode(["uint8"], raw, strict=False)[0]
         assert received == 12
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio
 async def test_infernet_callback_consumer() -> None:
-    task_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
+    sub_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
 
     await assert_regex_in_node_logs("Sent tx")
 
-    await assert_output(task_id)
+    await assert_output(sub_id)
 
 
 @pytest.mark.asyncio
@@ -80,7 +80,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
 
     payment = int(0.1e18)
 
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ECHO_SERVICE,
         encoded_echo_input,
         payment_amount=payment,
@@ -88,7 +88,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
         wallet=wallet.address,
     )
 
-    await assert_output(task_id)
+    await assert_output(sub_id)
     await assert_balance(wallet.address, funding - payment)
 
     protocol_balance_after = await w3.eth.get_balance(DEFAULT_PROTOCOL_FEE_RECIPIENT)
@@ -164,7 +164,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
         amount,
     )
 
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ECHO_SERVICE,
         encoded_echo_input,
         payment_amount=amount,
@@ -172,7 +172,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
         wallet=wallet.address,
     )
 
-    await assert_output(task_id)
+    await assert_output(sub_id)
 
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient

@@ -58,6 +58,7 @@ contract DeployEverything is Deploy {
         _deploy("FakeMoney.sol", "AcceptedMoney");
         _deploy("FakeMoney.sol", "RejectedMoney");
         _deploy("GenericVerifier.sol", "GenericAtomicVerifier");
+        _deploy("GenericVerifier.sol", "GenericLazyVerifier");
 
         postRun();
     }

@@ -5,11 +5,11 @@ import logging
 import shlex
 import subprocess
 from typing import Any, Callable, Dict, List, Optional, cast
-from uuid import uuid4
 
 from eth_abi.abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress, HexAddress
+from hexbytes import HexBytes
 from infernet_ml.utils.codec.vector import DataType, decode_vector
 from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
@@ -26,6 +26,7 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
+from web3.types import LogReceipt
 
 log = logging.getLogger(__name__)
 
@@ -142,7 +143,7 @@ def get_abi(filename: str, contract_name: str) -> ABIType:
 
 
 async def assert_generic_callback_consumer_output(
-    task_id: Optional[bytes],
+    sub_id: Optional[int],
     assertions: Callable[[bytes, bytes, bytes], None],
     timeout: int = 20,
 ) -> None:
@@ -151,8 +152,8 @@ async def assert_generic_callback_consumer_output(
     fails.
 
     Args:
-        task_id (Optional[bytes]): The task ID. If None, the function will attempt to get
-            the task ID from the `lastTaskId()` method on the contract.
+        sub_id (Optional[int]): The subscription ID. If None, the function will poll
+            `receivedToggle` until it changes, and then assert the output.
         assertions (Callable[[bytes, bytes, bytes], None]): The assertion
             function.
         timeout (int, optional): The timeout. Defaults to 10 seconds.
@@ -160,7 +161,7 @@ async def assert_generic_callback_consumer_output(
     """
     consumer = await get_consumer_contract()
 
-    if not task_id:
+    if sub_id is None:
         received_toggle = await consumer.functions.receivedToggle().call()
 
         @retry(  # type: ignore
@@ -178,15 +179,15 @@ async def assert_generic_callback_consumer_output(
         tries=timeout * 2,
         delay=1 / 2,
     )  # type: ignore
-    async def _assert(_task_id: bytes) -> None:
-        log.info(f"querying consumer contract for task id {_task_id.hex()}")
-        _input = await consumer.functions.receivedInput(_task_id).call()
-        _output = await consumer.functions.receivedOutput(_task_id).call()
-        _proof = await consumer.functions.receivedProof(_task_id).call()
+    async def _assert(_sub_id: int) -> None:
+        log.info(f"querying consumer contract for subscription id {_sub_id}")
+        _input = await consumer.functions.receivedInput(_sub_id).call()
+        _output = await consumer.functions.receivedOutput(_sub_id).call()
+        _proof = await consumer.functions.receivedProof(_sub_id).call()
         log.info(f"consumer contract call: {_input} {_output} {_proof}")
         assertions(_input, _output, _proof)
 
-    await _assert(task_id)
+    await _assert(sub_id)
 
 
 async def get_w3() -> AsyncWeb3:
@@ -282,7 +283,7 @@ async def request_web3_compute(
     payment_amount: int = 0,
     wallet: ChecksumAddress = ZERO_ADDRESS,
     prover: ChecksumAddress = ZERO_ADDRESS,
-) -> bytes:
+) -> int:
     """
     Requests compute from the consumer contract.
 
@@ -297,13 +298,11 @@ async def request_web3_compute(
         prover (ChecksumAddress, optional): The prover. Defaults to ZERO_ADDRESS.
 
     Returns:
-        int: The index of the request.
+        int: Subscription ID.
     """
     consumer = await get_consumer_contract()
-    randomness = f"{uuid4()}"
-    log.info(f"requesting compute {service_id} {randomness} {input!r}")
-    fn = consumer.functions.requestCompute(
-        randomness,
+    log.info(f"requesting compute {service_id} {input!r}")
+    tx = await consumer.functions.requestCompute(
         service_id,
         input,
         redundancy,
@@ -311,13 +310,30 @@ async def request_web3_compute(
         payment_amount,
         wallet,
         prover,
-    )
-    gen_id = await fn.call()
-    log.info(f"generated id {gen_id}")
-    tx = await fn.transact()
+    ).transact()
+
     log.info(f"awaiting transaction {tx.hex()}")
-    await (await get_w3()).eth.wait_for_transaction_receipt(tx)
-    return cast(bytes, gen_id)
+    receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+
+    target_topic = HexBytes(
+        "0x04344ed7a67fec80c444d56ee1cee242f3f75b91fecc8dbce8890069c82eb48e"
+    )
+
+    def extract_subscription_id(logs: List[LogReceipt]) -> int:
+        for _log in logs:
+            if (
+                _log["address"] == global_config.coordinator_address
+                and _log["topics"][0] == target_topic
+            ):
+                subscription_id_hex = _log["topics"][1]
+                subscription_id = int(subscription_id_hex.hex(), 16)
+                return subscription_id
+        raise ValueError("Subscription ID not found in logs")
+
+    sub_id = extract_subscription_id(receipt["logs"])
+
+    log.info(f"transaction receipt {receipt} - subscription id {sub_id}")
+    return sub_id
 
 
 def california_housing_web3_assertions(

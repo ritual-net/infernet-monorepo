@@ -1,26 +1,26 @@
 version: '3'
 
 services:
-  node:
-    image: ritualnetwork/infernet-node-internal:1.0.0.5
-    ports:
-      - "0.0.0.0:4000:4000"
-    volumes:
-      - ./config.json:/app/config.json
-      - node-logs:/logs
-      - /var/run/docker.sock:/var/run/docker.sock
-    tty: true
-    networks:
-      - network
-    depends_on:
-      - redis
-      - anvil-node
-    restart:
-      on-failure
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    stop_grace_period: 1m
-    container_name: infernet-node
+#  node:
+#    image: ritualnetwork/infernet-node-internal:1.0.0.5
+#    ports:
+#      - "0.0.0.0:4000:4000"
+#    volumes:
+#      - ./config.json:/app/config.json
+#      - node-logs:/logs
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    tty: true
+#    networks:
+#      - network
+#    depends_on:
+#      - redis
+#      - anvil-node
+#    restart:
+#      on-failure
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
+#    stop_grace_period: 1m
+#    container_name: infernet-node
 
   redis:
     image: redis:latest

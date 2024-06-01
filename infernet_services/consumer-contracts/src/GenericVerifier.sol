@@ -40,10 +40,7 @@ contract GenericAtomicVerifier is IProver {
         return prices[token];
     }
 
-    function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
-        external
-        override
-    {
+    function _finalizeProof(uint32 subscriptionId, uint32 interval, address node, bytes memory proof) internal {
         string memory content = abi.decode(proof, (string));
         EIP712Coordinator coordinator = EIP712Coordinator(registry.COORDINATOR());
         if (keccak256(abi.encodePacked(content)) == keccak256(abi.encodePacked(ACCEPTED_PROOF))) {
@@ -53,5 +50,31 @@ contract GenericAtomicVerifier is IProver {
         }
     }
 
+    function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
+        external
+        virtual
+        override
+    {
+        _finalizeProof(subscriptionId, interval, node, proof);
+    }
+
     receive() external payable {}
+}
+
+contract GenericLazyVerifier is GenericAtomicVerifier {
+    constructor(Registry _registry) GenericAtomicVerifier(_registry) {}
+
+    mapping(uint32 => mapping(uint32 => mapping(address => bytes))) public storedProofs;
+
+    function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
+    external
+    override
+    {
+        storedProofs[subscriptionId][interval][node] = proof;
+    }
+
+    function finalize(uint32 subscriptionId, uint32 interval, address node) external {
+        bytes memory proof = storedProofs[subscriptionId][interval][node];
+        _finalizeProof(subscriptionId, interval, node, proof);
+    }
 }

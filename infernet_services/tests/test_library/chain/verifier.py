@@ -51,3 +51,18 @@ class GenericAtomicVerifier:
         tx = await self._contract.functions.disallowToken(token).transact()
         await self._w3.eth.wait_for_transaction_receipt(tx)
         assert await self._contract.functions.acceptedPayments(token).call() is False
+
+
+class GenericLazyVerifier(GenericAtomicVerifier):
+    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
+        super().__init__(address, w3)
+        self._contract = w3.eth.contract(
+            address=address,
+            abi=get_abi("GenericVerifier.sol", "GenericLazyVerifier"),
+        )
+
+    async def finalize(
+        self: GenericLazyVerifier, sub_id: int, interval: int, node: ChecksumAddress
+    ) -> None:
+        tx = await self._contract.functions.finalize(sub_id, interval, node).transact()
+        await self._w3.eth.wait_for_transaction_receipt(tx)

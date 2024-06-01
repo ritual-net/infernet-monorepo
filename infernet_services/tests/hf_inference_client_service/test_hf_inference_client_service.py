@@ -91,28 +91,28 @@ async def test_hf_inference_client_service_summarization() -> None:
     assert len(result) < len(long_text)
 
 
-async def assert_web3_text_generation_output(task_id: Optional[bytes] = None) -> None:
+async def assert_web3_text_generation_output(sub_id: Optional[int] = None) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (out,) = decode(["string"], output, strict=False)
         assert "4" in out
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio
 async def test_web3_text_generation_no_model_provided() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["uint8", "string", "string"],
             [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
         ),
     )
-    await assert_web3_text_generation_output(task_id)
+    await assert_web3_text_generation_output(sub_id)
 
 
 async def assert_web3_text_classification_output(
-    task_id: Optional[bytes] = None,
+    sub_id: Optional[int] = None,
 ) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
@@ -121,12 +121,12 @@ async def assert_web3_text_classification_output(
         assert labels[0] == "POSITIVE"
         assert (scores[0] / 1e6) > 0.8
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio
 async def test_web3_text_classification_no_model_provided() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["uint8", "string", "string"],
@@ -137,11 +137,11 @@ async def test_web3_text_classification_no_model_provided() -> None:
             ],
         ),
     )
-    await assert_web3_text_classification_output(task_id)
+    await assert_web3_text_classification_output(sub_id)
 
 
 async def assert_web3_token_classification_output(
-    task_id: Optional[bytes] = None,
+    sub_id: Optional[int] = None,
 ) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
@@ -149,12 +149,12 @@ async def assert_web3_token_classification_output(
         assert groups[0] == "MISC"
         assert (scores[0] / 1e6) > 0.8
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio
 async def test_web3_token_classification_no_model_provided() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["uint8", "string", "string"],
@@ -166,29 +166,29 @@ async def test_web3_token_classification_no_model_provided() -> None:
         ),
     )
 
-    await assert_web3_token_classification_output(task_id)
+    await assert_web3_token_classification_output(sub_id)
 
 
-async def assert_web3_summarization_output(task_id: Optional[bytes] = None) -> None:
+async def assert_web3_summarization_output(sub_id: Optional[int] = None) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
         (result,) = decode(["string"], raw, strict=False)
         assert len(result) < len(long_text)
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_web3_summarization_no_model_provided() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["uint8", "string", "string"],
             [HFTaskId.SUMMARIZATION, "", long_text],
         ),
     )
-    await assert_web3_summarization_output(task_id)
+    await assert_web3_summarization_output(sub_id)
 
 
 @pytest.mark.asyncio

@@ -47,7 +47,7 @@ async def test_basic_web2_inference_from_arweave() -> None:
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_arweave() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ONNX_SERVICE_NOT_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
@@ -63,7 +63,7 @@ async def test_basic_web3_inference_from_arweave() -> None:
         ),
     )
 
-    await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+    await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
 
 
 hf_model_source, hf_load_args = (
@@ -94,7 +94,7 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_hf_hub() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ONNX_SERVICE_NOT_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
@@ -110,7 +110,7 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
         ),
     )
 
-    await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+    await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
 
 
 @pytest.mark.asyncio

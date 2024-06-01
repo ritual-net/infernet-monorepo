@@ -17,35 +17,6 @@ from test_library.web3_utils import (
 load_dotenv()
 
 
-# @pytest.fixture(scope="module", autouse=True)
-# def hf_hub_setup() -> Generator[None, None, None]:
-#     yield from handle_lifecycle(
-#         ONNX_ARWEAVE_PRELOADED,
-#         {
-#             "MODEL_SOURCE": ModelSource.HUGGINGFACE_HUB.value,
-#             "LOAD_ARGS": json.dumps(
-#                 {
-#                     "repo_id": "Ritual-Net/iris-classification",
-#                     "filename": "iris.onnx",
-#                 }
-#             ),
-#         },
-#         skip_deploying=skip_deploying,
-#         skip_contract=skip_contract,
-#         skip_teardown=skip_teardown,
-#     )
-
-
-# model_source, load_args = (
-#     ModelSource.HUGGINGFACE_HUB,
-#     {
-#         "repo_id": hf_model_id("iris-classification"),
-#         "filename": "iris.onnx",
-#         "version": None,
-#     },
-# )
-
-
 @pytest.mark.asyncio
 async def test_basic_web2_inference_from_hf_hub() -> None:
     task = await request_job(
@@ -64,7 +35,7 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_hf_hub() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ONNX_HF_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
@@ -80,4 +51,4 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
         ),
     )
 
-    await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+    await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)

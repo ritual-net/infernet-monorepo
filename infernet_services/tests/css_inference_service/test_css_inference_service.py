@@ -56,7 +56,7 @@ async def test_completion_web3(
     messages: list[ConvoMessage],
 ) -> None:
     encoded = encode_css_completion_request(provider, endpoint, model, messages)
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encoded,
     )
@@ -67,7 +67,7 @@ async def test_completion_web3(
             "yes" in result.lower() or "no" in result.lower()
         ), f"yes or no should be in result, instead got {result}"
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 parameters: Any = [

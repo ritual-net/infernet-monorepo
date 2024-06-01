@@ -19,7 +19,7 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 
 @pytest.mark.asyncio
 async def test_completion_web3() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["string"],
@@ -31,7 +31,7 @@ async def test_completion_web3() -> None:
         result: str = decode(["string"], output, strict=False)[0]
         assert "4" in result, f"expected 4 to be returned, instead got {result}"
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio

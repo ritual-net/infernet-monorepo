@@ -7,9 +7,9 @@ import {console2} from "forge-std/console2.sol";
 import {Delegator} from "infernet-sdk/pattern/Delegator.sol";
 
 contract GenericCallbackConsumer is CallbackConsumer, Delegator {
-    mapping(bytes32 => bytes) public receivedInput;
-    mapping(bytes32 => bytes) public receivedOutput;
-    mapping(bytes32 => bytes) public receivedProof;
+    mapping(uint32 => bytes) public receivedInput;
+    mapping(uint32 => bytes) public receivedOutput;
+    mapping(uint32 => bytes) public receivedProof;
 
     // Flag to check if the compute was received since the last request
     bool public receivedToggle;
@@ -22,7 +22,6 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
     }
 
     function requestCompute(
-        string memory randomness,
         string memory containerId,
         bytes memory inputs,
         uint16 redundancy,
@@ -30,15 +29,12 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         uint256 paymentAmount,
         address wallet,
         address prover
-    ) public returns (bytes32) {
-        bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
-        console2.log("generated task id, now requesting compute");
-        console2.logBytes32(generatedTaskId);
-        _requestCompute(
-            containerId, abi.encodePacked(inputs, randomness), redundancy, paymentToken, paymentAmount, wallet, prover
+    ) public returns (uint32) {
+        uint32 id = _requestCompute(
+            containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, prover
         );
-        console2.log("requested compute");
-        return generatedTaskId;
+        console2.log("Made subscription request", id);
+        return id;
     }
 
     function _receiveCompute(
@@ -53,13 +49,12 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         uint256 index
     ) internal override {
         (bytes memory raw, bytes memory processed) = abi.decode(input, (bytes, bytes));
-        bytes32 taskId = keccak256(raw);
-        console2.log("Received compute");
-        console2.logBytes32(taskId);
+        console2.log("Received compute for subscription", subscriptionId);
         receivedToggle = !receivedToggle;
         lastOutput = output;
-        receivedInput[taskId] = input;
-        receivedOutput[taskId] = output;
-        receivedProof[taskId] = proof;
+
+        receivedInput[subscriptionId] = input;
+        receivedOutput[subscriptionId] = output;
+        receivedProof[subscriptionId] = proof;
     }
 }
