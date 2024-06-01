@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {ERC20} from "solady/tokens/ERC20.sol";
 
 contract FakeMoney is ERC20 {
-
     function mint(address to, uint256 amount) public {
         _mint(to, amount);
     }

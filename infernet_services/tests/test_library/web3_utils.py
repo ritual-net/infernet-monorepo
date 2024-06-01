@@ -7,7 +7,7 @@ import subprocess
 from typing import Any, Callable, Dict, List, Optional, cast
 from uuid import uuid4
 
-from eth_abi.abi import decode
+from eth_abi.abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress, HexAddress
 from infernet_ml.utils.codec.vector import DataType, decode_vector
@@ -26,7 +26,6 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
-from web3.types import Wei
 
 log = logging.getLogger(__name__)
 
@@ -254,99 +253,11 @@ async def get_consumer_contract(
     )
 
 
-async def get_wallet_factory_contract(_address: Optional[str] = None) -> AsyncContract:
-    address = _address or global_config.wallet_factory
-    w3 = await get_w3()
-    return w3.eth.contract(
-        address=AsyncWeb3.to_checksum_address(address),
-        abi=get_abi("WalletFactory.sol", "WalletFactory"),
-    )
-
-
-class Wallet:
-    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
-        self.address = address
-        self._w3 = w3
-        self._contract = w3.eth.contract(
-            address=address,
-            abi=get_abi("Wallet.sol", "Wallet"),
-        )
-
-    async def approve(
-        self, spender: ChecksumAddress, token: ChecksumAddress, amount: int
-    ) -> None:
-        tx = await self._contract.functions.approve(spender, token, amount).transact()
-        await self._w3.eth.wait_for_transaction_receipt(tx)
-        assert await self._contract.functions.allowance(spender, token).call() == amount
-
-
-async def fund_wallet_with_eth(wallet: Wallet, amount: int) -> None:
-    w3 = await get_w3()
-    tx = await w3.eth.send_transaction(
-        {
-            "to": wallet.address,
-            "value": cast(Wei, amount),
-        }
-    )
-    balance_before = await w3.eth.get_balance(wallet.address)
-    await w3.eth.wait_for_transaction_receipt(tx)
-    balance_after = await w3.eth.get_balance(wallet.address)
-    assert balance_after == amount + balance_before
-
-
-class Token:
-    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
-        self.address = address
-        self._w3 = w3
-        self._contract = w3.eth.contract(
-            address=address,
-            abi=get_abi("FakeMoney.sol", "FakeMoney"),
-        )
-
-    async def mint(self, to: ChecksumAddress, amount: int) -> None:
-        tx = await self._contract.functions.mint(to, amount).transact()
-        await self._w3.eth.wait_for_transaction_receipt(tx)
-
-    async def balance_of(self, address: ChecksumAddress) -> Wei:
-        return cast(Wei, await self._contract.functions.balanceOf(address).call())
-
-
-def mock_token_address(token_name: ChecksumAddress) -> ChecksumAddress:
-    return get_deployed_contract_address(token_name)
-
-
-async def fund_wallet_with_token(wallet: Wallet, token_name: str, amount: int) -> None:
-    w3 = await get_w3()
-    contract = w3.eth.contract(
-        address=get_deployed_contract_address(token_name),
-        abi=get_abi("FakeMoney.sol", "FakeMoney"),
-    )
-    tx = await contract.functions.mint(wallet.address, amount).transact()
-    balance_bafore = await contract.functions.balanceOf(wallet.address).call()
-    await w3.eth.wait_for_transaction_receipt(tx)
-    assert (
-        await contract.functions.balanceOf(wallet.address).call()
-        == amount + balance_bafore
-    )
-
-
 async def assert_balance(address: ChecksumAddress, amount: int) -> None:
     w3 = await get_w3()
     balance = await w3.eth.get_balance(address)
     log.info(f"asserting balance {balance} == {amount}")
     assert balance == amount
-
-
-async def create_wallet(_owner: Optional[HexAddress] = None) -> Wallet:
-    _owner = _owner or get_account()
-    factory = await get_wallet_factory_contract()
-    wallet = await factory.functions.createWallet(_owner).call()
-    tx = await factory.functions.createWallet(_owner).transact()
-    w3 = await get_w3()
-    await w3.eth.wait_for_transaction_receipt(tx)
-    assert await factory.functions.isValidWallet(wallet).call()
-    log.info(f"created payment wallet {wallet}")
-    return Wallet(AsyncWeb3.to_checksum_address(wallet), w3)
 
 
 async def get_coordinator_contract() -> AsyncContract:
@@ -445,3 +356,17 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
         registry=DEFAULT_REGISTRY_ADDRESS,
         extra_params={"signer": get_account()},
     )
+
+
+def echo_input(i: int, proof: str = "") -> bytes:
+    """
+    Creates an echo input, to be used with the echo service.
+    """
+    return encode(["uint8", "string"], [i, proof])
+
+
+def echo_output(i: int) -> bytes:
+    """
+    Output from echo service
+    """
+    return encode(["uint8"], [i])

@@ -32,7 +32,7 @@ contract Deploy is BetterDeployer {
             consumer = deploy(contractName, artifact, abi.encode(registry));
         }
 
-        console2.log("Deployed Contract: ", address(consumer));
+        console2.log("Deployed Contract: ", contractName, address(consumer));
     }
 
     function run() public virtual {
@@ -57,6 +57,8 @@ contract DeployEverything is Deploy {
         _deploy("DelegateSubscriptionConsumer.sol", "DelegateSubscriptionConsumer");
         _deploy("FakeMoney.sol", "AcceptedMoney");
         _deploy("FakeMoney.sol", "RejectedMoney");
+        _deploy("GenericVerifier.sol", "GenericAtomicVerifier");
+
         postRun();
     }
 }

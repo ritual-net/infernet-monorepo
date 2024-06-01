@@ -7,8 +7,6 @@ from test_library.constants import ANVIL_NODE
 from test_library.web3_utils import get_consumer_contract
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
-SERVICE_NAME = "echo"
-
 log = logging.getLogger(__name__)
 
 

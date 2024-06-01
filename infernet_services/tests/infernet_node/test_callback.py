@@ -2,9 +2,11 @@ import logging
 from typing import Tuple
 
 import pytest
-from eth_abi import decode, encode  # type: ignore
-from infernet_node.conftest import SERVICE_NAME, SERVICE_WITH_PAYMENT_REQUIREMENTS
+from eth_abi.abi import decode
+from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
 from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.chain.token import Token
+from test_library.chain.wallet import Wallet, create_wallet, fund_wallet_with_eth
 from test_library.constants import (
     DEFAULT_PROTOCOL_FEE_RECIPIENT,
     PROTOCOL_FEE,
@@ -12,18 +14,18 @@ from test_library.constants import (
 )
 from test_library.test_config import global_config
 from test_library.web3_utils import (
-    Token,
-    Wallet,
     assert_balance,
     assert_generic_callback_consumer_output,
-    create_wallet,
-    fund_wallet_with_eth,
+    echo_input,
     get_deployed_contract_address,
     get_w3,
     request_web3_compute,
 )
 
 log = logging.getLogger(__name__)
+
+
+encoded_echo_input = echo_input(12)
 
 
 async def assert_output(task_id: bytes) -> None:
@@ -37,7 +39,7 @@ async def assert_output(task_id: bytes) -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_callback_consumer() -> None:
-    task_id = await request_web3_compute(SERVICE_NAME, encode(["uint8"], [12]))
+    task_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
 
     await assert_regex_in_node_logs("Sent tx")
 
@@ -48,8 +50,8 @@ async def test_infernet_callback_consumer() -> None:
 async def test_infernet_basic_payment_insufficient_allowance() -> None:
     wallet = await create_wallet()
     await request_web3_compute(
-        SERVICE_NAME,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE,
+        encoded_echo_input,
         payment_amount=int(1e18),
         wallet=wallet.address,
     )
@@ -79,8 +81,8 @@ async def test_infernet_basic_payment_happy_path() -> None:
     payment = int(0.1e18)
 
     task_id = await request_web3_compute(
-        SERVICE_NAME,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE,
+        encoded_echo_input,
         payment_amount=payment,
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
@@ -116,14 +118,27 @@ async def test_infernet_basic_payment_insufficient_balance() -> None:
     )
 
     await request_web3_compute(
-        SERVICE_NAME,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE,
+        encoded_echo_input,
         payment_amount=int(amount),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
     )
 
     await assert_regex_in_node_logs("Token transfer failed")
+
+
+async def setup_wallet_with_eth_and_approve_contract(
+    amount: int, contract_name: str = "GenericCallbackConsumer"
+) -> Wallet:
+    wallet = await create_wallet()
+    await fund_wallet_with_eth(wallet, amount)
+    await wallet.approve(
+        get_deployed_contract_address(contract_name),
+        ZERO_ADDRESS,
+        amount,
+    )
+    return wallet
 
 
 async def setup_wallet_with_accepted_token(amount: int) -> Tuple[Wallet, Token]:
@@ -150,8 +165,8 @@ async def test_infernet_basic_payment_custom_token() -> None:
     )
 
     task_id = await request_web3_compute(
-        SERVICE_NAME,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE,
+        encoded_echo_input,
         payment_amount=amount,
         payment_token=mock_token.address,
         wallet=wallet.address,
@@ -188,8 +203,8 @@ async def test_infernet_basic_payment_unaccepted_token() -> None:
     )
 
     await request_web3_compute(
-        SERVICE_NAME,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE,
+        encoded_echo_input,
         payment_amount=int(amount),
         payment_token=rejected_money,
         wallet=wallet.address,
@@ -216,8 +231,8 @@ async def test_infernet_ignore_subscription_with_low_bid() -> None:
     )
 
     await request_web3_compute(
-        SERVICE_WITH_PAYMENT_REQUIREMENTS,
-        encode(["uint8"], [12]),
+        ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS,
+        encoded_echo_input,
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,

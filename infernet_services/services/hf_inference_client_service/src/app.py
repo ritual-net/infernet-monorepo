@@ -7,8 +7,7 @@ import logging
 import os
 from typing import Any, Dict, Union, cast
 
-from eth_abi import decode  # type: ignore
-from eth_abi import encode  # type: ignore
+from eth_abi.abi import decode, encode
 from infernet_ml.utils.hf_types import (
     HFClassificationInferenceInput,
     HFInferenceClientInput,

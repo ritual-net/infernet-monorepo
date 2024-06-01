@@ -4,23 +4,22 @@ from time import time
 from typing import Optional, cast
 
 import pytest
-from eth_abi import encode  # type: ignore
 from eth_typing import ChecksumAddress
 from infernet_client import NodeClient
 from infernet_client.chain_utils import RPC, Subscription
+from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import setup_wallet_with_accepted_token
 from infernet_node.test_subscriptions import assert_next_output, set_next_input
 from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.chain.wallet import create_wallet, fund_wallet_with_eth
 from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
 from test_library.test_config import global_config
 from test_library.web3_utils import (
-    create_wallet,
-    fund_wallet_with_eth,
+    echo_input,
+    echo_output,
     get_coordinator_contract,
     get_deployed_contract_address,
 )
-
-SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +38,7 @@ async def create_delegated_subscription(
     frequency: int = 1,
     time_to_active: int = 0,
     redundancy: int = 1,
-    container: str = SERVICE_NAME,
+    container: str = ECHO_SERVICE,
     nonce: Optional[int] = None,
     contract_name: str = DELEGATE_SUB_CONSUMER_CONTRACT,
     payment_amount: int = 0,
@@ -85,10 +84,10 @@ async def create_delegated_subscription(
 async def test_infernet_delegated_subscription_happy_path() -> None:
     i = random.randint(0, 255)
 
-    await create_delegated_subscription(encode(["uint8"], [i]), 2, 1)
+    await create_delegated_subscription(echo_input(i), 2, 1)
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
@@ -96,10 +95,10 @@ async def test_infernet_delegated_subscription_happy_path() -> None:
 async def test_infernet_delegated_subscription_active_at_later() -> None:
     i = random.randint(0, 255)
 
-    await create_delegated_subscription(encode(["uint8"], [i]), 2, 1, time_to_active=4)
+    await create_delegated_subscription(echo_input(i), 2, 1, time_to_active=4)
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
@@ -107,17 +106,17 @@ async def test_infernet_delegated_subscription_active_at_later() -> None:
 async def test_infernet_delegated_recurring_subscription() -> None:
     i = random.randint(0, 255)
 
-    await create_delegated_subscription(encode(["uint8"], [i]), 4, 2)
+    await create_delegated_subscription(echo_input(i), 4, 2)
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
     i = random.randint(0, 255)
     await set_next_input(i, contract_name=DELEGATE_SUB_CONSUMER_CONTRACT)
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
@@ -125,10 +124,10 @@ async def test_infernet_delegated_recurring_subscription() -> None:
 async def test_infernet_delegated_subscription_with_redundancy() -> None:
     i = random.randint(0, 255)
 
-    await create_delegated_subscription(encode(["uint8"], [i]), 4, 1, redundancy=2)
+    await create_delegated_subscription(echo_input(i), 4, 1, redundancy=2)
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
     next_sub = await get_next_subscription_id()
@@ -154,7 +153,7 @@ async def test_infernet_delegated_subscription_with_payment() -> None:
     )
 
     await create_delegated_subscription(
-        encode(["uint8"], [i]),
+        echo_input(i),
         4,
         1,
         redundancy=2,
@@ -163,7 +162,7 @@ async def test_infernet_delegated_subscription_with_payment() -> None:
     )
 
     await assert_next_output(
-        encode(["uint8"], [i]), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
@@ -176,7 +175,7 @@ async def test_infernet_delegated_subscription_not_approved() -> None:
     await fund_wallet_with_eth(wallet, int(funding))
 
     await create_delegated_subscription(
-        encode(["uint8"], [random.randint(0, 255)]),
+        echo_input(random.randint(0, 255)),
         4,
         1,
         redundancy=2,
@@ -206,7 +205,7 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
 
     i = random.randint(0, 255)
     await create_delegated_subscription(
-        encode(["uint8"], [i]),
+        echo_input(i),
         4,
         1,
         redundancy=1,
@@ -216,7 +215,7 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
     )
 
     await assert_next_output(
-        encode(["uint8"], [i]),
+        echo_output(i),
         contract_name=DELEGATE_SUB_CONSUMER_CONTRACT,
         timeout=10,
     )
@@ -246,7 +245,7 @@ async def test_infernet_delegated_subscription_with_not_enough_money() -> None:
     )
 
     await create_delegated_subscription(
-        encode(["uint8"], [random.randint(0, 255)]),
+        echo_input(random.randint(0, 255)),
         4,
         1,
         redundancy=1,

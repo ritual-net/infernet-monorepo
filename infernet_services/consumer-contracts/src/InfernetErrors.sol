@@ -38,7 +38,7 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator, Allowlist {
     function echoThis(uint8 errorId) public {
         _requestCompute(
             "echo",
-            abi.encode(errorId),
+            abi.encode(errorId, ""),
             1, // redundancy
             address(0), // paymentToken
             0, // paymentAmount

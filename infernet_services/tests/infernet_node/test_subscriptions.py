@@ -2,13 +2,18 @@ import logging
 import random
 
 import pytest
-from eth_abi import decode, encode  # type: ignore
+from eth_abi.abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
-from infernet_node.conftest import SERVICE_NAME
+from infernet_node.conftest import ECHO_SERVICE
 from reretry import retry  # type: ignore
 from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.constants import ZERO_ADDRESS
-from test_library.web3_utils import get_consumer_contract, get_w3
+from test_library.web3_utils import (
+    echo_input,
+    echo_output,
+    get_consumer_contract,
+    get_w3,
+)
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 
@@ -55,7 +60,7 @@ async def set_next_input(
 ) -> None:
     consumer = await get_subscription_consumer_contract(contract_name)
     log.info(f"setting input to: {i}")
-    tx = await consumer.functions.setInput(encode(["uint8"], [i])).transact()
+    tx = await consumer.functions.setInput(echo_input(i)).transact()
     await (await get_w3()).eth.wait_for_transaction_receipt(tx)
 
 
@@ -77,7 +82,7 @@ async def create_sub_with_random_input(
     await set_next_input(i, contract_name=contract_name)
 
     create_sub = consumer.functions.createSubscription(
-        SERVICE_NAME,
+        ECHO_SERVICE,
         frequency,
         period,
         redundancy,
@@ -98,20 +103,20 @@ async def create_sub_with_random_input(
 async def test_infernet_subscription_consumer_happy_path() -> None:
     (i, sub_id) = await create_sub_with_random_input(1, 4)
 
-    await assert_next_output(encode(["uint8"], [i]))
+    await assert_next_output(echo_output(i))
 
 
 @pytest.mark.asyncio
 async def test_infernet_recurring_subscription() -> None:
     (i, sub_id) = await create_sub_with_random_input(2, 4)
-    await assert_next_output(encode(["uint8"], [i]))
+    await assert_next_output(echo_output(i))
     log.info("First output received")
 
     i = random.randint(0, 255)
     await set_next_input(i)
 
     log.info("Waiting for second output")
-    await assert_next_output(encode(["uint8"], [i]))
+    await assert_next_output(echo_output(i))
     log.info("Second output received")
 
 
@@ -119,7 +124,7 @@ async def test_infernet_recurring_subscription() -> None:
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
     (i, sub_id) = await create_sub_with_random_input(2, 5)
-    await assert_next_output(encode(["uint8"], [i]))
+    await assert_next_output(echo_output(i))
     log.info(f"First output received, cancelling next delivery: {sub_id}")
 
     consumer = await get_subscription_consumer_contract()

@@ -53,8 +53,8 @@ def deploy_contracts() -> None:
     _wait()
 
 
-SERVICE_NAME = "echo"
-SERVICE_WITH_PAYMENT_REQUIREMENTS = "echo_with_payment_requirements"
+ECHO_SERVICE = "echo"
+ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS = "echo_with_payment_requirements"
 
 
 def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:
@@ -64,8 +64,8 @@ def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:
 
     services = [
         ServiceConfig.build(
-            name=SERVICE_NAME,
-            image_id=f"ritualnetwork/{SERVICE_NAME}:latest",
+            name=ECHO_SERVICE,
+            image_id=f"ritualnetwork/{ECHO_SERVICE}:latest",
             port=3000,
             env_vars={"service_dir": "infernet_services/test_services"},
             accepted_payments={
@@ -74,8 +74,8 @@ def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:
             },
         ),
         ServiceConfig.build(
-            name=SERVICE_WITH_PAYMENT_REQUIREMENTS,
-            image_id=f"ritualnetwork/{SERVICE_NAME}:latest",
+            name=ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS,
+            image_id=f"ritualnetwork/{ECHO_SERVICE}:latest",
             port=3001,
             env_vars={"service_dir": "infernet_services/test_services"},
             accepted_payments={
