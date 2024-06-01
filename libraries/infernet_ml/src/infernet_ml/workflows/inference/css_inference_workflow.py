@@ -128,7 +128,8 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         @retry(**self.retry_params)
         def _run() -> Union[str, list[Union[float, int]]]:
             logging.info(
-                f"querying {preprocessed_data.provider} with {preprocessed_data.model_dump()}"  # noqa:E501
+                f"querying {preprocessed_data.provider} with "
+                f"{preprocessed_data.model_dump()}"
             )
             return css_mux(preprocessed_data)
 

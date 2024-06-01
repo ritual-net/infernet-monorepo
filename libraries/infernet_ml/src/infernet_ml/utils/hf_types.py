@@ -1,24 +1,47 @@
-from typing import Any, Optional
+from enum import IntEnum
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypedDict
 
 
-class HFInferenceInput(BaseModel):
+class HFTaskId(IntEnum):
+    """Hugging Face task types"""
+
+    UNSET = 0
+    TEXT_GENERATION = 1
+    TEXT_CLASSIFICATION = 2
+    TOKEN_CLASSIFICATION = 3
+    SUMMARIZATION = 4
+
+
+class HFInferenceBaseInput(BaseModel):
     """Base class for input data"""
 
     model_config = ConfigDict(protected_namespaces=())
 
     model: Optional[str] = None
 
+    task_id: HFTaskId
 
-class HFClassificationInferenceInput(HFInferenceInput):
+
+class HFClassificationInferenceInput(HFInferenceBaseInput):
     """Input data for classification models"""
+
+    task_id: HFTaskId = HFTaskId.TEXT_CLASSIFICATION
 
     text: str
 
 
-class HFTextGenerationInferenceInput(HFInferenceInput):
+class HFTokenClassificationInferenceInput(HFInferenceBaseInput):
+    """Input data for token classification models"""
+
+    task_id: HFTaskId = HFTaskId.TOKEN_CLASSIFICATION
+
+    text: str
+
+
+class HFTextGenerationInferenceInput(HFInferenceBaseInput):
     """Input data for text generation models
 
     Args:
@@ -53,6 +76,7 @@ class HFTextGenerationInferenceInput(HFInferenceInput):
 
     """
 
+    task_id: HFTaskId = HFTaskId.TEXT_GENERATION
     prompt: str
     details: bool = Field(default=False)
     stream: bool = Field(default=False)
@@ -72,7 +96,7 @@ class HFTextGenerationInferenceInput(HFInferenceInput):
     decoder_input_details: bool = Field(default=False)
 
 
-class HFSummarizationConfig(ConfigDict):
+class HFSummarizationConfig(TypedDict):
     """Summarization model configuration
 
     Args:
@@ -96,7 +120,7 @@ class HFSummarizationConfig(ConfigDict):
     max_time: NotRequired[float]
 
 
-class HFSummarizationInferenceInput(HFInferenceInput):
+class HFSummarizationInferenceInput(HFInferenceBaseInput):
     """Input data for summarization models
 
     Args:
@@ -104,11 +128,20 @@ class HFSummarizationInferenceInput(HFInferenceInput):
         parameters (Optional[HFSummarizationConfig]): Summarization model
     """
 
+    task_id: HFTaskId = HFTaskId.SUMMARIZATION
     text: str
-    parameters: Optional[dict[str, Any]] = None
+    parameters: Optional[HFSummarizationConfig] = None
 
 
-class HFDiffusionInferenceInput(HFInferenceInput):
+HFInferenceClientInput = Union[
+    HFClassificationInferenceInput,
+    HFTokenClassificationInferenceInput,
+    HFTextGenerationInferenceInput,
+    HFSummarizationInferenceInput,
+]
+
+
+class HFDiffusionInferenceInput(HFInferenceBaseInput):
     """Input data for diffusion models
 
     Args:
@@ -135,13 +168,18 @@ class HFDiffusionInferenceInput(HFInferenceInput):
     guidance_scale: Optional[float] = None
 
 
-class HFClassificationInferenceOutput(BaseModel):
-    """Output data for HF classification models
+def parse_hf_inference_input_from_dict(r: Dict[str, Any]) -> HFInferenceClientInput:
+    """Parse input data from dictionary"""
+    if r["task_id"] == HFTaskId.TEXT_CLASSIFICATION:
+        return HFClassificationInferenceInput(**r)
+    if r["task_id"] == HFTaskId.TOKEN_CLASSIFICATION:
+        return HFTokenClassificationInferenceInput(**r)
+    if r["task_id"] == HFTaskId.TEXT_GENERATION:
+        return HFTextGenerationInferenceInput(**r)
+    if r["task_id"] == HFTaskId.SUMMARIZATION:
+        return HFSummarizationInferenceInput(**r)
+    raise ValueError(f"Unknown task_id: {r['task_id']}")
 
-    Args:
-        label (str): Predicted label
-        score (float): Confidence score for the predicted label
-    """
 
-    label: str
-    score: float
+class HFInferenceClientOutput(TypedDict):
+    output: Any

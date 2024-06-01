@@ -4,8 +4,6 @@ Module implementing a base inference workflow.
 This class is not meant to be subclassed directly; instead,
 subclass one of [TGIClientInferenceWorkflow, CSSInferenceWorkflow,
  BaseClassicInferenceWorkflow]
-
-
 """
 
 import abc
@@ -95,18 +93,17 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
         """
         pass
 
-    @abc.abstractmethod
     def do_preprocessing(self, input_data: Any) -> Any:
         """
-        Implement any preprocessing of the raw user input.
-        For example, you may need to apply feature engineering
-        on the input before it is suitable for model inference.
+        Implement any preprocessing of the raw user input. For example, you may need to
+        apply feature engineering on the input before it is suitable for model inference.
+        By default, this method returns the input data as is.
 
         Args:
-            data: raw user input
+            input_data (Any): raw input from user
 
         Returns:
-            str: transformed input
+            Any: preprocessed input
         """
         return input_data
 
@@ -121,18 +118,19 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
             typing.Any: data to be streamed
         """
 
-    @abc.abstractmethod
     def do_postprocessing(self, input_data: Any, output_data: Any) -> Any:
         """
-        Implement any postprocessing here. for ease of
-        serving, we must return a dict or string.
+        Implement any postprocessing of the model output. By default, this method
+        returns the output data as is.
 
         Args:
-            output_data (Any):  raw output from model
+            input_data (Any): raw input from user
+            output_data (Any): model output
 
         Returns:
-            typing.Any: result of postprocessing
+            Any: postprocessed output
         """
+        return output_data
 
     @final
     def generate_proof(self) -> None:

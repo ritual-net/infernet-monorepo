@@ -186,3 +186,27 @@ def test_streaming_endpoint(
 
     print(f"total: {total}")
     assert _expected in total.lower()
+
+
+def test_allow_more_configs() -> None:
+    provider = Provider.OPENAI
+    endpoint = "completions"
+    params: CSSCompletionParams = CSSCompletionParams(
+        messages=[ConvoMessage(role="user", content="give me an essay about cats")]
+    )
+    req: CSSRequest = CSSRequest(
+        provider=provider,
+        endpoint=endpoint,
+        model="gpt-3.5-turbo-16k",
+        params=params,
+        api_keys=api_keys,
+        extra_args={
+            "temperature": 0.5,
+            "max_tokens": 10,
+            "top_p": 0.5,
+        },
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
+    workflow.setup()
+    res: str = workflow.inference(req)
+    assert len(res.split(" ")) < 10

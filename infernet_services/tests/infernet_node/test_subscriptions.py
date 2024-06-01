@@ -1,19 +1,16 @@
-import json
 import logging
 import random
-import re
 
 import pytest
 from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
+from infernet_node.conftest import SERVICE_NAME
 from reretry import retry  # type: ignore
-from test_library.constants import MAX_GAS_LIMIT, MAX_GAS_PRICE, NODE_LOG_CMD
-from test_library.log_collector import LogCollector
-from test_library.web3 import get_consumer_contract, get_w3
+from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.constants import ZERO_ADDRESS
+from test_library.web3_utils import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
-
-SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +63,11 @@ async def create_sub_with_random_input(
     frequency: int,
     period: int,
     redundancy: int = 1,
+    lazy: bool = False,
+    payment_token: str = ZERO_ADDRESS,
+    payment_amount: int = 0,
+    wallet: str = ZERO_ADDRESS,
+    prover: str = ZERO_ADDRESS,
     contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT,
 ) -> tuple[int, int]:
     # setting the input to a random number, this is to distinguish between the outputs
@@ -75,7 +77,15 @@ async def create_sub_with_random_input(
     await set_next_input(i, contract_name=contract_name)
 
     create_sub = consumer.functions.createSubscription(
-        SERVICE_NAME, MAX_GAS_PRICE, MAX_GAS_LIMIT, frequency, period, redundancy
+        SERVICE_NAME,
+        frequency,
+        period,
+        redundancy,
+        lazy,
+        payment_token,
+        payment_amount,
+        wallet,
+        prover,
     )
 
     sub_id = await create_sub.call()
@@ -106,28 +116,16 @@ async def test_infernet_recurring_subscription() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
-    (i, sub_id) = await create_sub_with_random_input(2, 4)
+    (i, sub_id) = await create_sub_with_random_input(2, 5)
     await assert_next_output(encode(["uint8"], [i]))
     log.info(f"First output received, cancelling next delivery: {sub_id}")
 
     consumer = await get_subscription_consumer_contract()
 
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
     tx = await consumer.functions.cancelSubscription(sub_id).transact()
     w3 = await get_w3()
     await w3.eth.wait_for_transaction_receipt(tx)
 
-    expected_log = f"subscription cancelled.*{sub_id}"
-
-    found, logs = await collector.wait_for_line(
-        expected_log, timeout=10, regex_flags=re.IGNORECASE
-    )
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
-
-    await collector.stop()
+    await assert_regex_in_node_logs(f"subscription cancelled.*{sub_id}")

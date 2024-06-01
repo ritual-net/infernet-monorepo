@@ -14,6 +14,7 @@ from infernet_ml.utils.codec.css import (
     decode_css_completion_request,
     decode_css_request,
 )
+from infernet_ml.utils.common_types import RetryParams
 from infernet_ml.utils.css_mux import ApiKeys, CSSCompletionParams, CSSRequest, Provider
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
@@ -24,8 +25,44 @@ from quart import request as req
 from quart.utils import run_sync
 from werkzeug.exceptions import HTTPException
 
-SERVICE_PREFIX = "CSS_INF"
 load_dotenv()
+
+
+def decode_onchain_css_request(hex_input: str) -> CSSRequest:
+    """Decode onchain CSS request from hex string
+
+    Args:
+        hex_input (str): hex string
+
+    Returns:
+        CSSRequest: CSSRequest instance
+    """
+    input_data_bytes: bytes = bytes.fromhex(hex_input)
+    provider, endpoint = decode_css_request(input_data_bytes)
+    logging.info(
+        "received Onchain Request: provider(%s) endpoint(%s)",
+        provider.name,
+        endpoint.name,
+    )
+
+    match endpoint:
+        case CSSEndpoint.completions:
+            model, messages = decode_css_completion_request(input_data_bytes)
+
+            css_request = CSSRequest(
+                provider=Provider(provider.name),
+                model=model,
+                endpoint=endpoint.name,
+                params=CSSCompletionParams(messages=messages),
+            )
+
+            return css_request
+        case CSSEndpoint.embeddings:
+            raise ServiceException("onchain output not supported for embeddings")
+        case _:
+            raise PydValError(
+                f"Invalid endpoint type: expected either completions or embeddings, but got {endpoint}"  # noqa: E501
+            )
 
 
 def create_app() -> Quart:
@@ -40,18 +77,6 @@ def create_app() -> Quart:
     """
 
     app: Quart = Quart(__name__)
-    app.config.from_prefixed_env(prefix=SERVICE_PREFIX)
-
-    LLM_WORKFLOW_CLASS = CSSInferenceWorkflow
-    LLM_WORKFLOW_POSITIONAL_ARGS = app.config.get("WORKFLOW_POSITIONAL_ARGS", [])
-    LLM_WORKFLOW_KW_ARGS = app.config.get("WORKFLOW_KW_ARGS", {})
-
-    logging.info(
-        "%s %s %s",
-        LLM_WORKFLOW_CLASS,
-        LLM_WORKFLOW_POSITIONAL_ARGS,
-        LLM_WORKFLOW_KW_ARGS,
-    )
 
     api_keys: ApiKeys = {
         Provider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
@@ -59,13 +84,14 @@ def create_app() -> Quart:
         Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
     }
 
+    _retry_params = os.getenv("RETRY_PARAMS")
+    retry_params = RetryParams(**json.loads(_retry_params)) if _retry_params else None
+
     # create workflow instance from class, using specified arguments
-    LLM_WORKFLOW = CSSInferenceWorkflow(
-        api_keys, *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
-    )
+    workflow = CSSInferenceWorkflow(api_keys, retry_params=retry_params)
 
     # setup workflow
-    LLM_WORKFLOW.setup()
+    workflow.setup()
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -87,89 +113,55 @@ def create_app() -> Quart:
             try:
                 # load data into model for validation
                 inf_input = InfernetInput(**data)
-
+                logging.info(f"received input: {inf_input}")
                 result: dict[str, Any]
-
                 match inf_input:
                     case InfernetInput(
                         source=JobLocation.OFFCHAIN,
                         data=input_data,
-                        destination=JobLocation.OFFCHAIN,
                     ):
-                        logging.info("received Offchain Request: %s", input_data)
                         css_request = CSSRequest(**cast(dict[str, Any], input_data))
-
-                        # send parsed output back
-                        result = await run_sync(LLM_WORKFLOW.inference)(
-                            input_data=css_request
-                        )
-
-                        logging.info("recieved result from workflow: %s", result)
-
-                        # return dict
-                        return {"output": result}
-
                     case InfernetInput(
-                        source=JobLocation.OFFCHAIN,
-                        destination=JobLocation.STREAM,
+                        source=JobLocation.ONCHAIN,
                         data=input_data,
+                    ):
+                        css_request = decode_onchain_css_request(cast(str, input_data))
+                    case _:
+                        abort(400, f"Invalid InferentInput source: {inf_input.source}")
+
+                match inf_input:
+                    case InfernetInput(
+                        destination=JobLocation.STREAM,
                     ):
                         logging.debug("received Streaming Request: %s", input_data)
                         css_request = CSSRequest(**cast(dict[str, Any], input_data))
 
                         async def stream_generator() -> AsyncGenerator[str, None]:
-                            for r in LLM_WORKFLOW.stream(input_data=css_request):
+                            for r in workflow.stream(input_data=css_request):
                                 yield r
 
                         return stream_generator()
 
-                    case InfernetInput(data=hex_input, destination=JobLocation.ONCHAIN):
-                        input_data_bytes: bytes = bytes.fromhex(cast(str, hex_input))
-                        provider, endpoint = decode_css_request(input_data_bytes)
-                        logging.info(
-                            "received Onchain Request: provider(%s) endpoint(%s)",
-                            provider.name,
-                            endpoint.name,
-                        )
+                result = await run_sync(workflow.inference)(input_data=css_request)
 
-                        match endpoint:
-                            case CSSEndpoint.completions:
-                                model, messages = decode_css_completion_request(
-                                    input_data_bytes
-                                )
+                logging.info(f"received result from workflow: {result}")
 
-                                css_request = CSSRequest(
-                                    provider=Provider(provider.name),
-                                    model=model,
-                                    endpoint=endpoint.name,
-                                    params=CSSCompletionParams(messages=messages),
-                                )
-
-                                result = await run_sync(LLM_WORKFLOW.inference)(
-                                    input_data=css_request
-                                )
-
-                                logging.debug(
-                                    "recieved completions result from workflow: %s",
-                                    result,
-                                )
-
-                                output = encode(["string"], [result]).hex()
-
-                            case CSSEndpoint.embeddings:
-                                raise ServiceException(
-                                    "onchain output not supported for embeddings"
-                                )
-
-                            case _:
-                                raise PydValError(
-                                    f"Invalid endpoint type: expected either completions or embeddings, but got {endpoint}"  # noqa: E501
-                                )
-
+                match inf_input:
+                    case InfernetInput(
+                        destination=JobLocation.OFFCHAIN,
+                    ):
+                        # send parsed output back
+                        return {"output": result}
+                    case InfernetInput(
+                        destination=JobLocation.ONCHAIN,
+                        data=hex_input,
+                    ):
                         onchain_output = {
-                            "raw_input": hex_input,
+                            "raw_input": hex_input
+                            if isinstance(hex_input, str)
+                            else "",
                             "processed_input": "",
-                            "raw_output": output,
+                            "raw_output": encode(["string"], [result]).hex(),
                             "processed_output": "",
                             "proof": "",
                         }
