@@ -13,6 +13,7 @@ class HFTaskId(IntEnum):
     TEXT_CLASSIFICATION = 2
     TOKEN_CLASSIFICATION = 3
     SUMMARIZATION = 4
+    TEXT_TO_IMAGE = 5
 
 
 class HFInferenceBaseInput(BaseModel):
@@ -160,6 +161,7 @@ class HFDiffusionInferenceInput(HFInferenceBaseInput):
             model dependent but usually between 7 and 8.
     """
 
+    task_id: HFTaskId = HFTaskId.TEXT_TO_IMAGE
     prompt: str
     negative_prompt: Optional[str] = None
     height: Optional[int] = None
