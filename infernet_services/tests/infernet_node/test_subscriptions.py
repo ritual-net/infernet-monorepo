@@ -12,6 +12,7 @@ from test_library.web3_utils import (
     echo_input,
     echo_output,
     get_consumer_contract,
+    get_sub_id_from_receipt,
     get_w3,
 )
 from web3.contract import AsyncContract  # type: ignore
@@ -81,7 +82,7 @@ async def create_sub_with_random_input(
     consumer = await get_subscription_consumer_contract(contract_name=contract_name)
     await set_next_input(i, contract_name=contract_name)
 
-    create_sub = consumer.functions.createSubscription(
+    tx = await consumer.functions.createSubscription(
         ECHO_SERVICE,
         frequency,
         period,
@@ -91,11 +92,11 @@ async def create_sub_with_random_input(
         payment_amount,
         wallet,
         prover,
-    )
+    ).transact()
 
-    sub_id = await create_sub.call()
-    log.info(f"creating subscription: {sub_id}")
-    await create_sub.transact()
+    receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+    sub_id = get_sub_id_from_receipt(receipt)
+
     return i, sub_id
 
 
@@ -123,14 +124,11 @@ async def test_infernet_recurring_subscription() -> None:
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
-    (i, sub_id) = await create_sub_with_random_input(2, 5)
+    (i, sub_id) = await create_sub_with_random_input(10, 2)
     await assert_next_output(echo_output(i))
     log.info(f"First output received, cancelling next delivery: {sub_id}")
 
     consumer = await get_subscription_consumer_contract()
 
-    tx = await consumer.functions.cancelSubscription(sub_id).transact()
-    w3 = await get_w3()
-    await w3.eth.wait_for_transaction_receipt(tx)
-
+    await consumer.functions.cancelSubscription(sub_id).transact()
     await assert_regex_in_node_logs(f"subscription cancelled.*{sub_id}")

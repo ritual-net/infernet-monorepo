@@ -26,7 +26,7 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
-from web3.types import LogReceipt
+from web3.types import LogReceipt, TxReceipt
 
 log = logging.getLogger(__name__)
 
@@ -314,7 +314,10 @@ async def request_web3_compute(
 
     log.info(f"awaiting transaction {tx.hex()}")
     receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+    return get_sub_id_from_receipt(receipt)
 
+
+def get_sub_id_from_receipt(receipt: TxReceipt) -> int:
     target_topic = HexBytes(
         "0x04344ed7a67fec80c444d56ee1cee242f3f75b91fecc8dbce8890069c82eb48e"
     )
