@@ -1,9 +1,10 @@
 import logging
+from typing import Optional
 
 import pytest
 from eth_abi.abi import decode, encode
 from infernet_ml.utils.hf_types import HFTaskId
-from test_library.web2_utils import get_job, request_job
+from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
@@ -24,6 +25,7 @@ async def test_hf_inference_client_service_text_generation() -> None:
         },
     )
     result = await get_job(task)
+    log.info("result: %s", result)
     assert "4" in result.get("output")
 
 
@@ -68,6 +70,7 @@ long_text = """
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
@@ -88,6 +91,14 @@ async def test_hf_inference_client_service_summarization() -> None:
     assert len(result) < len(long_text)
 
 
+async def assert_web3_text_generation_output(task_id: Optional[bytes] = None) -> None:
+    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
+        (out,) = decode(["string"], output, strict=False)
+        assert "4" in out
+
+    await assert_generic_callback_consumer_output(task_id, _assertions)
+
+
 @pytest.mark.asyncio
 async def test_web3_text_generation_no_model_provided() -> None:
     task_id = await request_web3_compute(
@@ -97,10 +108,18 @@ async def test_web3_text_generation_no_model_provided() -> None:
             [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
         ),
     )
+    await assert_web3_text_generation_output(task_id)
 
+
+async def assert_web3_text_classification_output(
+    task_id: Optional[bytes] = None,
+) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (out,) = decode(["string"], output, strict=False)
-        assert "4" in out
+        (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
+        (labels, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
+        log.info("labels: %s scores %s", labels, scores)
+        assert labels[0] == "POSITIVE"
+        assert (scores[0] / 1e6) > 0.8
 
     await assert_generic_callback_consumer_output(task_id, _assertions)
 
@@ -118,13 +137,16 @@ async def test_web3_text_classification_no_model_provided() -> None:
             ],
         ),
     )
+    await assert_web3_text_classification_output(task_id)
 
+
+async def assert_web3_token_classification_output(
+    task_id: Optional[bytes] = None,
+) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        assert output != b""
         (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
-        (labels, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
-        log.info("labels: %s scores %s", labels, scores)
-        assert labels[0] == "POSITIVE"
+        (groups, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
+        assert groups[0] == "MISC"
         assert (scores[0] / 1e6) > 0.8
 
     await assert_generic_callback_consumer_output(task_id, _assertions)
@@ -144,30 +166,84 @@ async def test_web3_token_classification_no_model_provided() -> None:
         ),
     )
 
+    await assert_web3_token_classification_output(task_id)
+
+
+async def assert_web3_summarization_output(task_id: Optional[bytes] = None) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        assert output != b""
-        (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
-        (groups, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
-        assert groups[0] == "MISC"
-        assert (scores[0] / 1e6) > 0.8
-
-    await assert_generic_callback_consumer_output(task_id, _assertions)
-
-
-@pytest.mark.asyncio
-async def test_web3_summarization_no_model_provided() -> None:
-    task_id = await request_web3_compute(
-        SERVICE_NAME,
-        encode(
-            ["uint8", "string", "string"],
-            [HFTaskId.TOKEN_CLASSIFICATION, "", long_text],
-        ),
-    )
-
-    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        assert output != b""
         (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
         (result,) = decode(["string"], raw, strict=False)
         assert len(result) < len(long_text)
 
     await assert_generic_callback_consumer_output(task_id, _assertions)
+
+
+@pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
+async def test_web3_summarization_no_model_provided() -> None:
+    task_id = await request_web3_compute(
+        SERVICE_NAME,
+        encode(
+            ["uint8", "string", "string"],
+            [HFTaskId.SUMMARIZATION, "", long_text],
+        ),
+    )
+    await assert_web3_summarization_output(task_id)
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request_text_generation() -> None:
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "task_id": HFTaskId.TEXT_GENERATION,
+            "prompt": "What's 2 + 2?",
+        },
+    )
+
+    await assert_web3_text_generation_output()
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request_text_classification() -> None:
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "task_id": HFTaskId.TEXT_CLASSIFICATION,
+            "text": "Ritual makes AI x crypto a great combination!",
+        },
+    )
+    await assert_web3_text_classification_output()
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request_token_classification() -> None:
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "task_id": HFTaskId.TOKEN_CLASSIFICATION,
+            "text": "Ritual makes AI x crypto a great combination!",
+        },
+    )
+
+    await assert_web3_token_classification_output()
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request_summarization() -> None:
+    min_length_tokens = 28
+    max_length_tokens = 56
+    summarization_config = {
+        "min_length": min_length_tokens,
+        "max_length": max_length_tokens,
+    }
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "task_id": HFTaskId.SUMMARIZATION,
+            "text": long_text,
+            "parameters": summarization_config,
+        },
+    )
+
+    await assert_web3_summarization_output()

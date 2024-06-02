@@ -98,8 +98,8 @@ def encode_hf_inference_output(
             scores = [int(o.get("score") * FLOAT_DECIMALS) for o in _output]
             return encode(["string[]", "uint256[]"], [entity_groups, scores])
         case HFTaskId.SUMMARIZATION:
-            summary = _output.summary_text
-            return encode(["string"], [summary])
+            log.info("Summarization output: %s", _output)
+            return encode(["string"], [_output])
         case HFTaskId.TEXT_GENERATION:
             return encode(["string"], [_output])
         case _:
