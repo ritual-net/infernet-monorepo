@@ -60,11 +60,15 @@ class CSSRequest(BaseModel):
     """A CSSRequest, meant for querying closed source models.
 
     Attributes:
-        provider: Provider
-        endpoint: str
-        model: str
-        api_keys: ApiKeys
-        params: Union[CSSCompletionParams, CSSEmbeddingParams]
+        provider: Provider Closed source model provider
+        endpoint: str Endpoint to query
+        model: str Id of model to use: e.g. "gpt-3.5-turbo"
+        api_keys: ApiKeys API keys to use, it's a mapping of provider to api key
+        params: Union[CSSCompletionParams, CSSEmbeddingParams] Parameters associated
+            with the request
+        stream: bool Flag to indicate if the API should stream the response
+        extra_args: Optional[Dict[str, Any]] Extra arguments to pass to the API. They
+            are appended to the body of the request: i.e. `{ temperate: 0.5 }` etc.
     """
 
     model_config = ConfigDict(protected_namespaces=())
@@ -85,6 +89,8 @@ class CSSRequest(BaseModel):
 
     # stream flag, if true, the API will stream the response
     stream: bool = False
+
+    extra_args: Optional[Dict[str, Any]] = None
 
 
 def open_ai_request_generator(req: CSSRequest) -> tuple[str, dict[str, Any]]:
@@ -220,7 +226,7 @@ def validate(req: CSSRequest) -> None:
 
     Raises:
         InfernetMLException: if API Key not specified or an unsupported
-        provider or endpoint specified.
+            provider or endpoint specified.
     """
     if req.provider not in PROVIDERS:
         raise InfernetMLException("Provider not supported!")
@@ -233,7 +239,7 @@ def validate(req: CSSRequest) -> None:
 
 
 def get_request_configuration(
-    req: CSSRequest, extra_args: Dict[str, Any]
+    req: CSSRequest,
 ) -> Tuple[str, Dict[str, str], Dict[str, Any]]:
     """
     Get the configuration for a given request.
@@ -241,8 +247,6 @@ def get_request_configuration(
     Args:
         req: a CSSRequest object, containing provider, endpoint, model,
         api keys & params.
-        extra_args: dict[str, Any] containing extra arguments to pass to the API, they
-        are getting merged with the input body.
 
     Returns:
         configuration: dict[str, Any]
@@ -258,23 +262,21 @@ def get_request_configuration(
         "Authorization": f"Bearer {api_key}",
     }
 
-    return url, headers, {**proc_input, **extra_args}
+    return url, headers, {**proc_input, **(req.extra_args or {})}
 
 
-def css_mux(req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None) -> str:
+def css_mux(req: CSSRequest) -> str:
     """
     By this point, we've already validated the request, so we can proceed
     with the actual API call.
 
     Args:
         req: CSSRequest
-        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
-        API, they are getting merged with the input body.
 
     Returns:
         response: processed output from api
     """
-    url, headers, body = get_request_configuration(req, (extra_args or {}))
+    url, headers, body = get_request_configuration(req)
 
     result = requests.post(url, headers=headers, json=body)
 
@@ -305,24 +307,19 @@ streaming_post_processing: Dict[Provider, Callable[[Any], str]] = {
 }
 
 
-def css_streaming_mux(
-    req: CSSRequest, extra_args: Optional[Dict[str, Any]] = None
-) -> Iterator[str]:
+def css_streaming_mux(req: CSSRequest) -> Iterator[str]:
     """
     Make a streaming request to the respective closed-source model provider.
 
     Args:
         req: CSSRequest
-        extra_args: dict[str, Any] (optional) containing extra arguments to pass to the
-        API, they are getting merged with the input body.
 
     Returns:
         Iterator[str]: a generator that yields the response in chunks
     """
-
-    extra_args = extra_args or {}
-    extra_args["stream"] = True
-    url, headers, body = get_request_configuration(req, extra_args)
+    req.extra_args = req.extra_args or {}
+    req.extra_args["stream"] = True
+    url, headers, body = get_request_configuration(req)
 
     s = requests.Session()
 

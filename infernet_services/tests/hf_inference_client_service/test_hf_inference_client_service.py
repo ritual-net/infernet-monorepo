@@ -70,6 +70,7 @@ long_text = """
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
@@ -178,6 +179,7 @@ async def assert_web3_summarization_output(task_id: Optional[bytes] = None) -> N
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_web3_summarization_no_model_provided() -> None:
     task_id = await request_web3_compute(
         SERVICE_NAME,

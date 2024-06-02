@@ -11,12 +11,7 @@ from infernet_ml.utils.model_loader import LoadArgs, ModelSource
 from pydantic import BaseModel, ValidationError
 from reretry import retry  # type: ignore
 from test_library.config_creator import get_service_port
-from test_library.constants import (
-    DEFAULT_CONTRACT,
-    DEFAULT_NODE_URL,
-    MAX_GAS_LIMIT,
-    MAX_GAS_PRICE,
-)
+from test_library.constants import DEFAULT_CONTRACT, DEFAULT_NODE_URL, ZERO_ADDRESS
 from test_library.infernet_fixture import log
 from test_library.test_config import global_config
 from test_library.web3_utils import get_deployed_contract_address
@@ -84,10 +79,12 @@ async def request_delegated_subscription(
             period=0,
             frequency=1,
             redundancy=1,
-            max_gas_price=MAX_GAS_PRICE,
-            max_gas_limit=MAX_GAS_LIMIT,
-            container_id=service_name,
-            inputs="",
+            containers=[service_name],
+            lazy=False,
+            prover=ZERO_ADDRESS,
+            payment_amount=0,
+            payment_token=ZERO_ADDRESS,
+            wallet=ZERO_ADDRESS,
         )
 
         client = NodeClient(global_config.node_url)
@@ -100,7 +97,7 @@ async def request_delegated_subscription(
             coordinator_address=global_config.coordinator_address,
             expiry=int(time() + 10),
             nonce=nonce,
-            private_key=global_config.private_key,
+            private_key=global_config.tester_private_key,
             data=data,
         )
 

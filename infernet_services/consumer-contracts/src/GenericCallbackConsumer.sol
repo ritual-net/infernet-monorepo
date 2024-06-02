@@ -15,16 +15,29 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
     bool public receivedToggle;
     bytes public lastOutput;
 
-    constructor(address coordinator, address signer) CallbackConsumer(coordinator) Delegator(signer) {}
+    constructor(address registry, address signer) CallbackConsumer(registry) Delegator(signer) {
+        console2.log("registry address", address(registry));
+        console2.log("signer address", address(signer));
+        console2.log("coordinators address", address(COORDINATOR));
+    }
 
-    function requestCompute(string calldata containerId, string memory randomness, bytes calldata inputs)
-        public
-        returns (bytes32)
-    {
+    function requestCompute(
+        string memory randomness,
+        string memory containerId,
+        bytes memory inputs,
+        uint16 redundancy,
+        address paymentToken,
+        uint256 paymentAmount,
+        address wallet,
+        address prover
+    ) public returns (bytes32) {
         bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
-        _requestCompute(containerId, abi.encodePacked(inputs, randomness), 20 gwei, 2_000_000, 1);
-        console2.log("generated task id");
+        console2.log("generated task id, now requesting compute");
         console2.logBytes32(generatedTaskId);
+        _requestCompute(
+            containerId, abi.encodePacked(inputs, randomness), redundancy, paymentToken, paymentAmount, wallet, prover
+        );
+        console2.log("requested compute");
         return generatedTaskId;
     }
 
@@ -35,7 +48,9 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         address node,
         bytes calldata input,
         bytes calldata output,
-        bytes calldata proof
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
     ) internal override {
         (bytes memory raw, bytes memory processed) = abi.decode(input, (bytes, bytes));
         bytes32 taskId = keccak256(raw);
