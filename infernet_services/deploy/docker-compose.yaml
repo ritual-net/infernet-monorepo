@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:no-filter-postmerge
+    image: ritualnetwork/infernet-node-internal:1.0.0.2
     ports:
       - "0.0.0.0:4000:4000"
     volumes:
@@ -48,8 +48,8 @@ services:
       on-failure
 
   anvil-node:
-      image: ritualnetwork/infernet-anvil-internal:latest
-      command: --host 0.0.0.0 --port 3000 --load-state saved_states/everything-deployed.state -b 1
+      image: ritualnetwork/infernet-anvil-internal:1.0.2
+      command: --host 0.0.0.0 --port 3000 --load-state infernet_deployed.json -b 1
       ports:
         - "8545:3000"
       networks:

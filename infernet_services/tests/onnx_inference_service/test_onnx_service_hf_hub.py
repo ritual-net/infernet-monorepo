@@ -57,9 +57,9 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
         },
     )
 
-    job_result = await get_job(task.id)
+    job_result = await get_job(task)
 
-    iris_classification_web2_assertions_fn(job_result.result.output)
+    iris_classification_web2_assertions_fn(job_result)
 
 
 @pytest.mark.asyncio

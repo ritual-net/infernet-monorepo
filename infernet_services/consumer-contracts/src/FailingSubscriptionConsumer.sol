@@ -5,9 +5,8 @@ import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {console2} from "forge-std/console2.sol";
 import {DelegateSubscriptionConsumer} from "./DelegateSubscriptionConsumer.sol";
 
-contract FailingSubscriptionConsumer is DelegateSubscriptionConsumer  {
+contract FailingSubscriptionConsumer is DelegateSubscriptionConsumer {
     constructor(address _coordinator, address _signer) DelegateSubscriptionConsumer(_coordinator, _signer) {}
-
 
     function _receiveCompute(
         uint32 subscriptionId,
@@ -16,7 +15,9 @@ contract FailingSubscriptionConsumer is DelegateSubscriptionConsumer  {
         address node,
         bytes calldata input,
         bytes calldata output,
-        bytes calldata proof
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
     ) internal override {
         receivedOutputs.push(output);
         console2.log("received output");

@@ -23,7 +23,7 @@ ONNX_SERVICE_DOCKER_IMG = "ritualnetwork/onnx_inference_service:latest"
 def onnx_setup() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 ONNX_ARWEAVE_PRELOADED,
                 image_id=ONNX_SERVICE_DOCKER_IMG,
                 port=3000,
@@ -37,7 +37,7 @@ def onnx_setup() -> Generator[None, None, None]:
                     ),
                 },
             ),
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 ONNX_HF_PRELOADED,
                 image_id=ONNX_SERVICE_DOCKER_IMG,
                 port=3001,
@@ -51,7 +51,7 @@ def onnx_setup() -> Generator[None, None, None]:
                     ),
                 },
             ),
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 ONNX_SERVICE_NOT_PRELOADED,
                 image_id=ONNX_SERVICE_DOCKER_IMG,
                 port=3002,

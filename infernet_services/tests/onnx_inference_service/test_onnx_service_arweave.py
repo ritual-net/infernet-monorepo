@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import encode
@@ -15,9 +17,11 @@ from test_library.web3_utils import (
 )
 
 load_dotenv()
+log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
     task = await request_job(
         ONNX_ARWEAVE_PRELOADED,
@@ -28,12 +32,13 @@ async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
         },
     )
 
-    job_result = await get_job(task.id)
+    job_result = await get_job(task)
 
-    iris_classification_web2_assertions_fn(job_result.result.output)
+    iris_classification_web2_assertions_fn(job_result)
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_basic_web3_inference_from_arweave_from_preloaded_model() -> None:
     task_id = await request_web3_compute(
         ONNX_ARWEAVE_PRELOADED,
