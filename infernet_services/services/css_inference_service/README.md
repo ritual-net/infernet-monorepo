@@ -130,7 +130,7 @@ class ContainerOutput(TypedDict):
     from infernet_client.client import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
-    job_id = await client.request_job( 
+    job_id = await client.request_job(
         "SERVICE_NAME",
         {
             "provider": "OPENAI",
@@ -147,7 +147,7 @@ class ContainerOutput(TypedDict):
                 "max_tokens": 10,
                 "temperature": 0.5,
             },
-        },  
+        },
     )
 
     result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
@@ -292,7 +292,7 @@ function _receiveCompute(
 
     client = NodeClient("http://127.0.0.1:4000")
     nonce = random.randint(0, 2**32 - 1)
-    await client.request_delegated_subscription( 
+    await client.request_delegated_subscription(
         sub=sub,
         rpc=RPC("http://127.0.0.1:8545")
         coordinator_address=global_config.coordinator_address,
