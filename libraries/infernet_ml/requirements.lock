@@ -72,7 +72,7 @@ referencing==0.35.1
 regex==2024.5.15
 requests==2.32.2
 retry2==0.9.5
-ritual-arweave==0.1.0.26
+ritual-arweave==0.1.0.27
 ritual-pyarweave==0.1.0.4
 rlp==4.0.1
 rpds-py==0.18.1
@@ -96,6 +96,7 @@ types-python-dateutil==2.9.0.20240316
 types-requests==2.32.0.20240523
 types-retry==0.9.9.4
 types-tqdm==4.66.0.20240417
+types-mock==5.1.0.20240425
 typing-extensions==4.11.0
 urllib3==2.2.1
 virtualenv==20.26.2

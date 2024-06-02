@@ -4,11 +4,12 @@ Hugging Face Hub, or Arweave.
 """
 
 import logging
+import os
 from enum import IntEnum
 from typing import Any, Optional, Union, cast
 
 from huggingface_hub import hf_hub_download  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from ritual_arweave.repo_manager import RepoManager
 
 
@@ -25,29 +26,41 @@ class ModelSource(IntEnum):
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class HFLoadArgs(BaseModel):
+class CommonLoadArgs(BaseModel):
     """
-    Arguments for loading the model
-    """
-
-    repo_id: str
-    filename: str
-
-
-class ArweaveLoadArgs(BaseModel):
-    """
-    Arguments for loading the model
+    Common arguments for loading a model
     """
 
-    repo_id: str
-    filename: str
+    model_config = ConfigDict(frozen=True)
+
+    cache_path: Optional[str] = None
     version: Optional[str] = None
+    repo_id: str
+    filename: str
+
+
+class HFLoadArgs(CommonLoadArgs):
+    """
+    Arguments for loading the model
+    """
+
+    pass
+
+
+class ArweaveLoadArgs(CommonLoadArgs):
+    """
+    Arguments for loading the model
+    """
+
+    pass
 
 
 class LocalLoadArgs(BaseModel):
     """
     Arguments for loading the model
     """
+
+    model_config = ConfigDict(frozen=True)
 
     path: str
 
@@ -88,7 +101,7 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
             raise ValueError(f"Invalid model source {model_source}")
 
 
-def load_model(
+def download_model(
     model_source: ModelSource,
     load_args: LoadArgs,
 ) -> str:
@@ -105,30 +118,38 @@ def load_model(
     Returns:
         str: the path to the model
     """
+    logger.info(f"Downloading model from {model_source} with args {load_args}")
 
     match model_source:
         # load the model locally
         case ModelSource.LOCAL:
             local_args = cast(LocalLoadArgs, load_args)
-            logging.info(f"Loading model from local path {local_args.path}")
             return local_args.path
         case ModelSource.HUGGINGFACE_HUB:
             hf_args = cast(HFLoadArgs, load_args)
-            logging.info(
-                f"Downloading model from Hugging Face Hub {hf_args.repo_id}"
-                f" with filename {hf_args.filename}"
+            return cast(
+                str,
+                hf_hub_download(
+                    repo_id=hf_args.repo_id,
+                    filename=hf_args.filename,
+                    revision=hf_args.version,
+                    cache_dir=hf_args.cache_path,
+                ),
             )
-            return cast(str, hf_hub_download(hf_args.repo_id, hf_args.filename))
         case ModelSource.ARWEAVE:
             arweave_args = cast(ArweaveLoadArgs, load_args)
+            cache_path = arweave_args.cache_path or os.path.expanduser("~/.cache/")
+            version = arweave_args.version or "latest"
+            base_path = f"{cache_path}/{arweave_args.repo_id}/{version}/."
             logging.info(
-                f"Downloading model from Arweave {arweave_args.repo_id}"
-                f" with filename {arweave_args.filename}"
+                f"Downloading model from Arweave "
+                f"{cache_path}/{arweave_args.repo_id}/{version}/{arweave_args.filename}"
             )
             return RepoManager().download_artifact_file(
                 repo_id=arweave_args.repo_id,
                 file_name=arweave_args.filename,
                 version=arweave_args.version,
+                base_path=base_path,
             )
         case _:
             raise ValueError(f"Invalid model source {model_source}")
