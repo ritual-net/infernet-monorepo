@@ -84,6 +84,20 @@ async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:
     return await _wait()
 
 
+def start_anvil_node() -> None:
+    """
+    Start an anvil node.
+    """
+    cmd = "make start-infernet-anvil"
+    log.info(f"Running command: {cmd}")
+
+    result = subprocess.run(shlex.split(cmd))
+    if result.returncode != 0:
+        msg = f"Error starting the anvil node: {result}"
+        log.error(msg)
+        raise Exception(msg)
+
+
 def deploy_node(
     deploy_env_vars: Optional[ServiceEnvVars] = None,
 ) -> None:
@@ -100,7 +114,7 @@ def deploy_node(
             cmd += f" {k}={v}"
     log.info(f"Running command: {cmd}")
 
-    result = subprocess.run([*shlex.split(cmd)])
+    result = subprocess.run(shlex.split(cmd))
     if result.returncode != 0:
         msg = f"Error deploying the node: {result}"
         log.error(msg)

@@ -55,7 +55,8 @@ contract DeployEverything is Deploy {
         _deploy("GenericSubscriptionConsumer.sol", "GenericSubscriptionConsumer");
         _deploy("FailingSubscriptionConsumer.sol", "FailingSubscriptionConsumer");
         _deploy("DelegateSubscriptionConsumer.sol", "DelegateSubscriptionConsumer");
-
+        _deploy("FakeMoney.sol", "AcceptedMoney");
+        _deploy("FakeMoney.sol", "RejectedMoney");
         postRun();
     }
 }

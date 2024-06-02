@@ -36,6 +36,13 @@ deploy-node:
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
 
+start-infernet-anvil:
+	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d anvil-node
+
+stop-infernet-anvil:
+	docker-compose -f $(deploy_dir)/docker-compose.yaml kill anvil-node || true
+	docker-compose -f $(deploy_dir)/docker-compose.yaml rm -f anvil-node || true
+
 stop-service:
 	services=`docker ps -q --filter "name=$(service)*"` && \
 	docker kill $$services || true && \

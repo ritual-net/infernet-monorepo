@@ -6,15 +6,13 @@ import re
 import pytest
 from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
+from infernet_node.conftest import SERVICE_NAME
 from reretry import retry  # type: ignore
 from test_library.constants import NODE_LOG_CMD, ZERO_ADDRESS
 from test_library.log_collector import LogCollector
 from test_library.web3_utils import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
-
-SERVICE_NAME = "echo"
-
 
 log = logging.getLogger(__name__)
 
