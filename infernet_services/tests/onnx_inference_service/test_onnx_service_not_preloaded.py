@@ -1,24 +1,15 @@
-from typing import Generator
-
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import encode
 from infernet_ml.utils.codec.vector import encode_vector
 from infernet_ml.utils.model_loader import ModelSource
 from onnx_inference_service.common import (
-    SERVICE_NAME,
     iris_classification_web2_assertions_fn,
     iris_input_vector_params,
 )
-from test_library.constants import (
-    arweave_model_id,
-    hf_model_id,
-    skip_contract,
-    skip_deploying,
-    skip_teardown,
-)
-from test_library.infernet_fixture import handle_lifecycle
-from test_library.web2_utils import get_job, request_job
+from onnx_inference_service.conftest import ONNX_SERVICE_NOT_PRELOADED
+from test_library.constants import arweave_model_id, hf_model_id
+from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     iris_web3_assertions,
@@ -26,18 +17,6 @@ from test_library.web3_utils import (
 )
 
 load_dotenv()
-
-
-@pytest.fixture(scope="module", autouse=True)
-def arweave_setup() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
-        {},
-        service_wait_timeout=30,
-        skip_deploying=skip_deploying,
-        skip_contract=skip_contract,
-        skip_teardown=skip_teardown,
-    )
 
 
 ar_model_source, ar_load_args = (
@@ -53,7 +32,7 @@ ar_model_source, ar_load_args = (
 @pytest.mark.asyncio
 async def test_basic_web2_inference_from_arweave() -> None:
     task = await request_job(
-        SERVICE_NAME,
+        ONNX_SERVICE_NOT_PRELOADED,
         {
             "model_source": ar_model_source,
             "load_args": ar_load_args,
@@ -61,15 +40,15 @@ async def test_basic_web2_inference_from_arweave() -> None:
         },
     )
 
-    job_result = await get_job(task.id)
+    job_result = await get_job(task)
 
-    iris_classification_web2_assertions_fn(job_result.result.output)
+    iris_classification_web2_assertions_fn(job_result)
 
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_arweave() -> None:
     task_id = await request_web3_compute(
-        SERVICE_NAME,
+        ONNX_SERVICE_NOT_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
             [
@@ -87,7 +66,7 @@ async def test_basic_web3_inference_from_arweave() -> None:
     await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
 
 
-model_source, load_args = (
+hf_model_source, hf_load_args = (
     ModelSource.HUGGINGFACE_HUB,
     {
         "repo_id": hf_model_id("iris-classification"),
@@ -100,29 +79,29 @@ model_source, load_args = (
 @pytest.mark.asyncio
 async def test_basic_web2_inference_from_hf_hub() -> None:
     task = await request_job(
-        SERVICE_NAME,
+        ONNX_SERVICE_NOT_PRELOADED,
         {
-            "model_source": model_source,
-            "load_args": load_args,
+            "model_source": hf_model_source,
+            "load_args": hf_load_args,
             "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
         },
     )
 
-    job_result = await get_job(task.id)
+    job_result = await get_job(task)
 
-    iris_classification_web2_assertions_fn(job_result.result.output)
+    iris_classification_web2_assertions_fn(job_result)
 
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_hf_hub() -> None:
     task_id = await request_web3_compute(
-        SERVICE_NAME,
+        ONNX_SERVICE_NOT_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
             [
-                model_source,
-                load_args["repo_id"],
-                load_args["filename"],
+                hf_model_source,
+                hf_load_args["repo_id"],
+                hf_load_args["filename"],
                 "",
                 encode_vector(
                     **iris_input_vector_params,
@@ -132,3 +111,17 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
     )
 
     await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request() -> None:
+    await request_delegated_subscription(
+        ONNX_SERVICE_NOT_PRELOADED,
+        {
+            "model_source": hf_model_source,
+            "load_args": hf_load_args,
+            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
+        },
+    )
+
+    await assert_generic_callback_consumer_output(None, iris_web3_assertions)

@@ -27,7 +27,7 @@ from quart import Quart, abort
 from quart import request as req
 from quart.json.provider import DefaultJSONProvider
 from torch import Tensor
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 log = logging.getLogger(__name__)
 
@@ -149,7 +149,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         # Type information read from model schema
 
         # get data as json
-        dtype: DataType = DataType.float
 
         infernet_input: Optional[dict[str, Any]] = await req.get_json()
         if not infernet_input:
@@ -177,15 +176,16 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             case JobLocation.OFFCHAIN:
                 log.info("received Offchain Request: %s", data)
                 inference_input = TorchInferenceInput(**data)
+                dtype = DataType[data["input"]["dtype"]]
             case _:
-                abort(400, f"Invalid infernet input source: {input.source}")
+                raise BadRequest(f"Invalid infernet source: {input.source}")
 
         result = WORKFLOW.inference(inference_input)
 
         match input:
             case InfernetInput(destination=JobLocation.OFFCHAIN):
                 return {
-                    "dtype": data["input"]["dtype"],
+                    "dtype": dtype.name,
                     "shape": result.shape,
                     "values": result.outputs.tolist(),
                 }
@@ -202,7 +202,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     "proof": "",
                 }
             case _:
-                abort(400, f"Invalid source: {input.source}")
+                raise BadRequest(f"Invalid infernet destination: {input.destination}")
 
     @app.errorhandler(HTTPException)
     def handle_exception(e: Any) -> Any:
