@@ -83,19 +83,23 @@ TORCH_MODEL_LRU_CACHE_SIZE = int(os.getenv("TORCH_MODEL_LRU_CACHE_SIZE", 64))
 
 
 @lru_cache(maxsize=TORCH_MODEL_LRU_CACHE_SIZE)
-def load_torch_model(path: str, use_jit: bool = False) -> torch.nn.Module:
+def load_torch_model(
+    model_source: ModelSource, load_args: LoadArgs, use_jit: bool
+) -> torch.nn.Module:
     """
-    Loads a torch model from the given path. Uses `torch.jit.load()` if use_jit is True,
+    Loads a torch model from the given source. Uses `torch.jit.load()` if use_jit is set,
     otherwise uses `torch.load()`.
 
     Args:
-        path: str: Path to the model file
+        model_source: ModelSource: Source of the model to be loaded
+        load_args: LoadArgs: Arguments to be passed to the model loader
         use_jit: bool: Whether to use JIT for loading the model
 
     Returns:
         torch.nn.Module: Loaded model
     """
-    logger.info(f"Loading model from path & starting session: {path}")
+    path = download_model(model_source, load_args)
+    logger.info(f"Loading model from path: {path}")
 
     model = torch.jit.load(path) if use_jit else torch.load(path)  # type: ignore
 
@@ -171,9 +175,8 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         Returns:
             torch.nn.Module: Loaded model
         """
-        model_path = download_model(model_source, load_args)
         # uses lru_cache
-        return load_torch_model(model_path, self.use_jit)
+        return load_torch_model(model_source, load_args, self.use_jit)
 
     def do_run_model(
         self, inference_input: TorchInferenceInput

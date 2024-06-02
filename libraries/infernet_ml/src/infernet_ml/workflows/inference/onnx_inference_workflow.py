@@ -77,16 +77,20 @@ ONNX_MODEL_LRU_CACHE_SIZE = int(os.getenv("ONNX_MODEL_LRU_CACHE_SIZE", 64))
 
 
 @lru_cache(maxsize=ONNX_MODEL_LRU_CACHE_SIZE)
-def load_model_and_start_session(path: str) -> InferenceSession:
+def load_model_and_start_session(
+    model_source: ModelSource, load_args: LoadArgs
+) -> InferenceSession:
     """
     Load the model and start the inference session.
 
     Args:
-        path: str: Path to the model file
+        model_source: ModelSource: Source of the model to be loaded
+        load_args: LoadArgs: Arguments to be passed to the model loader
 
     Returns:
         InferenceSession: Inference session for the model
     """
+    path = download_model(model_source, load_args)
     logger.info(f"Loading model from path & starting session: {path}")
     onnx_model = onnx.load(path)
     onnx.checker.check_model(onnx_model)
@@ -126,6 +130,12 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         """
         return cast(ONNXInferenceResult, super().inference(input_data))
 
+    def setup(self) -> "ONNXInferenceWorkflow":
+        """
+        Setup method for the workflow. Overridden to add type hints.
+        """
+        return cast(ONNXInferenceWorkflow, super().setup())
+
     def do_setup(self) -> "ONNXInferenceWorkflow":
         """
         If model source and load args are provided, preloads the model & starts the
@@ -138,10 +148,10 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
             )
             return self
 
-        self.ort_session = self._start_session(self.model_source, self.model_load_args)
+        self.ort_session = self.get_session(self.model_source, self.model_load_args)
         return self
 
-    def _start_session(
+    def get_session(
         self, model_source: ModelSource, load_args: LoadArgs
     ) -> InferenceSession:
         """
@@ -151,10 +161,9 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
             model_source: ModelSource: Source of the model to be loaded
             load_args: LoadArgs: Arguments to be passed to the model loader
         """
-        model_path = download_model(model_source, load_args)
 
         # load & check the model (uses lru_cache)
-        return load_model_and_start_session(model_path)
+        return load_model_and_start_session(model_source, load_args)
 
     def do_preprocessing(
         self, input_data: ONNXInferenceInput
@@ -172,7 +181,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         """
         ort_session = self.ort_session
         if input_data.model_source is not None and input_data.load_args is not None:
-            ort_session = self._start_session(
+            ort_session = self.get_session(
                 input_data.model_source, input_data.load_args
             )
         inputs = input_data.inputs

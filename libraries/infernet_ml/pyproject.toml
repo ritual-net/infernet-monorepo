@@ -1,6 +1,6 @@
 [project]
 name = "infernet-ml"
-version = "1.0.0.23"
+version = "1.0.0.39"
 description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
@@ -11,7 +11,7 @@ dependencies = [
     "pydantic>=2.5.3,<3.0.0",
     "huggingface-hub>=0.17.3,<1.0.0",
     "click>=8.1.7,<9.0.0",
-    "ritual-arweave>=0.1.0,<1.0.0",
+    "ritual-arweave>=0.1.0.27,<1.0.0",
 ]
 
 readme = "README.md"
@@ -39,7 +39,8 @@ development = [
 # torch inference dependencies
 torch_inference = [
     "torch>=2.0.0,<3.0.0",
-    "sk2torch>=1.2.0,<2.0.0"
+    "sk2torch>=1.2.0,<2.0.0",
+    "numpy>=1.25.2,<2.0.0",
 ]
 
 # bark inference service
@@ -54,6 +55,7 @@ onnx_inference = [
     "torch>=2.0.0,<3.0.0",
     "onnx>=1.15.0,<2.0.0",
     "onnxruntime>=1.16.3,<2.0.0",
+    "numpy>=1.25.2,<2.0.0",
 ]
 
 # llm inference dependencies

@@ -5,7 +5,7 @@ import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {SubscriptionConsumer} from "infernet-sdk/consumer/Subscription.sol";
 import {console2} from "forge-std/console2.sol";
 
-contract GenericSubscriptionConsumer is SubscriptionConsumer  {
+contract GenericSubscriptionConsumer is SubscriptionConsumer {
     bytes[] public receivedOutputs;
 
     constructor(address coordinator) SubscriptionConsumer(coordinator) {}
@@ -30,14 +30,19 @@ contract GenericSubscriptionConsumer is SubscriptionConsumer  {
     }
 
     function createSubscription(
-        string calldata containerId,
-        uint48 maxGasPrice,
-        uint32 maxGasLimit,
+        string memory containerId,
         uint32 frequency,
         uint32 period,
-        uint16 redundancy
+        uint16 redundancy,
+        bool lazy,
+        address paymentToken,
+        uint256 paymentAmount,
+        address wallet,
+        address prover
     ) public returns (uint256 subscriptionId) {
-        return _createComputeSubscription(containerId, maxGasPrice, maxGasLimit, frequency, period, redundancy);
+        return _createComputeSubscription(
+            containerId, frequency, period, redundancy, lazy, paymentToken, paymentAmount, wallet, prover
+        );
     }
 
     function cancelSubscription(uint32 subscriptionId) public {
@@ -51,7 +56,9 @@ contract GenericSubscriptionConsumer is SubscriptionConsumer  {
         address node,
         bytes calldata input,
         bytes calldata output,
-        bytes calldata proof
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
     ) internal virtual override {
         receivedOutputs.push(output);
         console2.log("received output!");
