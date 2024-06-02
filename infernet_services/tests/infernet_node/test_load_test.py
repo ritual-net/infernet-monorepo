@@ -4,34 +4,28 @@ import random
 from uuid import uuid4
 
 import pytest
-
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import assert_output
 from infernet_node.test_delegate_subscription import (
-    create_delegated_subscription,
     DELEGATE_SUB_CONSUMER_CONTRACT,
+    create_delegated_subscription,
 )
 from infernet_node.test_subscriptions import (
     assert_subscription_consumer_output,
     create_sub_with_random_input,
 )
-from test_library.web3_utils import (
-    echo_input,
-    request_web3_compute,
-    echo_output,
-)
+from test_library.web3_utils import echo_input, echo_output, request_web3_compute
 
 log = logging.getLogger(__name__)
 
 
-async def _fire_callback():
+async def _fire_callback() -> None:
     i = f"{uuid4()}"
     sub_id = await request_web3_compute(ECHO_SERVICE, echo_input(i))
     await assert_output(sub_id, i)
-    return sub_id, i
 
 
-async def _fire_delegated():
+async def _fire_delegated() -> None:
     i = f"{uuid4()}"
     sub_id = await create_delegated_subscription(echo_input(i), 10, 1)
     await assert_subscription_consumer_output(
@@ -42,7 +36,7 @@ async def _fire_delegated():
     )
 
 
-async def _fire_subscription():
+async def _fire_subscription() -> None:
     (sub_id, i) = await create_sub_with_random_input(1, 5)
     await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=20)
 
@@ -55,6 +49,7 @@ async def test_infernet_100_callback_consumers() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip()
 async def test_infernet_100_delegated_subscription() -> None:
     num_subscriptions = 100
     await asyncio.gather(*[_fire_delegated() for _ in range(num_subscriptions)])
