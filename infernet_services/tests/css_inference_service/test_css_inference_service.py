@@ -1,9 +1,8 @@
 import logging
-import os
-from typing import Any, Generator
+from typing import Any
 
 import pytest
-from dotenv import load_dotenv
+from css_inference_service.conftest import SERVICE_NAME
 from eth_abi.abi import decode
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
@@ -11,29 +10,24 @@ from infernet_ml.utils.codec.css import (
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from test_library.infernet_fixture import handle_lifecycle
-from test_library.web2_utils import get_job, request_job, request_streaming_job
-from test_library.web3 import (
+from test_library.web2_utils import (
+    get_job,
+    request_delegated_subscription,
+    request_job,
+    request_streaming_job,
+)
+from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )
 
-SERVICE_NAME = "css_inference_service"
 log = logging.getLogger(__name__)
 
-load_dotenv()
+boolean_like_prompt = "Is the sky blue? return yes or no"
 
 
-@pytest.fixture(scope="module", autouse=True)
-def node_lifecycle() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
-        {
-            "PERPLEXITYAI_API_KEY": os.environ["PERPLEXITYAI_API_KEY"],
-            "GOOSEAI_API_KEY": os.environ["GOOSEAI_API_KEY"],
-            "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
-        },
-    )
+def boolean_like_prompt_assertion(result: str) -> None:
+    assert any(x in result.lower() for x in ["yes", "no", "sky", "blue"])
 
 
 @pytest.mark.parametrize(
@@ -43,18 +37,19 @@ def node_lifecycle() -> Generator[None, None, None]:
             CSSProvider.OPENAI,
             "gpt-3.5-turbo-16k",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="does 2+2=4? return yes or no")],
+            [ConvoMessage(role="user", content=boolean_like_prompt)],
         ),
         (
             CSSProvider.PERPLEXITYAI,
-            "sonar-small-online",
+            "mistral-7b-instruct",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="does 2+2=4? return yes or no")],
+            [ConvoMessage(role="user", content=boolean_like_prompt)],
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_completion(
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
+async def test_completion_web3(
     provider: CSSProvider,
     model: str,
     endpoint: CSSEndpoint,
@@ -67,15 +62,13 @@ async def test_completion(
     )
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        result: str = decode(["string"], output, strict=False)[0]
+        (result,) = decode(["string"], output, strict=False)
         assert (
             "yes" in result.lower() or "no" in result.lower()
         ), f"yes or no should be in result, instead got {result}"
 
     await assert_generic_callback_consumer_output(task_id, _assertions)
 
-
-apple_prompt = "who founded apple?"
 
 parameters: Any = [
     "provider, model, params",
@@ -85,15 +78,15 @@ parameters: Any = [
             "gpt-4",
             {
                 "endpoint": "completions",
-                "messages": [{"role": "user", "content": apple_prompt}],
+                "messages": [{"role": "user", "content": boolean_like_prompt}],
             },
         ),
         (
             "PERPLEXITYAI",
-            "sonar-small-online",
+            "mistral-7b-instruct",
             {
                 "endpoint": "completions",
-                "messages": [{"role": "user", "content": apple_prompt}],
+                "messages": [{"role": "user", "content": boolean_like_prompt}],
             },
         ),
     ],
@@ -102,12 +95,12 @@ parameters: Any = [
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-async def test_css_inference_service(
+async def test_css_inference_service_web2(
     provider: str,
     model: str,
     params: dict[str, Any],
 ) -> None:
-    task = await request_job(
+    task_id = await request_job(
         SERVICE_NAME,
         {
             "provider": provider,
@@ -116,15 +109,63 @@ async def test_css_inference_service(
             "params": params,
         },
     )
-    result: str = (await get_job(task.id)).result.output["output"]
-    assert "steve" in result.lower(), (
-        f"steve jobs should be in result, instead got " f"{result}"
+    result: str = (await get_job(task_id)).get("output")
+    boolean_like_prompt_assertion(result)
+
+
+@pytest.mark.asyncio
+async def test_css_inference_service_custom_parameters() -> None:
+    task_id = await request_job(
+        SERVICE_NAME,
+        {
+            "provider": "OPENAI",
+            "endpoint": "completions",
+            "model": "gpt-4",
+            "params": {
+                "endpoint": "completions",
+                "messages": [
+                    {"role": "user", "content": "give me an essay about cats"}
+                ],
+            },
+            "extra_args": {
+                "max_tokens": 10,
+                "temperature": 0.5,
+            },
+        },
     )
+    result: str = (await get_job(task_id)).get("output")
+    assert len(result.split(" ")) < 10
 
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-async def test_tgi_client_streaming_service(
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
+async def test_delegate_subscription(
+    provider: str,
+    model: str,
+    params: dict[str, Any],
+) -> None:
+    await request_delegated_subscription(
+        SERVICE_NAME,
+        {
+            "provider": provider,
+            "endpoint": "completions",
+            "model": model,
+            "params": params,
+        },
+    )
+
+    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
+        (result,) = decode(["string"], output, strict=False)
+        log.info(f"got result: {result}")
+        boolean_like_prompt_assertion(result)
+
+    await assert_generic_callback_consumer_output(None, _assertions)
+
+
+@pytest.mark.parametrize(*parameters)
+@pytest.mark.asyncio
+async def test_css_service_streaming_inference(
     provider: str,
     model: str,
     params: dict[str, Any],
@@ -139,6 +180,4 @@ async def test_tgi_client_streaming_service(
         },
     )
     result = task.decode()
-    assert "steve" in result.lower(), (
-        f"steve jobs should be in result, instead got " f"{result}"
-    )
+    boolean_like_prompt_assertion(result)

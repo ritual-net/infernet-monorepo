@@ -4,18 +4,15 @@ The goal of this module is to provide a generic interface to run inference on an
  Hugging Face models for any of the supported tasks across the domains.
 """
 
-import inspect
 import logging
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, cast
 
 from huggingface_hub import InferenceClient  # type: ignore[import-untyped]
-from pydantic import ValidationError
 
 from infernet_ml.utils.hf_types import (
-    HFClassificationInferenceInput,
-    HFInferenceInput,
-    HFSummarizationInferenceInput,
-    HFTextGenerationInferenceInput,
+    HFInferenceClientInput,
+    HFInferenceClientOutput,
+    HFTaskId,
 )
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
@@ -60,10 +57,10 @@ AVAILABLE_DOMAIN_TASKS = {
 }
 # Maintain a list of supported tasks
 SUPPORTED_TASKS = [
-    "text_generation",
-    "text_classification",
-    "token_classification",
-    "summarization",
+    HFTaskId.SUMMARIZATION,
+    HFTaskId.TEXT_GENERATION,
+    HFTaskId.TEXT_CLASSIFICATION,
+    HFTaskId.TOKEN_CLASSIFICATION,
 ]
 
 # Logger for the module
@@ -76,79 +73,80 @@ class HFInferenceClientWorkflow(BaseInferenceWorkflow):
     """
 
     def __init__(
-        self, task: str, model: Optional[str] = None, *args: Any, **kwargs: Any
+        self,
+        token: Optional[str] = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize the Huggingface Inference Workflow object
 
         Args:
-            task (str): HF supported task id
-            model (str): model id on Huggingface Hub to be used for inference
-        Raises:
-            ValueError: if task is not supported
-        """
-        super().__init__(*args, **kwargs)
-        # Ensure task is one of supported tasks
-        logger.debug(f"Initializing Huggingface Inference Workflow for task {task}")
-        if task not in SUPPORTED_TASKS:
-            raise ValueError(
-                f"Task {task} is not supported. Supported tasks are {SUPPORTED_TASKS}"
-            )
-        logger.debug(f"Task {task} is supported")
-        self.task_id = task
-        self.model_id = model
-        self.inference_params: dict[str, Any] = {}
+            token (Optional[str]): API token for the inference client.
+                Defaults to None.
 
-    def do_setup(self) -> bool:
+        """
+        self.token = token
+        super().__init__(*args, **kwargs)
+
+    def setup(self) -> "HFInferenceClientWorkflow":
+        """
+        Setup the inference client. Overriding the base class setup method to add
+        typing annotations
+        """
+        return cast(HFInferenceClientWorkflow, super().setup())
+
+    def do_setup(self) -> "HFInferenceClientWorkflow":
         """
         Setup the inference client
         """
-        self.client = InferenceClient(token=self.kwargs.get("token"))
-        self.task = self.client.__getattribute__(self.task_id)
-        self.task_argspec = inspect.getfullargspec(self.task)
-        done = (
-            isinstance(self.client, InferenceClient)
-            and self.task is not None
-            and self.task_argspec is not None
-        )
-        logger.debug(f"Setup done: {done}")
-        return done
+        self.client = InferenceClient(token=self.token)
+        return self
 
     def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
         raise NotImplementedError
 
-    def do_preprocessing(self, input_data: dict[str, Any]) -> HFInferenceInput:
-        # Handle task specific input data
-        try:
-            preprocessed_data: HFInferenceInput
-            match self.task_id:
-                case "text_classification":
-                    preprocessed_data = HFClassificationInferenceInput(**input_data)
-                case "token_classification":
-                    preprocessed_data = HFClassificationInferenceInput(**input_data)
-                case "summarization":
-                    preprocessed_data = HFSummarizationInferenceInput(**input_data)
-                case "text_generation":
-                    preprocessed_data = HFTextGenerationInferenceInput(**input_data)
-                case _:
-                    preprocessed_data = HFInferenceInput(**input_data)
-        except ValidationError as e:
-            raise ValueError(f"Invalid input data: {e} for {self.task_id} task")
-
-        return preprocessed_data
-
-    def do_run_model(self, preprocessed_data: HFInferenceInput) -> dict[str, Any]:
+    def inference(self, input_data: HFInferenceClientInput) -> HFInferenceClientOutput:
         """
-        Perform inference on the input data
+        Overriding the inference method to add typing annotations
 
         Args:
-            preprocessed_data (HFInferenceInput): preprocessed input data
+            input_data (HFInferenceClientInput): Input data for the inference call
 
         Returns:
-            dict: output data from the inference call
+            Dict[str, Any]: output data from the inference call
         """
-        output = self.task(**preprocessed_data.model_dump(), **self.inference_params)
+        return cast(HFInferenceClientOutput, super().inference(input_data))
+
+    def do_run_model(self, hf_input: HFInferenceClientInput) -> HFInferenceClientOutput:
+        """
+        Perform inference on the hf_input data
+
+        Args:
+            hf_input (HFInferenceClientInput): Input data for the inference call
+
+        Returns:
+            HFInferenceClientOutput: Output data from the inference call
+        """
+
+        attr_lookup = {
+            HFTaskId.TEXT_CLASSIFICATION: "text_classification",
+            HFTaskId.SUMMARIZATION: "summarization",
+            HFTaskId.TEXT_GENERATION: "text_generation",
+            HFTaskId.TOKEN_CLASSIFICATION: "token_classification",
+        }
+
+        # check if the task_id is supported
+        if hf_input.task_id not in SUPPORTED_TASKS:
+            raise ValueError(f"Task ID {hf_input.task_id} is not supported")
+
+        task = self.client.__getattribute__(attr_lookup.get(hf_input.task_id))
+        args = hf_input.model_dump()
+        del args["task_id"]
+        output = task(**args)
+
         logger.debug(f"Output from inference call: {output}")
+
         return {"output": output}
 
     def do_postprocessing(
