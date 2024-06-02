@@ -30,21 +30,12 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         uint256 paymentAmount,
         address wallet,
         address prover
-    )
-        public
-        returns (bytes32)
-    {
+    ) public returns (bytes32) {
         bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
         console2.log("generated task id, now requesting compute");
         console2.logBytes32(generatedTaskId);
         _requestCompute(
-            containerId,
-            abi.encodePacked(inputs, randomness),
-            redundancy,
-            paymentToken,
-            paymentAmount,
-            wallet,
-            prover
+            containerId, abi.encodePacked(inputs, randomness), redundancy, paymentToken, paymentAmount, wallet, prover
         );
         console2.log("requested compute");
         return generatedTaskId;

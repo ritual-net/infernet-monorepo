@@ -26,7 +26,7 @@ TORCH_SERVICE_DOCKER_IMG = "ritualnetwork/torch_inference_service:latest"
 def torch_setup() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 TORCH_ARWEAVE_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3000,
@@ -40,7 +40,7 @@ def torch_setup() -> Generator[None, None, None]:
                     ),
                 },
             ),
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 TORCH_HF_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3001,
@@ -54,7 +54,7 @@ def torch_setup() -> Generator[None, None, None]:
                     ),
                 },
             ),
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 TORCH_SERVICE_NOT_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3002,

@@ -1,17 +1,24 @@
 import asyncio
+import json
 import logging
 import os
 import shlex
 import subprocess
-from typing import Callable, Generator, List, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional
 
 from test_library.config_creator import (
     ServiceConfig,
     ServiceEnvVars,
+    config_path,
     create_config_file,
 )
 from test_library.constants import DEFAULT_CONTRACT, suppress_logs
-from test_library.orchestration import await_node, await_services, deploy_node
+from test_library.orchestration import (
+    await_node,
+    await_services,
+    deploy_node,
+    start_anvil_node,
+)
 from test_library.test_config import (
     NetworkConfig,
     default_network_config,
@@ -34,14 +41,16 @@ def setup_logging() -> None:
     )
 
 
-def stop_services(services: List[ServiceConfig]) -> None:
-    names = " ".join([service.name for service in services])
+def stop_services() -> None:
+    with open(config_path(), "r") as f:
+        cfg = json.load(f)
+    names = " ".join([service["id"] for service in cfg["containers"]])
     subprocess.run(shlex.split(f"docker kill {names}"))
     subprocess.run(shlex.split(f"docker rm {names}"))
 
 
-def stop_node(services: List[ServiceConfig]) -> None:
-    stop_services(services)
+def stop_node_and_services() -> None:
+    stop_services()
     subprocess.run(shlex.split("make stop-node"))
 
 
@@ -86,7 +95,9 @@ def handle_lifecycle(
     skip_contract: bool = False,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
-    post_node_deploy_hook: Optional[Callable[[], None]] = None,
+    post_chain_start_hook: Callable[[], None] = lambda: None,
+    post_config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
+    post_node_deploy_hook: Callable[[], None] = lambda: None,
     skip_deploying: bool = False,
     skip_teardown: bool = False,
     node_wait_timeout: int = 10,
@@ -95,19 +106,21 @@ def handle_lifecycle(
 ) -> Generator[None, None, None]:
     try:
         populate_global_config(network_config)
+        start_anvil_node()
+        post_chain_start_hook()
         log.info(f"global config: {global_config}")
         create_config_file(
             services,
-            global_config.private_key,
-            global_config.coordinator_address,
+            global_config.node_private_key,
+            global_config.registry_address,
             global_config.infernet_rpc_url,
+            post_config_gen_hook,
         )
         if not skip_deploying:
             deploy_node(
                 deploy_env_vars,
             )
-        if post_node_deploy_hook:
-            post_node_deploy_hook()
+        post_node_deploy_hook()
         log.info(f"waiting up to {node_wait_timeout}s for node to be ready")
         asyncio.run(await_node(timeout=node_wait_timeout))
         log.info("✅ node is ready")
@@ -124,4 +137,4 @@ def handle_lifecycle(
         if skip_teardown:
             log.info("skipping tear down")
             return
-        stop_node(services)
+        stop_node_and_services()
