@@ -20,7 +20,7 @@ def lifecycle() -> Generator[None, None, None]:
     args = f'["{url}/{model}", 30, {{"Authorization": "Bearer {hf_token}"}}]'
     yield from handle_lifecycle(
         [
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 SERVICE_NAME,
                 env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args},
             )
