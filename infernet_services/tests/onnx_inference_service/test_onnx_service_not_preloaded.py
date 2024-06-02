@@ -9,7 +9,7 @@ from onnx_inference_service.common import (
 )
 from onnx_inference_service.conftest import ONNX_SERVICE_NOT_PRELOADED
 from test_library.constants import arweave_model_id, hf_model_id
-from test_library.web2_utils import get_job, request_job
+from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     iris_web3_assertions,
@@ -111,3 +111,17 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
     )
 
     await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+
+
+@pytest.mark.asyncio
+async def test_delegated_sub_request() -> None:
+    await request_delegated_subscription(
+        ONNX_SERVICE_NOT_PRELOADED,
+        {
+            "model_source": hf_model_source,
+            "load_args": hf_load_args,
+            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
+        },
+    )
+
+    await assert_generic_callback_consumer_output(None, iris_web3_assertions)

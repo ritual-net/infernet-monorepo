@@ -18,7 +18,7 @@ from pydantic import ValidationError as PydValError
 from quart import Quart, abort
 from quart import request as req
 from quart.utils import run_sync
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 SERVICE_PREFIX = "TGI_INF"
 
@@ -77,53 +77,52 @@ def create_app() -> Quart:
                 ## load data into model for validation
                 inf_input = InfernetInput(**data)
                 logging.info("received InfernetInput %s", inf_input)
+
+                inf_request: TgiInferenceRequest
+                hex_input: str = ""
+
                 match inf_input:
                     case InfernetInput(
                         source=JobLocation.OFFCHAIN,
-                        destination=JobLocation.OFFCHAIN,
                         data=input_data,
                     ):
-                        logging.debug("received Offchain Request: %s", input_data)
-
-                        ## send parsed output back
-                        result = await run_sync(workflow.inference)(
-                            input_data=TgiInferenceRequest(
-                                **cast(dict[str, str], input_data)
-                            )
+                        inf_request = TgiInferenceRequest(
+                            **cast(dict[str, str], input_data)
+                        )
+                    case InfernetInput(
+                        source=JobLocation.ONCHAIN,
+                        data=_hex_input,
+                    ):
+                        hex_input = cast(str, _hex_input)
+                        input_bytes: bytes = bytes.fromhex(hex_input)
+                        text = decode(["string"], input_bytes)[0]
+                        inf_request = TgiInferenceRequest(text=text)
+                    case _:
+                        raise BadRequest(
+                            f"Invalid InferentInput source: {inf_input.source}"
                         )
 
-                        logging.info("recieved result from workflow: %s", result)
-
-                        # return dict
-                        return {"output": result}
+                match inf_input:
                     case InfernetInput(
-                        source=JobLocation.OFFCHAIN,
-                        data=input_data,
                         destination=JobLocation.STREAM,
                     ):
-                        logging.debug("received Streaming Request: %s", input_data)
 
                         async def stream_generator() -> AsyncGenerator[str, None]:
-                            for r in workflow.stream(
-                                TgiInferenceRequest(**cast(dict[str, str], input_data))
-                            ):
+                            for r in workflow.stream(inf_request):
                                 yield r.token.text.encode()
 
                         return stream_generator()
 
-                    case InfernetInput(data=hex_input, destination=JobLocation.ONCHAIN):
-                        logging.debug("received on chain Request: %s", hex_input)
-                        input_bytes: bytes = bytes.fromhex(cast(str, hex_input))
+                result = await run_sync(workflow.inference)(input_data=inf_request)
+                logging.info("recieved result from workflow: %s", result)
 
-                        text = decode(["string"], input_bytes)[0]
+                match inf_input:
+                    case InfernetInput(
+                        destination=JobLocation.OFFCHAIN,
+                    ):
+                        return {"output": result}
 
-                        input = TgiInferenceRequest(text=text)
-
-                        ## send parsed output back
-                        result = await run_sync(workflow.inference)(input_data=input)
-
-                        logging.info("recieved result from workflow: %s", result)
-
+                    case InfernetInput(destination=JobLocation.ONCHAIN):
                         output = encode(["string"], [result]).hex()
 
                         onchain_output = {

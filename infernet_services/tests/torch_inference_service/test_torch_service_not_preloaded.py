@@ -5,7 +5,7 @@ from eth_abi.abi import encode
 from infernet_ml.utils.codec.vector import encode_vector
 from infernet_ml.utils.model_loader import ModelSource
 from test_library.constants import arweave_model_id
-from test_library.web2_utils import get_job, request_job
+from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     california_housing_web3_assertions,
@@ -69,4 +69,23 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 
     await assert_generic_callback_consumer_output(
         task_id, california_housing_web3_assertions
+    )
+
+
+@pytest.mark.asyncio
+async def test_delegate_subscription_inference() -> None:
+    await request_delegated_subscription(
+        TORCH_SERVICE_NOT_PRELOADED,
+        {
+            "model_source": ar_model_source,
+            "load_args": ar_load_args,
+            "input": {
+                **california_housing_vector_params,
+                "dtype": "double",
+            },
+        },
+    )
+
+    await assert_generic_callback_consumer_output(
+        None, california_housing_web3_assertions
     )

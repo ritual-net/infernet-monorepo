@@ -17,7 +17,7 @@ SERVICE_NAME = "css_inference_service"
 def lifecycle() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 SERVICE_NAME,
                 env_vars={
                     "PERPLEXITYAI_API_KEY": os.environ["PERPLEXITYAI_API_KEY"],

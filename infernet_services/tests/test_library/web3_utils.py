@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import logging
 import shlex
 import subprocess
-from typing import Any, Callable, Dict, List, cast
+from typing import Any, Callable, Dict, List, Optional, cast
 from uuid import uuid4
 
 from eth_abi.abi import decode
@@ -15,14 +17,16 @@ from test_library.constants import (
     ANVIL_NODE,
     DEFAULT_CONTRACT,
     DEFAULT_CONTRACT_FILENAME,
-    DEFAULT_COORDINATOR_ADDRESS,
-    DEFAULT_PRIVATE_KEY,
+    DEFAULT_NODE_PRIVATE_KEY,
+    DEFAULT_REGISTRY_ADDRESS,
+    ZERO_ADDRESS,
 )
 from test_library.test_config import global_config
 from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
+from web3.types import Wei
 
 log = logging.getLogger(__name__)
 
@@ -30,9 +34,9 @@ log = logging.getLogger(__name__)
 def deploy_smart_contract(
     filename: str = DEFAULT_CONTRACT_FILENAME,
     consumer_contract: str = DEFAULT_CONTRACT,
-    sender: str = DEFAULT_PRIVATE_KEY,
+    sender: str = DEFAULT_NODE_PRIVATE_KEY,
     rpc_url: str = ANVIL_NODE,
-    coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    registry: str = DEFAULT_REGISTRY_ADDRESS,
     extra_params: Dict[str, str] = {},
 ) -> None:
     """
@@ -47,14 +51,14 @@ def deploy_smart_contract(
         sender (str, optional): The private key of the sender. Defaults to
         DEFAULT_PRIVATE_KEY, which is one of anvil's test private keys.
         rpc_url (str, optional): The RPC URL. Defaults to DEFAULT_INFERNET_RPC_URL.
-        coordinator_address (str, optional): The coordinator address. Defaults to
+        registry (str, optional): The coordinator address. Defaults to
         DEFAULT_COORDINATOR_ADDRESS.
 
     """
     cmd = (
         f"make deploy-contract filename={filename} "
         f"contract={consumer_contract} sender={sender} "
-        f"rpc_url={rpc_url} coordinator={coordinator_address}"
+        f"rpc_url={rpc_url} registry={registry}"
     )
 
     for k, v in extra_params.items():
@@ -62,6 +66,58 @@ def deploy_smart_contract(
 
     log.info(f"deploying contract: {cmd}")
     subprocess.run(shlex.split(cmd))
+
+
+def run_forge_script(
+    script_name: str,
+    script_contract_name: str,
+    sender: str = DEFAULT_NODE_PRIVATE_KEY,
+    rpc_url: str = ANVIL_NODE,
+    extra_params: Dict[str, str] = {},
+) -> None:
+    """
+    Runs a forge script. Uses the makefile script under the hood.
+
+    Args:
+        script_name (str): The script's name: i.e. `Deploy` for a `Deploy.s.sol` file.
+        script_contract_name (str): The script's contract name.
+        sender (str, optional): The private key of the sender. Defaults to
+            DEFAULT_PRIVATE_KEY
+        rpc_url (str, optional): The RPC URL. Defaults to DEFAULT_INFERNET_RPC_URL.
+        extra_params (Dict[str, str], optional): Extra parameters. Defaults to {}.
+    """
+    cmd = (
+        f"make run-forge-script script_name={script_name} "
+        f"script_contract_name={script_contract_name} sender={sender} "
+        f"rpc_url={rpc_url}"
+    )
+
+    for k, v in extra_params.items():
+        cmd += f" {k}={v}"
+
+    log.info(f"Running script: {cmd}")
+
+    results = []
+
+    @retry(  # type: ignore
+        exceptions=(AssertionError,),
+        tries=5,
+        delay=0.1,
+    )
+    def _deploy() -> None:
+        result = subprocess.run(shlex.split(cmd), capture_output=True)
+        results.append(result)
+        assert result.returncode == 0
+
+    try:
+        _deploy()
+    except AssertionError as e:
+        result = results[-1]
+        msg = f"Error running forge script: command: {cmd}\n{result}"
+        if result:
+            msg += f"\n\nstdout:\n{result.stdout!r}\n\nstderr:\n{result.stderr!r}\n"
+        log.error(msg)
+        raise e
 
 
 ABIType = List[Dict[str, Any]]
@@ -87,7 +143,7 @@ def get_abi(filename: str, contract_name: str) -> ABIType:
 
 
 async def assert_generic_callback_consumer_output(
-    task_id: bytes,
+    task_id: Optional[bytes],
     assertions: Callable[[bytes, bytes, bytes], None],
     timeout: int = 20,
 ) -> None:
@@ -96,29 +152,42 @@ async def assert_generic_callback_consumer_output(
     fails.
 
     Args:
-        index (int): The index of the output.
+        task_id (Optional[bytes]): The task ID. If None, the function will attempt to get
+            the task ID from the `lastTaskId()` method on the contract.
         assertions (Callable[[bytes, bytes, bytes], None]): The assertion
-        function.
-        task_id (bytes): The task id.
+            function.
         timeout (int, optional): The timeout. Defaults to 10 seconds.
 
     """
+    consumer = await get_consumer_contract()
+
+    if not task_id:
+        received_toggle = await consumer.functions.receivedToggle().call()
+
+        @retry(  # type: ignore
+            exceptions=(AssertionError,), tries=timeout * 2, delay=1 / 2
+        )
+        async def _wait_till_next_output():
+            assert await consumer.functions.receivedToggle().call() != received_toggle
+
+        await _wait_till_next_output()
+
+        return assertions(b"", await consumer.functions.lastOutput().call(), b"")
 
     @retry(
         exceptions=(AssertionError, InsufficientDataBytes, ContractLogicError),
         tries=timeout * 2,
         delay=1 / 2,
     )  # type: ignore
-    async def _assert():
-        log.info(f"querying consumer contract for task id {task_id.hex()}")
-        consumer = await get_consumer_contract()
-        _input = await consumer.functions.receivedInput(task_id).call()
-        _output = await consumer.functions.receivedOutput(task_id).call()
-        _proof = await consumer.functions.receivedProof(task_id).call()
+    async def _assert(_task_id: bytes) -> None:
+        log.info(f"querying consumer contract for task id {_task_id.hex()}")
+        _input = await consumer.functions.receivedInput(_task_id).call()
+        _output = await consumer.functions.receivedOutput(_task_id).call()
+        _proof = await consumer.functions.receivedProof(_task_id).call()
         log.info(f"consumer contract call: {_input} {_output} {_proof}")
         assertions(_input, _output, _proof)
 
-    await _assert()
+    await _assert(task_id)
 
 
 async def get_w3() -> AsyncWeb3:
@@ -129,16 +198,17 @@ async def get_w3() -> AsyncWeb3:
         AsyncWeb3: The web3 instance.
     """
     w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
-    account = w3.eth.account.from_key(global_config.private_key)
+    account = w3.eth.account.from_key(global_config.tester_private_key)
     w3.middleware_onion.add(await async_construct_sign_and_send_raw_middleware(account))
     w3.eth.default_account = account.address
     return w3
 
 
-def get_account() -> HexAddress:
+def get_account(_private_key: Optional[str] = None) -> ChecksumAddress:
+    private_key = _private_key or global_config.tester_private_key
     w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
-    account = w3.eth.account.from_key(global_config.private_key)
-    return cast(HexAddress, account.address)
+    account = w3.eth.account.from_key(private_key)
+    return AsyncWeb3.to_checksum_address(account.address)
 
 
 def get_deployed_contract_address(deployment_name: str) -> ChecksumAddress:
@@ -146,7 +216,7 @@ def get_deployed_contract_address(deployment_name: str) -> ChecksumAddress:
         f"{infernet_services_dir()}/consumer-contracts/deployments/deployments.json"
     ) as f:
         deployments = json.load(f)
-    return cast(ChecksumAddress, deployments[deployment_name])
+    return AsyncWeb3.to_checksum_address(deployments[deployment_name])
 
 
 async def get_consumer_contract(
@@ -184,6 +254,101 @@ async def get_consumer_contract(
     )
 
 
+async def get_wallet_factory_contract(_address: Optional[str] = None) -> AsyncContract:
+    address = _address or global_config.wallet_factory
+    w3 = await get_w3()
+    return w3.eth.contract(
+        address=AsyncWeb3.to_checksum_address(address),
+        abi=get_abi("WalletFactory.sol", "WalletFactory"),
+    )
+
+
+class Wallet:
+    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
+        self.address = address
+        self._w3 = w3
+        self._contract = w3.eth.contract(
+            address=address,
+            abi=get_abi("Wallet.sol", "Wallet"),
+        )
+
+    async def approve(
+        self, spender: ChecksumAddress, token: ChecksumAddress, amount: int
+    ) -> None:
+        tx = await self._contract.functions.approve(spender, token, amount).transact()
+        await self._w3.eth.wait_for_transaction_receipt(tx)
+        assert await self._contract.functions.allowance(spender, token).call() == amount
+
+
+async def fund_wallet_with_eth(wallet: Wallet, amount: int) -> None:
+    w3 = await get_w3()
+    tx = await w3.eth.send_transaction(
+        {
+            "to": wallet.address,
+            "value": cast(Wei, amount),
+        }
+    )
+    balance_before = await w3.eth.get_balance(wallet.address)
+    await w3.eth.wait_for_transaction_receipt(tx)
+    balance_after = await w3.eth.get_balance(wallet.address)
+    assert balance_after == amount + balance_before
+
+
+class Token:
+    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
+        self.address = address
+        self._w3 = w3
+        self._contract = w3.eth.contract(
+            address=address,
+            abi=get_abi("FakeMoney.sol", "FakeMoney"),
+        )
+
+    async def mint(self, to: ChecksumAddress, amount: int) -> None:
+        tx = await self._contract.functions.mint(to, amount).transact()
+        await self._w3.eth.wait_for_transaction_receipt(tx)
+
+    async def balance_of(self, address: ChecksumAddress) -> Wei:
+        return cast(Wei, await self._contract.functions.balanceOf(address).call())
+
+
+def mock_token_address(token_name: ChecksumAddress) -> ChecksumAddress:
+    return get_deployed_contract_address(token_name)
+
+
+async def fund_wallet_with_token(wallet: Wallet, token_name: str, amount: int) -> None:
+    w3 = await get_w3()
+    contract = w3.eth.contract(
+        address=get_deployed_contract_address(token_name),
+        abi=get_abi("FakeMoney.sol", "FakeMoney"),
+    )
+    tx = await contract.functions.mint(wallet.address, amount).transact()
+    balance_bafore = await contract.functions.balanceOf(wallet.address).call()
+    await w3.eth.wait_for_transaction_receipt(tx)
+    assert (
+        await contract.functions.balanceOf(wallet.address).call()
+        == amount + balance_bafore
+    )
+
+
+async def assert_balance(address: ChecksumAddress, amount: int) -> None:
+    w3 = await get_w3()
+    balance = await w3.eth.get_balance(address)
+    log.info(f"asserting balance {balance} == {amount}")
+    assert balance == amount
+
+
+async def create_wallet(_owner: Optional[HexAddress] = None) -> Wallet:
+    _owner = _owner or get_account()
+    factory = await get_wallet_factory_contract()
+    wallet = await factory.functions.createWallet(_owner).call()
+    tx = await factory.functions.createWallet(_owner).transact()
+    w3 = await get_w3()
+    await w3.eth.wait_for_transaction_receipt(tx)
+    assert await factory.functions.isValidWallet(wallet).call()
+    log.info(f"created payment wallet {wallet}")
+    return Wallet(AsyncWeb3.to_checksum_address(wallet), w3)
+
+
 async def get_coordinator_contract() -> AsyncContract:
     contract_address = cast(HexAddress, global_config.coordinator_address)
     w3 = await get_w3()
@@ -198,13 +363,27 @@ async def get_coordinator_contract() -> AsyncContract:
     )
 
 
-async def request_web3_compute(service_id: str, input: bytes) -> bytes:
+async def request_web3_compute(
+    service_id: str,
+    input: bytes,
+    redundancy: int = 1,
+    payment_token: ChecksumAddress = ZERO_ADDRESS,
+    payment_amount: int = 0,
+    wallet: ChecksumAddress = ZERO_ADDRESS,
+    prover: ChecksumAddress = ZERO_ADDRESS,
+) -> bytes:
     """
     Requests compute from the consumer contract.
 
     Args:
         service_id (str): The service ID.
         input (bytes): The input.
+        redundancy (int, optional): The redundancy. Defaults to 1.
+        payment_token (ChecksumAddress, optional): The payment token. Defaults to
+            ZERO_ADDRESS.
+        payment_amount (int, optional): The payment amount. Defaults to 0.
+        wallet (ChecksumAddress, optional): The wallet. Defaults to ZERO_ADDRESS.
+        prover (ChecksumAddress, optional): The prover. Defaults to ZERO_ADDRESS.
 
     Returns:
         int: The index of the request.
@@ -212,7 +391,16 @@ async def request_web3_compute(service_id: str, input: bytes) -> bytes:
     consumer = await get_consumer_contract()
     randomness = f"{uuid4()}"
     log.info(f"requesting compute {service_id} {randomness} {input!r}")
-    fn = consumer.functions.requestCompute(service_id, randomness, input)
+    fn = consumer.functions.requestCompute(
+        randomness,
+        service_id,
+        input,
+        redundancy,
+        payment_token,
+        payment_amount,
+        wallet,
+        prover,
+    )
     gen_id = await fn.call()
     log.info(f"generated id {gen_id}")
     tx = await fn.transact()
@@ -239,3 +427,21 @@ def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
     assert dtype == DataType.float
     assert shape == (1, 3)
     assert values.argmax() == 2
+
+
+def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
+    """
+    Deploys a smart contract with sane defaults. Uses the global config for
+    private key, rpc url, and coordinator address.
+
+    Args:
+        contract_name (str): The contract name.
+    """
+    deploy_smart_contract(
+        filename=f"{contract_name}.sol",
+        consumer_contract=contract_name,
+        sender=global_config.tester_private_key,
+        rpc_url=global_config.rpc_url,
+        registry=DEFAULT_REGISTRY_ADDRESS,
+        extra_params={"signer": get_account()},
+    )

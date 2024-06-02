@@ -15,12 +15,10 @@ SERVICE_NAME = "hf_inference_client_service"
 def node_lifecycle() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
-            ServiceConfig.build_service(
+            ServiceConfig.build(
                 SERVICE_NAME,
                 env_vars={
-                    "HF_INF_TASK": "text_generation",
-                    "HF_INF_MODEL": "HuggingFaceH4/zephyr-7b-beta",
-                    "HF_INF_TOKEN": os.environ["HF_TOKEN"],
+                    "HF_TOKEN": os.environ["HF_TOKEN"],
                 },
             )
         ],
