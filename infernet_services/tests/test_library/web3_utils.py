@@ -302,7 +302,8 @@ async def request_web3_compute(
     """
     consumer = await get_consumer_contract()
     log.info(f"requesting compute {service_id} {input!r}")
-    tx = await consumer.functions.requestCompute(
+
+    fn = consumer.functions.requestCompute(
         service_id,
         input,
         redundancy,
@@ -310,7 +311,8 @@ async def request_web3_compute(
         payment_amount,
         wallet,
         prover,
-    ).transact()
+    )
+    tx = await global_config.tx_submitter.submit(fn)
 
     log.info(f"awaiting transaction {tx.hex()}")
     receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
@@ -335,7 +337,7 @@ def get_sub_id_from_receipt(receipt: TxReceipt) -> int:
 
     sub_id = extract_subscription_id(receipt["logs"])
 
-    log.info(f"transaction receipt {receipt} - subscription id {sub_id}")
+    log.info(f"got transaction receipt for sub {sub_id}")
     return sub_id
 
 
@@ -377,15 +379,15 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
     )
 
 
-def echo_input(i: int, proof: str = "") -> bytes:
+def echo_input(_in: str, proof: str = "") -> bytes:
     """
     Creates an echo input, to be used with the echo service.
     """
-    return encode(["uint8", "string"], [i, proof])
+    return encode(["string", "string"], [_in, proof])
 
 
-def echo_output(i: int) -> bytes:
+def echo_output(_in: str) -> bytes:
     """
     Output from echo service
     """
-    return encode(["uint8"], [i])
+    return encode(["string"], [_in])

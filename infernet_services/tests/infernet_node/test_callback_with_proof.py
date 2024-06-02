@@ -1,5 +1,6 @@
 import logging
 from typing import Tuple, cast
+from uuid import uuid4
 
 import pytest
 from infernet_node.conftest import ECHO_SERVICE
@@ -44,7 +45,7 @@ async def test_proof_payment_unsupported_token_by_verifier() -> None:
 
     await request_web3_compute(
         ECHO_SERVICE,
-        echo_input(12, VALID_PROOF),
+        echo_input(f"{uuid4()}", VALID_PROOF),
         payment_amount=funding,
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
@@ -133,16 +134,18 @@ async def test_eager_proof_payment_valid_proof() -> None:
         verifier_balance_before,
     ) = await _get_balances(wallet, verifier)
 
+    _in = f"{uuid4()}"
+
     sub_id = await request_web3_compute(
         ECHO_SERVICE,
-        echo_input(12, VALID_PROOF),
+        echo_input(_in, VALID_PROOF),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
         prover=get_deployed_contract_address("GenericAtomicVerifier"),
     )
 
-    await assert_output(sub_id)
+    await assert_output(sub_id, _in)
     await assert_balance(wallet.address, funding - subscription_payment)
 
     # # assert protocol income
@@ -195,17 +198,18 @@ async def test_eager_proof_payment_invalid_proof() -> None:
     protocol_balance_before = await protocol_balance()
     node_balance_before = await node_balance()
     verifier_balance_before = await verifier.get_balance()
+    _in = f"{uuid4()}"
 
     sub_id = await request_web3_compute(
         ECHO_SERVICE,
-        echo_input(12, INVALID_PROOF),
+        echo_input(_in, INVALID_PROOF),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
         prover=get_deployed_contract_address("GenericAtomicVerifier"),
     )
 
-    await assert_output(sub_id)
+    await assert_output(sub_id, _in)
 
     protocol_balance_after = await protocol_balance()
     node_balance_after = await node_balance()
@@ -252,16 +256,18 @@ async def _lazy_proof_setup(
         verifier_balance_before,
     ) = await _get_balances(wallet, verifier)
 
+    _in = f"{uuid4()}"
+
     sub_id = await request_web3_compute(
         ECHO_SERVICE,
-        echo_input(12, proof),
+        echo_input(_in, proof),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
         prover=get_deployed_contract_address(LAZY_VERIFIER_CONTRACT),
     )
 
-    await assert_output(sub_id)
+    await assert_output(sub_id, _in)
 
     (
         wallet_balance_diff,

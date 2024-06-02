@@ -4,6 +4,7 @@ from typing import Optional
 
 from eth_typing import ChecksumAddress
 from test_library.chain.wallet import Wallet
+from test_library.test_config import global_config
 from test_library.web3_utils import get_abi
 from web3 import AsyncWeb3
 
@@ -27,7 +28,9 @@ class GenericAtomicVerifier:
     async def set_price(
         self: GenericAtomicVerifier, token: ChecksumAddress, price: int
     ) -> None:
-        tx = await self._contract.functions.setPrice(token, price).transact()
+        tx = await global_config.tx_submitter.submit(
+            self._contract.functions.setPrice(token, price)
+        )
         await self._w3.eth.wait_for_transaction_receipt(tx)
         assert await self._contract.functions.fee(token).call() == price
 
@@ -48,7 +51,9 @@ class GenericAtomicVerifier:
     async def disallow_token(
         self: GenericAtomicVerifier, token: ChecksumAddress
     ) -> None:
-        tx = await self._contract.functions.disallowToken(token).transact()
+        tx = await global_config.tx_submitter.submit(
+            self._contract.functions.disallowToken(token)
+        )
         await self._w3.eth.wait_for_transaction_receipt(tx)
         assert await self._contract.functions.acceptedPayments(token).call() is False
 
@@ -64,5 +69,7 @@ class GenericLazyVerifier(GenericAtomicVerifier):
     async def finalize(
         self: GenericLazyVerifier, sub_id: int, interval: int, node: ChecksumAddress
     ) -> None:
-        tx = await self._contract.functions.finalize(sub_id, interval, node).transact()
+        tx = await global_config.tx_submitter.submit(
+            self._contract.functions.finalize(sub_id, interval, node)
+        )
         await self._w3.eth.wait_for_transaction_receipt(tx)

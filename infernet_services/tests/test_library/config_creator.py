@@ -15,7 +15,13 @@ from test_library.constants import (
 
 base_config = {
     "log_path": "infernet_node.log",
-    "server": {"port": 4000},
+    "server": {
+        "port": 4000,
+        "rate_limit": {
+            "num_requests": 1000,
+            "period": 1000,
+        },
+    },
     "chain": {
         "enabled": True,
         "trail_head_blocks": 0,

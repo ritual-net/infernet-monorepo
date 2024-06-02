@@ -29,7 +29,9 @@ class Wallet:
     async def approve(
         self, spender: ChecksumAddress, token: ChecksumAddress, amount: int
     ) -> None:
-        tx = await self._contract.functions.approve(spender, token, amount).transact()
+        tx = await global_config.tx_submitter.submit(
+            self._contract.functions.approve(spender, token, amount)
+        )
         await self._w3.eth.wait_for_transaction_receipt(tx)
         assert await self._contract.functions.allowance(spender, token).call() == amount
 
@@ -42,7 +44,7 @@ class Wallet:
 
 async def fund_address_with_eth(address: ChecksumAddress, amount: int) -> None:
     w3 = await get_w3()
-    tx = await w3.eth.send_transaction(
+    tx = await global_config.tx_submitter.send_tx(
         {
             "to": address,
             "value": cast(Wei, amount),
@@ -64,7 +66,9 @@ async def fund_wallet_with_token(wallet: Wallet, token_name: str, amount: int) -
         address=get_deployed_contract_address(token_name),
         abi=get_abi("FakeMoney.sol", "FakeMoney"),
     )
-    tx = await contract.functions.mint(wallet.address, amount).transact()
+    tx = await global_config.tx_submitter.submit(
+        contract.functions.mint(wallet.address, amount)
+    )
     balance_bafore = await contract.functions.balanceOf(wallet.address).call()
     await w3.eth.wait_for_transaction_receipt(tx)
     assert (
@@ -86,7 +90,7 @@ async def create_wallet(_owner: Optional[HexAddress] = None) -> Wallet:
     _owner = _owner or get_account()
     factory = await get_wallet_factory_contract()
     wallet = await factory.functions.createWallet(_owner).call()
-    tx = await factory.functions.createWallet(_owner).transact()
+    tx = await global_config.tx_submitter.submit(factory.functions.createWallet(_owner))
     w3 = await get_w3()
     await w3.eth.wait_for_transaction_receipt(tx)
     assert await factory.functions.isValidWallet(wallet).call()

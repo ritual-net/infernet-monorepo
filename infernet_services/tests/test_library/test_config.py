@@ -1,8 +1,11 @@
-import os
-from typing import Optional, cast
+from __future__ import annotations
 
+import os
+from typing import Dict, Optional, cast
+
+from eth_account import Account
 from eth_typing import ChecksumAddress
-from pydantic import BaseModel
+from test_library.chain.tx_submitter import TxSubmitter
 from test_library.constants import (
     ANVIL_NODE,
     DEFAULT_COORDINATOR_ADDRESS,
@@ -15,9 +18,11 @@ from test_library.constants import (
     DEFAULT_TESTER_PRIVATE_KEY,
     DEFAULT_WALLET_FACTORY_ADDRESS,
 )
+from web3 import AsyncHTTPProvider, AsyncWeb3
+from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
 
 
-class NetworkConfig(BaseModel):
+class NetworkConfig:
     """
     Network configuration for the consumer contract.
 
@@ -59,6 +64,12 @@ class NetworkConfig(BaseModel):
     contract_address: Optional[str]
         The address of the consumer contract. If not provided it's read from
         the 'consumer-contracts/deployments' directory.
+
+    tx_submitter: Optional[TxSubmitter]
+        The TxSubmitter instance that the testing framework will use to send
+        transactions. This is used to keep track of the nonce of the transactions. By
+        default web3.py does check for nonce, but if we're sending parallel transactions
+        then we need to keep track of the nonce ourselves.
     """
 
     rpc_url: str
@@ -72,6 +83,72 @@ class NetworkConfig(BaseModel):
     protocol_fee_recipient: ChecksumAddress
     tester_private_key: str
     contract_address: Optional[ChecksumAddress] = None
+
+    def __init__(
+        self,
+        rpc_url: str,
+        node_url: str,
+        infernet_rpc_url: str,
+        coordinator_address: ChecksumAddress,
+        registry_address: ChecksumAddress,
+        wallet_factory: ChecksumAddress,
+        node_private_key: str,
+        node_payment_wallet: ChecksumAddress,
+        protocol_fee_recipient: ChecksumAddress,
+        tester_private_key: str,
+        contract_address: Optional[ChecksumAddress] = None,
+    ):
+        self.rpc_url = rpc_url
+        self.node_url = node_url
+        self.infernet_rpc_url = infernet_rpc_url
+        self.coordinator_address = coordinator_address
+        self.registry_address = registry_address
+        self.wallet_factory = wallet_factory
+        self.node_private_key = node_private_key
+        self.node_payment_wallet = node_payment_wallet
+        self.protocol_fee_recipient = protocol_fee_recipient
+        self.tester_private_key = tester_private_key
+        self.contract_address = contract_address
+        self._tx_submitter: Optional[TxSubmitter] = None
+        self._account: Optional[Account] = None
+
+    def as_dict(self: NetworkConfig) -> Dict[str, str | None]:
+        return {
+            "rpc_url": self.rpc_url,
+            "node_url": self.node_url,
+            "infernet_rpc_url": self.infernet_rpc_url,
+            "coordinator_address": self.coordinator_address,
+            "registry_address": self.registry_address,
+            "wallet_factory": self.wallet_factory,
+            "node_private_key": self.node_private_key,
+            "node_payment_wallet": self.node_payment_wallet,
+            "protocol_fee_recipient": self.protocol_fee_recipient,
+            "tester_private_key": self.tester_private_key,
+            "contract_address": self.contract_address,
+        }
+
+    async def initialize(self: NetworkConfig) -> NetworkConfig:
+        w3 = AsyncWeb3(AsyncHTTPProvider(self.rpc_url))
+        account = w3.eth.account.from_key(self.tester_private_key)
+        w3.middleware_onion.add(
+            await async_construct_sign_and_send_raw_middleware(account)
+        )
+        w3.eth.default_account = account.address
+        self._tx_submitter = TxSubmitter(w3)
+        self._account = account
+        return self
+
+    @property
+    def account(self: NetworkConfig) -> Account:
+        if self._account is None:
+            raise ValueError("NetworkConfig is not initialized.")
+        return self._account
+
+    @property
+    def tx_submitter(self: NetworkConfig) -> TxSubmitter:
+        if self._tx_submitter is None:
+            raise ValueError("NetworkConfig is not initialized.")
+        return self._tx_submitter
 
 
 default_network_config: NetworkConfig = NetworkConfig(

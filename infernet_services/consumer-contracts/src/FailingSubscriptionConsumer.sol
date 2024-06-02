@@ -19,9 +19,6 @@ contract FailingSubscriptionConsumer is DelegateSubscriptionConsumer {
         bytes32 containerId,
         uint256 index
     ) internal override {
-        receivedOutputs.push(output);
-        console2.log("received output");
-        console2.logBytes(output);
         revert("reverting");
     }
 }

@@ -2,6 +2,7 @@ import logging
 import random
 from time import time
 from typing import Optional, cast
+from uuid import uuid4
 
 import pytest
 from eth_typing import ChecksumAddress
@@ -9,7 +10,11 @@ from infernet_client import NodeClient
 from infernet_client.chain_utils import RPC, Subscription
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import setup_wallet_with_accepted_token
-from infernet_node.test_subscriptions import assert_next_output, set_next_input
+from infernet_node.test_subscriptions import (
+    assert_subscription_consumer_output,
+    set_subscription_consumer_input,
+)
+from reretry import retry  # type: ignore
 from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.chain.wallet import create_wallet, fund_wallet_with_eth
 from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
@@ -17,13 +22,18 @@ from test_library.test_config import global_config
 from test_library.web3_utils import (
     echo_input,
     echo_output,
+    get_consumer_contract,
     get_coordinator_contract,
     get_deployed_contract_address,
 )
+from web3 import Web3
 
 log = logging.getLogger(__name__)
 
 DELEGATE_SUB_CONSUMER_CONTRACT = "DelegateSubscriptionConsumer"
+
+PERIOD = 4
+FREQUENCY = 2
 
 
 async def get_next_subscription_id() -> int:
@@ -44,11 +54,17 @@ async def create_delegated_subscription(
     payment_amount: int = 0,
     payment_token: str = ZERO_ADDRESS,
     wallet: ChecksumAddress = ZERO_ADDRESS,
+    timeout: int = 5,
+    freq: int = 10,
+    return_subscription_id: bool = True,
 ) -> int:
     hex_input = _input.hex()
+
+    contract_address = get_deployed_contract_address(contract_name)
+
     # create delegated subscription request
     sub = Subscription(
-        owner=get_deployed_contract_address(contract_name),
+        owner=contract_address,
         active_at=int(time() + time_to_active),
         period=period,
         frequency=frequency,
@@ -77,57 +93,78 @@ async def create_delegated_subscription(
         data={"input": hex_input},
     )
 
-    return nonce
+    contract = await get_consumer_contract(f"{contract_name}.sol", contract_name)
+
+    @retry(  # type: ignore
+        exceptions=AssertionError,
+        delay=1 / freq,
+        tries=timeout * freq,
+    )
+    async def _get() -> int:
+        r = await contract.functions.subIdByInput(Web3.keccak(_input)).call()
+        assert r != 0
+        return cast(int, r)
+
+    if return_subscription_id:
+        return cast(int, await _get())
+
+    return -1
 
 
 @pytest.mark.asyncio
 async def test_infernet_delegated_subscription_happy_path() -> None:
-    i = random.randint(0, 255)
+    i = f"{uuid4()}"
 
-    await create_delegated_subscription(echo_input(i), 2, 1)
+    sub_id = await create_delegated_subscription(echo_input(i), PERIOD, 1)
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
 @pytest.mark.asyncio
 async def test_infernet_delegated_subscription_active_at_later() -> None:
-    i = random.randint(0, 255)
+    i = f"{uuid4()}"
 
-    await create_delegated_subscription(echo_input(i), 2, 1, time_to_active=4)
+    sub_id = await create_delegated_subscription(
+        echo_input(i), PERIOD, 1, time_to_active=4
+    )
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
 @pytest.mark.asyncio
 async def test_infernet_delegated_recurring_subscription() -> None:
-    i = random.randint(0, 255)
+    i = f"{uuid4()}"
 
-    await create_delegated_subscription(echo_input(i), 4, 2)
+    sub_id = await create_delegated_subscription(echo_input(i), 4, FREQUENCY)
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
+    log.info(f"got sub id: {sub_id}")
 
-    i = random.randint(0, 255)
-    await set_next_input(i, contract_name=DELEGATE_SUB_CONSUMER_CONTRACT)
+    i = f"{uuid4()}"
+    await set_subscription_consumer_input(
+        sub_id, i, contract_name=DELEGATE_SUB_CONSUMER_CONTRACT
+    )
+    log.info(f"set input: {i}")
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
 @pytest.mark.asyncio
 async def test_infernet_delegated_subscription_with_redundancy() -> None:
-    i = random.randint(0, 255)
+    i = f"{uuid4()}"
 
-    await create_delegated_subscription(echo_input(i), 4, 1, redundancy=2)
+    sub_id = await create_delegated_subscription(echo_input(i), PERIOD, 1, redundancy=2)
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
     next_sub = await get_next_subscription_id()
@@ -137,7 +174,7 @@ async def test_infernet_delegated_subscription_with_redundancy() -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_delegated_subscription_with_payment() -> None:
-    i = random.randint(0, 255)
+    i = f"{uuid4()}"
 
     funding = int(1e18)
     wallet = await create_wallet()
@@ -152,7 +189,7 @@ async def test_infernet_delegated_subscription_with_payment() -> None:
         funding,
     )
 
-    await create_delegated_subscription(
+    sub_id = await create_delegated_subscription(
         echo_input(i),
         4,
         1,
@@ -161,8 +198,8 @@ async def test_infernet_delegated_subscription_with_payment() -> None:
         payment_amount=int(funding / 2),
     )
 
-    await assert_next_output(
-        echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+    await assert_subscription_consumer_output(
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
 
@@ -175,12 +212,13 @@ async def test_infernet_delegated_subscription_not_approved() -> None:
     await fund_wallet_with_eth(wallet, int(funding))
 
     await create_delegated_subscription(
-        echo_input(random.randint(0, 255)),
+        echo_input(f"{uuid4()}"),
         4,
         1,
         redundancy=2,
         wallet=wallet.address,
         payment_amount=int(funding / 2),
+        return_subscription_id=False,
     )
 
     await assert_regex_in_node_logs(".*insufficient allowance.*")
@@ -203,8 +241,8 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
         amount,
     )
 
-    i = random.randint(0, 255)
-    await create_delegated_subscription(
+    i = f"{uuid4()}"
+    sub_id = await create_delegated_subscription(
         echo_input(i),
         4,
         1,
@@ -214,7 +252,8 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
         payment_amount=amount,
     )
 
-    await assert_next_output(
+    await assert_subscription_consumer_output(
+        sub_id,
         echo_output(i),
         contract_name=DELEGATE_SUB_CONSUMER_CONTRACT,
         timeout=10,
@@ -245,13 +284,14 @@ async def test_infernet_delegated_subscription_with_not_enough_money() -> None:
     )
 
     await create_delegated_subscription(
-        echo_input(random.randint(0, 255)),
+        echo_input(f"{uuid4()}"),
         4,
         1,
         redundancy=1,
         wallet=wallet.address,
         payment_token=mock_token.address,
         payment_amount=amount * 2,
+        return_subscription_id=False,
     )
 
     await assert_regex_in_node_logs(".*insufficient balance.*")

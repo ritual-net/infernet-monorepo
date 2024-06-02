@@ -78,13 +78,15 @@ def populate_global_config(network_config: NetworkConfig) -> None:
         network_config (NetworkConfig): the network config to populate the global config
             with.
     """
-    for attr_name, attr_value in network_config.model_dump().items():
+    for attr_name, attr_value in network_config.as_dict().items():
         if hasattr(global_config, attr_name):
             setattr(global_config, attr_name, attr_value)
         else:
             raise AttributeError(
                 f"{attr_name} is not a valid attribute of the config model."
             )
+
+    asyncio.run(global_config.initialize())
 
 
 InfernetFixtureType = Callable[[], Generator[None, None, None]]
@@ -106,7 +108,8 @@ def handle_lifecycle(
 ) -> Generator[None, None, None]:
     try:
         populate_global_config(network_config)
-        start_anvil_node()
+        if not skip_deploying:
+            start_anvil_node()
         post_chain_start_hook()
         log.info(f"global config: {global_config}")
         create_config_file(

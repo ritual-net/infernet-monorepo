@@ -31,7 +31,7 @@ def create_app() -> Flask:
                 )
 
         (input, proof) = decode(
-            ["uint8", "string"], bytes.fromhex(hex_input), strict=False
+            ["string", "string"], bytes.fromhex(hex_input), strict=False
         )
 
         print(f"decoded data: {input}")
@@ -39,7 +39,7 @@ def create_app() -> Flask:
         return {
             "raw_input": hex_input,
             "processed_input": "",
-            "raw_output": encode(["uint8"], [input]).hex(),
+            "raw_output": encode(["string"], [input]).hex(),
             "processed_output": "",
             "proof": encode(["string"], [proof]).hex(),
         }

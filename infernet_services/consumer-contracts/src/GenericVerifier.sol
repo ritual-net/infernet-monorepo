@@ -67,8 +67,8 @@ contract GenericLazyVerifier is GenericAtomicVerifier {
     mapping(uint32 => mapping(uint32 => mapping(address => bytes))) public storedProofs;
 
     function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
-    external
-    override
+        external
+        override
     {
         storedProofs[subscriptionId][interval][node] = proof;
     }

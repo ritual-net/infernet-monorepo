@@ -1,0 +1,79 @@
+import asyncio
+import logging
+import random
+from uuid import uuid4
+
+import pytest
+
+from infernet_node.conftest import ECHO_SERVICE
+from infernet_node.test_callback import assert_output
+from infernet_node.test_delegate_subscription import (
+    create_delegated_subscription,
+    DELEGATE_SUB_CONSUMER_CONTRACT,
+)
+from infernet_node.test_subscriptions import (
+    assert_subscription_consumer_output,
+    create_sub_with_random_input,
+)
+from test_library.web3_utils import (
+    echo_input,
+    request_web3_compute,
+    echo_output,
+)
+
+log = logging.getLogger(__name__)
+
+
+async def _fire_callback():
+    i = f"{uuid4()}"
+    sub_id = await request_web3_compute(ECHO_SERVICE, echo_input(i))
+    await assert_output(sub_id, i)
+    return sub_id, i
+
+
+async def _fire_delegated():
+    i = f"{uuid4()}"
+    sub_id = await create_delegated_subscription(echo_input(i), 10, 1)
+    await assert_subscription_consumer_output(
+        sub_id,
+        echo_output(i),
+        contract_name=DELEGATE_SUB_CONSUMER_CONTRACT,
+        timeout=10,
+    )
+
+
+async def _fire_subscription():
+    (sub_id, i) = await create_sub_with_random_input(1, 5)
+    await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=20)
+
+
+@pytest.mark.asyncio
+async def test_infernet_100_callback_consumers() -> None:
+    num_subscriptions = 100
+
+    await asyncio.gather(*[_fire_callback() for _ in range(num_subscriptions)])
+
+
+@pytest.mark.asyncio
+async def test_infernet_100_delegated_subscription() -> None:
+    num_subscriptions = 100
+    await asyncio.gather(*[_fire_delegated() for _ in range(num_subscriptions)])
+
+
+@pytest.mark.asyncio
+@pytest.mark.skip()
+async def test_infernet_100_subscriptions() -> None:
+    num_subscriptions = 100
+    await asyncio.gather(*[_fire_subscription() for _ in range(num_subscriptions)])
+
+
+@pytest.mark.asyncio
+@pytest.mark.skip()
+async def test_infernet_interwoven_subscriptions() -> None:
+    num_subscriptions = 200
+    tasks = []
+    for _ in range(num_subscriptions):
+        tasks.append(
+            random.choice([_fire_callback, _fire_delegated, _fire_subscription])()
+        )
+    await asyncio.gather(*tasks)

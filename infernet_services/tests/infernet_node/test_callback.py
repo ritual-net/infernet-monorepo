@@ -25,14 +25,14 @@ from test_library.web3_utils import (
 log = logging.getLogger(__name__)
 
 
-encoded_echo_input = echo_input(12)
+encoded_echo_input = echo_input("hello")
 
 
-async def assert_output(sub_id: int) -> None:
+async def assert_output(sub_id: int, out: str = "hello") -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         raw, processed = decode(["bytes", "bytes"], output)
-        received = decode(["uint8"], raw, strict=False)[0]
-        assert received == 12
+        received = decode(["string"], raw, strict=False)[0]
+        assert received == out
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
 
