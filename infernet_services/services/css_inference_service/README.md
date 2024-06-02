@@ -125,12 +125,43 @@ class ContainerOutput(TypedDict):
 ### Web2 Request
 
 === "Python"
-```python
-from infernet_client.client import NodeClient
 
-client = NodeClient("http://127.0.0.1:4000")
-job_id = await client.request_job( 
-    "SERVICE_NAME",
+    ```python
+    from infernet_client.client import NodeClient
+
+    client = NodeClient("http://127.0.0.1:4000")
+    job_id = await client.request_job( 
+        "SERVICE_NAME",
+        {
+            "provider": "OPENAI",
+            "endpoint": "completions",
+            "model": "gpt-4",
+            "params": {
+                "endpoint": "completions",
+                "messages": [
+                    {"role": "user", "content": "give me an essay about cats"}
+                ],
+            },
+            # note the ability to add extra_args to the request.
+            "extra_args": {
+                "max_tokens": 10,
+                "temperature": 0.5,
+            },
+        },  
+    )
+
+    result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
+    ```
+
+=== "CLI"
+
+    ```bash
+    # Note that the sync flag is optional and will wait for the job to complete.
+    # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
+    infernet-client job -c SERVICE_NAME -i input.json --sync
+    ```
+    where `input.json` looks like this:
+    ```json
     {
         "provider": "OPENAI",
         "endpoint": "completions",
@@ -141,48 +172,20 @@ job_id = await client.request_job(
                 {"role": "user", "content": "give me an essay about cats"}
             ],
         },
-        # note the ability to add extra_args to the request.
         "extra_args": {
             "max_tokens": 10,
             "temperature": 0.5,
         },
-    },  
-)
-
-result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
-```
-
-=== "CLI"
-```bash
-# Note that the sync flag is optional and will wait for the job to complete.
-# If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-infernet-client job -c SERVICE_NAME -i input.json --sync
-```
-where `input.json` looks like this:
-```json
-{
-    "provider": "OPENAI",
-    "endpoint": "completions",
-    "model": "gpt-4",
-    "params": {
-        "endpoint": "completions",
-        "messages": [
-            {"role": "user", "content": "give me an essay about cats"}
-        ],
-    },
-    "extra_args": {
-        "max_tokens": 10,
-        "temperature": 0.5,
-    },
-}
-```
+    }
+    ```
 
 === "cURL"
-```bash
-curl -X POST http://127.0.0.1:4000/api/jobs \
-     -H "Content-Type: application/json" \
-     -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
-```
+
+    ```bash
+    curl -X POST http://127.0.0.1:4000/api/jobs \
+        -H "Content-Type: application/json" \
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
+    ```
 
 
 ### Web3 Request (onchain subscription)
@@ -268,34 +271,74 @@ function _receiveCompute(
 ### Delegated Subscription Request
 
 === "Python"
-```python
-from infernet_client.client import NodeClient
-from infernet_client.chain_utils import Subscription, RPC
 
-sub = Subscription(
-    owner="0x...",
-    active_at=int(time()),
-    period=0,
-    frequency=1,
-    redundancy=1,
-    containers=["SERVICE_NAME"],
-    lazy=False,
-    prover=ZERO_ADDRESS,
-    payment_amount=0,
-    payment_token=ZERO_ADDRESS,
-    wallet=ZERO_ADDRESS,
-)
+    ```python
+    from infernet_client.client import NodeClient
+    from infernet_client.chain_utils import Subscription, RPC
 
-client = NodeClient("http://127.0.0.1:4000")
-nonce = random.randint(0, 2**32 - 1)
-await client.request_delegated_subscription( 
-    sub=sub,
-    rpc=RPC("http://127.0.0.1:8545")
-    coordinator_address=global_config.coordinator_address,
-    expiry=int(time() + 10),
-    nonce=nonce,
-    private_key="0x...",
-    data={
+    sub = Subscription(
+        owner="0x...",
+        active_at=int(time()),
+        period=0,
+        frequency=1,
+        redundancy=1,
+        containers=["SERVICE_NAME"],
+        lazy=False,
+        prover=ZERO_ADDRESS,
+        payment_amount=0,
+        payment_token=ZERO_ADDRESS,
+        wallet=ZERO_ADDRESS,
+    )
+
+    client = NodeClient("http://127.0.0.1:4000")
+    nonce = random.randint(0, 2**32 - 1)
+    await client.request_delegated_subscription( 
+        sub=sub,
+        rpc=RPC("http://127.0.0.1:8545")
+        coordinator_address=global_config.coordinator_address,
+        expiry=int(time() + 10),
+        nonce=nonce,
+        private_key="0x...",
+        data={
+            "provider": "OPENAI",
+            "endpoint": "completions",
+            "model": "gpt-4",
+            "params": {
+                "endpoint": "completions",
+                "messages": [
+                    {"role": "user", "content": "give me an essay about cats"}
+                ],
+            },
+        },
+    )
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+        --params params.json --input input.json
+    # Success: Subscription created.
+    ```
+    where `params.json` looks like this:
+    ```json
+    {
+        "owner": "0x00Bd138aBD7....................", // Subscription Owner
+        "active_at": 0, // Instantly active
+        "period": 3, // 3 seconds between intervals
+        "frequency": 2, // Process 2 times
+        "redundancy": 2, // 2 nodes respond each time
+        "containers": ["SERVICE_NAME"], // comma-separated list of containers
+        "lazy": false,
+        "prover": "0x0000000000000000000000000000000000000000",
+        "payment_amount": 0,
+        "payment_token": "0x0000000000000000000000000000000000000000",
+        "wallet": "0x0000000000000000000000000000000000000000",
+    }
+    ```
+    and where `input.json` looks like this:
+    ```json
+    {
         "provider": "OPENAI",
         "endpoint": "completions",
         "model": "gpt-4",
@@ -305,47 +348,8 @@ await client.request_delegated_subscription(
                 {"role": "user", "content": "give me an essay about cats"}
             ],
         },
-    },
-)
-```
-
-=== "CLI"
-
-```bash
-infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
-    --params params.json --input input.json
-# Success: Subscription created.
-```
-where `params.json` looks like this:
-```json
-{
-    "owner": "0x00Bd138aBD7....................", // Subscription Owner
-    "active_at": 0, // Instantly active
-    "period": 3, // 3 seconds between intervals
-    "frequency": 2, // Process 2 times
-    "redundancy": 2, // 2 nodes respond each time
-    "containers": ["SERVICE_NAME"], // comma-separated list of containers
-    "lazy": false,
-    "prover": "0x0000000000000000000000000000000000000000",
-    "payment_amount": 0,
-    "payment_token": "0x0000000000000000000000000000000000000000",
-    "wallet": "0x0000000000000000000000000000000000000000",
-}
-```
-and where `input.json` looks like this:
-```json
-{
-    "provider": "OPENAI",
-    "endpoint": "completions",
-    "model": "gpt-4",
-    "params": {
-        "endpoint": "completions",
-        "messages": [
-            {"role": "user", "content": "give me an essay about cats"}
-        ],
-    },
-    "extra_args": {
-        "max_tokens": 10,
-        "temperature": 0.5,
-    },
-}
+        "extra_args": {
+            "max_tokens": 10,
+            "temperature": 0.5,
+        },
+    }
