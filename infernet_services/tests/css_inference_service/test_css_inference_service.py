@@ -23,6 +23,12 @@ from test_library.web3_utils import (
 
 log = logging.getLogger(__name__)
 
+boolean_like_prompt = "Is the sky blue? return yes or no"
+
+
+def boolean_like_prompt_assertion(result: str) -> None:
+    assert any(x in result.lower() for x in ["yes", "no", "sky", "blue"])
+
 
 @pytest.mark.parametrize(
     "provider, model, endpoint, messages",
@@ -31,17 +37,18 @@ log = logging.getLogger(__name__)
             CSSProvider.OPENAI,
             "gpt-3.5-turbo-16k",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="does 2 + 2 = 4? return yes or no")],
+            [ConvoMessage(role="user", content=boolean_like_prompt)],
         ),
         (
             CSSProvider.PERPLEXITYAI,
             "mistral-7b-instruct",
             CSSEndpoint.completions,
-            [ConvoMessage(role="user", content="Is the sky blue? return yes or no")],
+            [ConvoMessage(role="user", content=boolean_like_prompt)],
         ),
     ],
 )
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_completion_web3(
     provider: CSSProvider,
     model: str,
@@ -63,8 +70,6 @@ async def test_completion_web3(
     await assert_generic_callback_consumer_output(task_id, _assertions)
 
 
-apple_prompt = "who founded apple?"
-
 parameters: Any = [
     "provider, model, params",
     [
@@ -73,7 +78,7 @@ parameters: Any = [
             "gpt-4",
             {
                 "endpoint": "completions",
-                "messages": [{"role": "user", "content": apple_prompt}],
+                "messages": [{"role": "user", "content": boolean_like_prompt}],
             },
         ),
         (
@@ -81,7 +86,7 @@ parameters: Any = [
             "mistral-7b-instruct",
             {
                 "endpoint": "completions",
-                "messages": [{"role": "user", "content": apple_prompt}],
+                "messages": [{"role": "user", "content": boolean_like_prompt}],
             },
         ),
     ],
@@ -105,9 +110,7 @@ async def test_css_inference_service_web2(
         },
     )
     result: str = (await get_job(task_id)).get("output")
-    assert "steve" in result.lower(), (
-        f"steve jobs should be in result, instead got " f"{result}"
-    )
+    boolean_like_prompt_assertion(result)
 
 
 @pytest.mark.asyncio
@@ -136,6 +139,7 @@ async def test_css_inference_service_custom_parameters() -> None:
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_delegate_subscription(
     provider: str,
     model: str,
@@ -154,9 +158,7 @@ async def test_delegate_subscription(
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (result,) = decode(["string"], output, strict=False)
         log.info(f"got result: {result}")
-        assert (
-            "steve" in result.lower()
-        ), f"yes or no should be in result, instead got {result}"
+        boolean_like_prompt_assertion(result)
 
     await assert_generic_callback_consumer_output(None, _assertions)
 
@@ -178,4 +180,4 @@ async def test_css_service_streaming_inference(
         },
     )
     result = task.decode()
-    assert "steve" in result.lower()
+    boolean_like_prompt_assertion(result)

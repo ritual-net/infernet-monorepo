@@ -68,7 +68,7 @@ async def create_delegated_subscription(
         coordinator_address=global_config.coordinator_address,
         expiry=int(time() + 10),
         nonce=nonce,
-        private_key=global_config.private_key,
+        private_key=global_config.tester_private_key,
         data={"input": hex_input},
     )
 

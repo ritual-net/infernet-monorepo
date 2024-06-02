@@ -1,14 +1,16 @@
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
+from eth_typing import ChecksumAddress
 from pydantic import BaseModel
 from test_library.constants import (
-    DEFAULT_COORDINATOR_ADDRESS,
     DEFAULT_INFERNET_RPC_URL,
-    DEFAULT_PAYMENT_ADDRESS,
-    DEFAULT_PRIVATE_KEY,
+    DEFAULT_NODE_PAYMENT_WALLET,
+    DEFAULT_NODE_PRIVATE_KEY,
+    DEFAULT_REGISTRY_ADDRESS,
+    ZERO_ADDRESS,
 )
 
 base_config = {
@@ -18,7 +20,6 @@ base_config = {
         "enabled": True,
         "trail_head_blocks": 0,
         "rpc_url": "",
-        "coordinator_address": "",
         "wallet": {
             "max_gas_limit": 4000000,
             "private_key": "",
@@ -45,45 +46,79 @@ class ServiceConfig(BaseModel):
         name: The name of the service
         image_id: The image ID of the service
         env_vars: A dictionary of environment variables
+        accepted_payments: A dictionary of accepted payments
         port: The port on which the service will run
     """
 
     name: str
     image_id: str
     env_vars: ServiceEnvVars = {}
+    accepted_payments: Dict[ChecksumAddress, int]
     port: int
 
     @classmethod
-    def build_service(
+    def build(
         cls,
         name: str,
         image_id: str = "",
         port: int = 3000,
         env_vars: Optional[ServiceEnvVars] = None,
+        accepted_payments: Optional[Dict[ChecksumAddress, int]] = None,
     ) -> "ServiceConfig":
+        """
+        Build a service configuration object.
+
+        Args:
+            name: The name of the service
+            image_id: The image ID of the service
+            port: The port on which the service will run
+            env_vars: A dictionary of environment variables
+            accepted_payments: A dictionary of accepted payments
+
+        Returns:
+            A ServiceConfig object
+        """
         return cls(
             name=name,
             image_id=image_id or f"ritualnetwork/{name}:latest",
             env_vars=env_vars if env_vars else {},
             port=port,
+            accepted_payments=accepted_payments or {ZERO_ADDRESS: 0},
         )
+
+    @property
+    def serialized(self) -> Dict[str, Any]:
+        return {
+            "id": self.name,
+            "image": self.image_id,
+            "env": self.env_vars,
+            "port": self.port,
+            "allowed_delegate_addresses": [],
+            "allowed_addresses": [],
+            "allowed_ips": [],
+            "command": "--bind=0.0.0.0:3000 --workers=2",
+            "external": True,
+            "accepted_payments": self.accepted_payments,
+        }
 
 
 def create_config_file(
     services: List[ServiceConfig],
-    private_key: str = DEFAULT_PRIVATE_KEY,
-    coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
+    private_key: str = DEFAULT_NODE_PRIVATE_KEY,
+    registry_address: str = DEFAULT_REGISTRY_ADDRESS,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
+    config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
 ) -> None:
     log.info(f"Creating config file for services {services}")
     cfg = get_config(
         services,
         private_key=private_key,
-        coordinator_address=coordinator_address,
+        registry_address=registry_address,
         rpc_url=rpc_url,
     )
+
     with open(config_path(), "w") as f:
-        f.write(json.dumps(cfg, indent=4))
+        f.write(json.dumps(config_gen_hook(cfg), indent=4))
 
 
 def get_service_port(service_name: str) -> int:
@@ -108,9 +143,9 @@ def get_service_port(service_name: str) -> int:
 
 def get_config(
     services: List[ServiceConfig],
-    private_key: str = DEFAULT_PRIVATE_KEY,
-    coordinator_address: str = DEFAULT_COORDINATOR_ADDRESS,
-    payment_address: str = DEFAULT_PAYMENT_ADDRESS,
+    private_key: str = DEFAULT_NODE_PRIVATE_KEY,
+    registry_address: str = DEFAULT_REGISTRY_ADDRESS,
+    payment_address: str = DEFAULT_NODE_PAYMENT_WALLET,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> Dict[str, Any]:
     """
@@ -119,7 +154,7 @@ def get_config(
     Args:
         services: A list of ServiceConfig objects.
         private_key: The private key of the wallet
-        coordinator_address: The coordinator address
+        registry_address: The registry address
         payment_address: The payment address of the node. This is the address that will
             receive payments.
         rpc_url: The RPC URL of the chain
@@ -129,23 +164,12 @@ def get_config(
     """
 
     cfg: Dict[str, Any] = base_config.copy()
+    cfg["containers"] = []
     for service in services:
-        cfg["containers"].append(
-            {
-                "id": service.name,
-                "image": service.image_id,
-                "env": service.env_vars,
-                "port": service.port,
-                "allowed_delegate_addresses": [],
-                "allowed_addresses": [],
-                "allowed_ips": [],
-                "command": "--bind=0.0.0.0:3000 --workers=2",
-                "external": True,
-            }
-        )
+        cfg["containers"].append(service.serialized)
     cfg["chain"]["wallet"]["private_key"] = private_key
     cfg["chain"]["wallet"]["payment_address"] = payment_address
-    cfg["chain"]["coordinator_address"] = coordinator_address
+    cfg["chain"]["registry_address"] = registry_address
     cfg["chain"]["rpc_url"] = rpc_url
     return cfg
 

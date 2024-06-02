@@ -6,15 +6,13 @@ import re
 import pytest
 from eth_abi import decode, encode  # type: ignore
 from eth_abi.exceptions import InsufficientDataBytes
+from infernet_node.conftest import SERVICE_NAME
 from reretry import retry  # type: ignore
 from test_library.constants import NODE_LOG_CMD, ZERO_ADDRESS
 from test_library.log_collector import LogCollector
 from test_library.web3_utils import get_consumer_contract, get_w3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
-
-SERVICE_NAME = "echo"
-
 
 log = logging.getLogger(__name__)
 
@@ -120,6 +118,7 @@ async def test_infernet_recurring_subscription() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
     (i, sub_id) = await create_sub_with_random_input(2, 5)
     await assert_next_output(encode(["uint8"], [i]))

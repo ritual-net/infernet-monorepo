@@ -641,7 +641,6 @@ async def test_request_delegated_subscription(client: NodeClient) -> None:
 
     rpc = Mock()
     rpc.get_checksum_address = Mock(return_value=coordinator)
-    rpc.get_nonce = AsyncMock(return_value=nonce)
     rpc.get_chain_id = AsyncMock(return_value=chain_id)
 
     with patch("aiohttp.ClientSession.post") as mock_post:
@@ -715,7 +714,7 @@ async def test_request_delegated_subscription_nonexistent(client: NodeClient) ->
                 rpc,
                 ChecksumAddress(HexAddress(HexStr(sub.owner))),
                 expiry,
-                0,
+                nonce,
                 private_key,
                 input_data,
             )

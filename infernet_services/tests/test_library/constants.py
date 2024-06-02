@@ -4,17 +4,32 @@ from typing import cast
 from eth_typing import ChecksumAddress
 
 # Anvil's second default address
-DEFAULT_PRIVATE_KEY = (
+DEFAULT_NODE_PRIVATE_KEY = (
     "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
 )
 
+# Anvil's third default address. This is also the address that deployed all the contracts
+# in Infernet-Anvil.
+DEFAULT_PROTOCOL_FEE_RECIPIENT: ChecksumAddress = cast(
+    ChecksumAddress, "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+)
+
+# Tester's private key (Anvil's fourth default address)
+DEFAULT_TESTER_PRIVATE_KEY = (
+    "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6"
+)
+
 # Address of the node's escrow wallet
-DEFAULT_PAYMENT_ADDRESS: ChecksumAddress = cast(
+DEFAULT_NODE_PAYMENT_WALLET: ChecksumAddress = cast(
     ChecksumAddress, "0x60985ee8192B322c3CAbA97A9A9f7298bdc4335C"
 )
 
 DEFAULT_COORDINATOR_ADDRESS: ChecksumAddress = cast(
     ChecksumAddress, "0x2E983A1Ba5e8b38AAAeC4B440B9dDcFBf72E15d1"
+)
+
+DEFAULT_WALLET_FACTORY_ADDRESS: ChecksumAddress = cast(
+    ChecksumAddress, "0xF6168876932289D073567f347121A267095f3DD6"
 )
 
 DEFAULT_REGISTRY_ADDRESS: ChecksumAddress = cast(
@@ -28,6 +43,8 @@ DEFAULT_INFERNET_RPC_URL = "http://host.docker.internal:8545"
 DEFAULT_TESTING_RPC_URL = "http://127.0.0.1:8545"
 
 ZERO_ADDRESS = cast(ChecksumAddress, "0x0000000000000000000000000000000000000000")
+
+PROTOCOL_FEE = 0.05
 
 ANVIL_NODE = "http://127.0.0.1:8545"
 DEFAULT_NODE_URL = "http://127.0.0.1:4000"
