@@ -1,6 +1,38 @@
 # CSS (Closed-Source Software) Inference Service
 
-This service serves models via a `CSSInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
+This service serves closed source models via a `CSSInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic
+
+## Infernet Configuraton
+
+The service can be configuraed as part of the overall Infernet configuration in `config.json`.
+
+```json
+{
+  "log_path": "infernet_node.log",
+  //...... contents abbreviated
+  "containers": [
+    {
+      "id": "css_inference_service",
+      "image": "your_org/css_inference_service:latest",
+      "external": true,
+      "port": "3000",
+      "allowed_delegate_addresses": [],
+      "allowed_addresses": [],
+      "allowed_ips": [],
+      "command": "--bind=0.0.0.0:3000 --workers=2",
+      "env": {
+        "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
+        "CSS_INF_WORKFLOW_KW_ARGS": "{}",
+        "CSS_REQUEST_TRIES": "3",
+        "CSS_REQUEST_DELAY": "3",
+        "CSS_REQUEST_MAX_DELAY": "10",
+        "CSS_REQUEST_BACKOFF": "2",
+        "CSS_REQUEST_JITTER": "[0.5, 1.5]"
+      }
+    }
+  ]
+}
+```
 
 ## Supported Providers
 
@@ -10,140 +42,310 @@ The service supports three providers, each requiring an API key specified as an 
 - `GOOSEAI_API_KEY` - API key for GooseAI
 - `OPENAI_API_KEY` - API key for OpenAI
 
-## Endpoint
-
-Infernet services implement an endpoint at `/service_output` that accepts a JSON payload conforming to the `InfernetInput` model. For more details on Infernet-compatible containers, refer to [our documentation](https://docs.ritual.net/infernet/node/containers).
-
-## Input
-### Data Field (offchain)
-
-#### Service Specific Data Schema
-Example offchain request:
-
-```python
-# completions
-{
-    "source": 1,
-    "data": {
-        "model": "gpt-3.5-turbo-16k", # depends on service provider. See service provider documentation for available models
-        "params": {
-            "endpoint": "completion"
-            "messages": [{"role": "user", "content": "how do I make pizza?"}]
-        }
-    }
-}
-# embeddings
-{
-    "source": 1,
-    "data": {
-        "model": "text-embedding-3-small", # depends on service provider. See service provider documentation for available models
-        "params": {
-            "endpoint": "embeddings"
-            "input": "string to be embedded"
-        }
-    }
-}
-```
-
-#### Data Field (chain)
-Due to output data size constraints, onchain input is only supported for the completions endpoint.
-
-The data payload should be a hexstring of the provider, endpoint, model, and messages fields encoded using the Ethereum Application Binary Interface (ABI).
-
-Example python code using the eth-abi API:
-```python
-data_bytes = encode(
-    ["uint8", "uint8", "string", "(string,string)[]"],
-    [
-        "OPENAI",
-        1, # for completions
-        "gpt-3.5-turbo-16k",
-        [("user","how do I make pizza?")],
-    ],
-)
-
-data = data_bytes.hex()
-```
-Example json input:
-
-```python
-{
-    "source": 0,
-    "data" : "00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000012736f6e61722d736d616c6c2d6f6e6c696e650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000047573657200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002e686f7720646f2049206d616b652070697a7a613f206b65657020796f757220726573706f6e73652073686f72742e000000000000000000000000000000000000"
-}
-```
-
-## Output (Offchain)
-The data returned is a JSON dictionary in the format:
-
-```json
-{
-    "output" : "LLM_PAYLOAD"
-}
-```
-## Output (Onchain)
-The data returned is a JSON dictionary in the format:
-
-```json
-{
-    "raw_input": "",
-    "processed_input": "",
-    "raw_output":"00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000343546f206d616b652070697a7a612c20666f6c6c6f772074686573652073746570733a0a0a312e2052656d6f76652074686520646f7567682066726f6d207468652066726964676520616e642073657420697420617369646520666f72206120666577206d696e7574657320746f20636f6d6520636c6f73657220746f20726f6f6d2074656d70657261747572652e0a322e205072656865617420796f7572206f76656e20746f2074686520646573697265642074656d70657261747572652c207479706963616c6c792061726f756e6420343735c2b0462028323435c2b0432920666f72206120636f6e76656e74696f6e616c206f76656e206f7220343530c2b0462028323332c2b0432920666f72206120636f6e76656374696f6e206f76656e2e0a332e20526f6c6c206f75742074686520646f756768206f6e2061206c696768746c7920666c6f75726564207375726661636520746f20796f7572206465736972656420746869636b6e6573732e0a342e205472616e736665722074686520646f75676820746f20612070697a7a61207065656c206f7220612062616b696e672073686565742e0a352e2041646420796f75722073617563652c206368656573652c20616e64206465736972656420746f7070696e67732e0a362e2042616b65207468652070697a7a6120696e2074686520707265686561746564206f76656e20756e74696c2074686520637275737420697320676f6c64656e2062726f776e20616e64207468652063686565736520697320627562626c7920616e6420736c696768746c792062726f776e65642e0a372e20416c6c6f77207468652070697a7a6120746f20636f6f6c20666f72206120666577206d696e75746573206265666f726520736c6963696e6720616e642073657276696e672e0a0a52656d656d62657220746f20736561736f6e2074686520646f756768207769746820636c6173736963204974616c69616e20736561736f6e696e6773206c696b65206f726567616e6f2c20626173696c2c20616e64207468796d6520647572696e6720746865206d6978696e6720616e64206b6e656164696e672070726f6365737320746f20656e68616e63652074686520666c61766f72206f6620796f75722063727573742e0000000000000000000000000000000000000000000000000000000000",
-    "processed_output": "",
-    "proof": ""
-}
-```
-
-# Building the service
-
-You can leverage the Makefile in the repo root directory to build the service's docker image:
-
-```bash
-make build service=tgi_client_inference_service
-```
-
-# Configuring the Service
-
-The CSS Inference Service can be configured using environment variables and the `config.json` file.
-
 ## Environment Variables
 
-- **CSS_INF_WORKFLOW_POSITIONAL_ARGS**: A list of positional arguments required to instantiate the CSS Inference Workflow.
-- **CSS_INF_WORKFLOW_KW_ARGS**: A dictionary of keyword arguments required to instantiate the CSS Inference Workflow.
+### CSS_INF_WORKFLOW_POSITIONAL_ARGS
+- **Description**: The first argument is the name of the provider, and the second argument is the endpoint.
+- **Default**: `["OPENAI", "completions"]`
 
-## config.json
+### CSS_INF_WORKFLOW_KW_ARGS
+- **Description**: Any argument passed here will be defaulted when sending to the CSS provider.
+- **Default**: `{}`
 
-To configure general container attributes, you need to modify the `config.json` file in the service folder. For more details on `config.json`, please refer to the [Infernet Node Configuration documentation](https://docs.ritual.net/infernet/node/configuration).
+### CSS_REQUEST_TRIES
+- **Description**: The number of retries for the inference workflow.
+- **Default**: `3`
 
-# Deploying the Service
+### CSS_REQUEST_DELAY
+- **Description**: The delay (in seconds) between retries.
+- **Default**: `3`
 
-With an image built, you can deploy a minimal deployment of your service along with an Infernet node by running the following command using the Makefile in the repo root directory:
+### CSS_REQUEST_MAX_DELAY
+- **Description**: The maximum delay (in seconds) between retries.
+- **Default**: `10`
 
-```bash
-# Replace XXXX with actual PerplexityAI API Key
+### CSS_REQUEST_BACKOFF
+- **Description**: The backoff (in seconds) between retries.
+- **Default**: `2`
 
-make deploy-node service=css_inference_service env='{\"CSS_INF_WORKFLOW_POSITIONAL_ARGS\":\"[\\\"PERPLEXITYAI\\\", \\\"completions\\\"]\",\"PERPLEXITYAI_API_KEY\":\"XXXX\"}'
+### CSS_REQUEST_JITTER
+- **Description**: The jitter (in seconds) to add to requests.
+- **Default**: `[0.5, 1.5]`
 
+## Usage
 
-# to stop the deployment
-make stop-node service=css_inference_service
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the `infernet_client` package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+
+The schema format of a `infernet_client` job request looks like the following:
+
+```python
+class JobRequest(TypedDict):
+    """Job request.
+
+    Attributes:
+        containers: The list of container names.
+        data: The data to pass to the containers.
+    """
+
+    containers: list[str]
+    data: dict[str, Any]
 ```
 
-You can use curl to send an example request to the node
+The schema format of a `infernet_client` job result looks like the following:
 
+```python
+class JobResult(TypedDict):
+    """Job result.
+
+    Attributes:
+        id: The job ID.
+        status: The job status.
+        result: The job result.
+        intermediate: Job result from intermediate containers.
+    """
+
+    id: str
+    status: JobStatus
+    result: Optional[ContainerOutput]
+    intermediate: NotRequired[list[ContainerOutput]]
+
+class ContainerOutput(TypedDict):
+    """Container output.
+
+    Attributes:
+        container: The container name.
+        output: The output of the container.
+    """
+
+    container: str
+    output: Any
+
+```
+
+### Web2 Request
+
+=== "Python"
+```python
+from infernet_client.client import NodeClient
+
+client = NodeClient("http://127.0.0.1:4000")
+job_id = await client.request_job( 
+    "SERVICE_NAME",
+    {
+        "provider": "OPENAI",
+        "endpoint": "completions",
+        "model": "gpt-4",
+        "params": {
+            "endpoint": "completions",
+            "messages": [
+                {"role": "user", "content": "give me an essay about cats"}
+            ],
+        },
+        # note the ability to add extra_args to the request.
+        "extra_args": {
+            "max_tokens": 10,
+            "temperature": 0.5,
+        },
+    },  
+)
+
+result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
+```
+
+=== "CLI"
 ```bash
-curl -X POST http://localhost:4000/api/jobs \
+# Note that the sync flag is optional and will wait for the job to complete.
+# If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
+infernet-client job -c SERVICE_NAME -i input.json --sync
+```
+where `input.json` looks like this:
+```json
+{
+    "provider": "OPENAI",
+    "endpoint": "completions",
+    "model": "gpt-4",
+    "params": {
+        "endpoint": "completions",
+        "messages": [
+            {"role": "user", "content": "give me an essay about cats"}
+        ],
+    },
+    "extra_args": {
+        "max_tokens": 10,
+        "temperature": 0.5,
+    },
+}
+```
+
+=== "cURL"
+```bash
+curl -X POST http://127.0.0.1:4000/api/jobs \
      -H "Content-Type: application/json" \
-     -d '{"containers": ["css_inference_service"], "data": {"model": "sonar-small-online", {
-                "endpoint": "completions",
-                "messages": [{"role": "user", "content": "how do I make pizza?"}]
-     }}'
+     -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
 ```
 
-# Running Service Locally
 
-It may be helpful to run services locally. To do so, you may call the following make target in your root directory if the image has been built:
+### Web3 Request (onchain subscription)
+
+You will need to import the `infernet-sdk` in your requesting contract. In this example we showcase the Callback pattern, which is an example of a one-off subscription. Please refer to the `infernet-sdk` documentation for further details.
+
+Input requests should be passed in as an encoded byte string. Here is an example of how to generate this for a CSS inference request:
+```python
+class CSSEndpoint(IntEnum):
+    """Enum for CSS Inference Endpoints"""
+
+    completions = 0
+    embeddings = 1
+
+
+class CSSProvider(IntEnum):
+    """Enum for CSS Inference Providers"""
+
+    OPENAI = 0
+    GOOSEAI = 1
+    PERPLEXITYAI = 2
+
+from eth_abi.abi import encode
+
+input_bytes= encode(
+    ["uint8", "uint8", "string", "(string,string)[]"],
+    [
+        provider,
+        endpoint,
+        model,
+        [(m.role, m.content) for m in messages],
+    ],
+)
+```
+
+Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`, you can use the following functions to request and recieve compute:
+```solidity
+function requestCompute(
+    string memory randomness,
+    string memory containerId,
+    bytes memory inputs,
+    uint16 redundancy,
+    address paymentToken,
+    uint256 paymentAmount,
+    address wallet,
+    address prover
+)
+    public
+    returns (bytes32)
+{
+    bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
+    console2.log("generated task id, now requesting compute");
+    console2.logBytes32(generatedTaskId);
+    _requestCompute(
+        containerId,
+        abi.encodePacked(inputs, randomness),
+        redundancy,
+        paymentToken,
+        paymentAmount,
+        wallet,
+        prover
+    );
+    console2.log("requested compute");
+    return generatedTaskId;
+}
+
+function _receiveCompute(
+    uint32 subscriptionId,
+    uint32 interval,
+    uint16 redundancy,
+    address node,
+    bytes calldata input,
+    bytes calldata output,
+    bytes calldata proof,
+    bytes32 containerId,
+    uint256 index
+) internal override {
+    console2.log("received output!");
+    console2.logBytes(output);
+}
+```
+
+### Delegated Subscription Request
+
+=== "Python"
+```python
+from infernet_client.client import NodeClient
+from infernet_client.chain_utils import Subscription, RPC
+
+sub = Subscription(
+    owner="0x...",
+    active_at=int(time()),
+    period=0,
+    frequency=1,
+    redundancy=1,
+    containers=["SERVICE_NAME"],
+    lazy=False,
+    prover=ZERO_ADDRESS,
+    payment_amount=0,
+    payment_token=ZERO_ADDRESS,
+    wallet=ZERO_ADDRESS,
+)
+
+client = NodeClient("http://127.0.0.1:4000")
+nonce = random.randint(0, 2**32 - 1)
+await client.request_delegated_subscription( 
+    sub=sub,
+    rpc=RPC("http://127.0.0.1:8545")
+    coordinator_address=global_config.coordinator_address,
+    expiry=int(time() + 10),
+    nonce=nonce,
+    private_key="0x...",
+    data={
+        "provider": "OPENAI",
+        "endpoint": "completions",
+        "model": "gpt-4",
+        "params": {
+            "endpoint": "completions",
+            "messages": [
+                {"role": "user", "content": "give me an essay about cats"}
+            ],
+        },
+    },
+)
+```
+
+=== "CLI"
 
 ```bash
-make run service=css_inference_service
+infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+    --params params.json --input input.json
+# Success: Subscription created.
 ```
+where `params.json` looks like this:
+```json
+{
+    "owner": "0x00Bd138aBD7....................", // Subscription Owner
+    "active_at": 0, // Instantly active
+    "period": 3, // 3 seconds between intervals
+    "frequency": 2, // Process 2 times
+    "redundancy": 2, // 2 nodes respond each time
+    "containers": ["SERVICE_NAME"], // comma-separated list of containers
+    "lazy": false,
+    "prover": "0x0000000000000000000000000000000000000000",
+    "payment_amount": 0,
+    "payment_token": "0x0000000000000000000000000000000000000000",
+    "wallet": "0x0000000000000000000000000000000000000000",
+}
+```
+and where `input.json` looks like this:
+```json
+{
+    "provider": "OPENAI",
+    "endpoint": "completions",
+    "model": "gpt-4",
+    "params": {
+        "endpoint": "completions",
+        "messages": [
+            {"role": "user", "content": "give me an essay about cats"}
+        ],
+    },
+    "extra_args": {
+        "max_tokens": 10,
+        "temperature": 0.5,
+    },
+}

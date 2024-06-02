@@ -1,6 +1,28 @@
 site_name: Inference Services
+extra_css:
+- stylesheets/extra.css
 theme:
+  logo: assets/logo.svg
   name: material
+  palette:
+  - scheme: slate
+    primary: custom
+  features:
+  - content.tabs.link
+  - content.code.copy
+  - search.highlight
+  - search.suggest
+markdown_extensions:
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+- pymdownx.superfences
+- pymdownx.inlinehilite
+- pymdownx.snippets
+- pymdownx.tabbed:
+    alternate_style: true
+- admonition
 plugins:
 - search
 - mkdocstrings:
