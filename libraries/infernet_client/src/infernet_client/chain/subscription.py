@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, List
 
 from eth_abi.abi import encode
@@ -172,6 +174,7 @@ class Subscription:
                 },
             }
         )
+<<<<<<< HEAD:libraries/infernet_client/src/infernet_client/chain_utils.py
 
 
 class RPC:

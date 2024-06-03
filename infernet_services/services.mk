@@ -61,8 +61,7 @@ swap-service: stop-service
 stop-node:
 	@docker compose -f $(deploy_dir)/docker-compose.yaml kill || true
 	@docker compose -f $(deploy_dir)/docker-compose.yaml rm -f || true
-	@docker stop $(service) anvil-node || true
-	@docker rm $(service) anvil-node || true
+	@$(MAKE) stop-service || true
 	@kill $(lsof -i :8545 | grep anvil | awk '{print $2}') || true
 
 filter ?= ""

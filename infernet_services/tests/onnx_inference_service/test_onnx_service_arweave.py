@@ -40,7 +40,7 @@ async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_basic_web3_inference_from_arweave_from_preloaded_model() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         ONNX_ARWEAVE_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
@@ -56,4 +56,4 @@ async def test_basic_web3_inference_from_arweave_from_preloaded_model() -> None:
         ),
     )
 
-    await assert_generic_callback_consumer_output(task_id, iris_web3_assertions)
+    await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
