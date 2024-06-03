@@ -36,6 +36,14 @@ DEFAULT_RETRY_PARAMS = RetryParams(
 
 
 class TensorInput(BaseModel):
+    """
+    Represents a tensor input to an ONNX model.
+
+    Args:
+        dtype: str: Data type of the tensor
+        shape: Tuple[int, ...]: Shape of the tensor
+        values: Any: Values of the tensor
+    """
     dtype: str
     shape: Tuple[int, ...]
     values: Any  # Flexible enough to initially accept any data structure.

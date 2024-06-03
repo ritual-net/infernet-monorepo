@@ -8,12 +8,12 @@ convenience.
 
 === "uv"
     ``` bash
-    uv pip install infernet-ml[tgi_inference]
+    uv pip install "infernet-ml[tgi_inference]"
     ```
 
 === "pip"
     ``` bash
-    pip install infernet-ml[tgi_inference]
+    pip install "infernet-ml[tgi_inference]"
     ```
 
 ## Example Usage

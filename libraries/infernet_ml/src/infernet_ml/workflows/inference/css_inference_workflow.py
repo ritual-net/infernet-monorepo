@@ -16,20 +16,20 @@ models. Currently, the following APIs are supported:
 
 ## Additional Installations
 
-Since this workflow uses some additional libraries, you'll need to install `infernet-ml[css_inference]`. Alternatively,
-you can install those packages directly. The optional dependencies `"[css_inference]"` are provided for your
-convenience.
+Since this workflow uses some additional libraries, you'll need to install `infernet-ml[css_inference]`. 
+Alternatively, you can install those packages directly. The optional dependencies `"[css_inference]"` 
+are provided for your convenience.
 
 === "uv"
 
     ``` bash
-    uv pip install infernet-ml[css_inference]
+    uv pip install "infernet-ml[css_inference]"
     ```
 
 === "pip"
 
     ``` bash
-    pip install infernet-client[css_inference]
+    pip install "infernet-client[css_inference]"
     ```
 
 ## Completions Example

@@ -9,21 +9,15 @@ to run all models that are hosted on Huggingface Hub.
 - `"token_classification"`
 - `"summarization"`
 
-## Input Format
-The input format is the `HFInferenceClientInput` pydantic model. This is one of four
-input formats:
-
-1. `HFClassificationInferenceInput`
-2. `HFTokenClassificationInferenceInput`
-3. `HFTextGenerationInferenceInput`
-4. `HFSummarizationInferenceInput`
-
 
 ## Example Classification Inference
 
 ```python
-from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
-from infernet_ml.utils.hf_types import HFClassificationInferenceInput, HFTaskId
+from infernet_ml.utils.hf_types import HFClassificationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
+
 
 def main():
     # Initialize the workflow
@@ -39,66 +33,25 @@ def main():
 
     print(output_data)
 
-if name == "__main__":
+
+if __name__ == "__main__":
     main()
 ```
 
 Outputs:
 
 ```bash
-{
-    "output": [
-        {
-            "label": "POSITIVE",
-            "score": 0.999
-        }
-    ]
-}
+{'output': [TextClassificationOutputElement(label='POSITIVE', score=0.9997395873069763), TextClassificationOutputElement(label='NEGATIVE', score=0.00026040704688057303)]}
 ```
 
 ## Example Token Classification Inference
 
 ```python
-from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
-from infernet_ml.utils.hf_types import HFTokenClassificationInferenceInput, HFTaskId
+from infernet_ml.utils.hf_types import HFTextGenerationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
 
-def main():
-    # Initialize the workflow
-    workflow = HFInferenceClientWorkflow().setup()
-
-    # Run the inference
-
-    output_data = workflow.inference(
-        HFTokenClassificationInferenceInput(
-            text="Ritual makes AI x crypto a great combination!",
-        )
-    )
-
-    print(output_data)
-
-if name == "__main__":
-    main()
-
-```
-
-Outputs:
-
-```bash
-{
-    "output": [
-        {
-            "entity_group": "MISC",
-            "score": 0.999
-        }
-    ]
-}
-```
-
-## Example Text Generation Inference
-
-```python
-from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
-from infernet_ml.utils.hf_types import HFTextGenerationInferenceInput, HFTaskId
 
 def main():
     # Initialize the workflow
@@ -108,26 +61,69 @@ def main():
 
     output_data = workflow.inference(
         HFTextGenerationInferenceInput(
-            text="Decentralizing AI using crypto is awesome!",
+            prompt="Decentralizing AI using crypto is awesome!",
         )
     )
 
     print(output_data)
 
-if name == "__main__":
+
+if __name__ == "__main__":
     main()
 ```
 
 Outputs:
 
 ```bash
-{
-    "output": [
-        {
-            "generated_text": "Decentralizing AI using crypto is awesome! The future is here."
-        }
-    ]
-}
+{'output': '\n\nDecentralized AI is the future of AI. It will enable the creation of more'}
+```
+
+## Example Text Generation Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
+from infernet_ml.utils.hf_types import (
+    HFSummarizationInferenceInput,
+    HFSummarizationConfig,
+)
+
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    min_length_tokens = 28
+    max_length_tokens = 56
+    summarization_config = HFSummarizationConfig(
+        min_length=min_length_tokens,
+        max_length=max_length_tokens,
+    )
+    input_text = "Artificial Intelligence has the capacity to positively "
+    "impact humanity but the infrastructure in which it is being"
+    "developed is not yet ready for the future. Decentralizing AI using "
+    "crypto is awesome!"
+
+    input_data = HFSummarizationInferenceInput(
+        text=input_text,
+        parameters=summarization_config,
+    )
+    output_data = workflow.inference(input_data)
+
+    print(output_data)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{'output': SummarizationOutput(summary_text=' Artificial Intelligence has the capacity to positively impact artificial intelligence, says AI expert . Artificial Intelligence can be positively beneficial to society, he says .')}
 ```
 
 ## Example Summarization Inference
@@ -176,6 +172,15 @@ Outputs:
     ]
 }
 ```
+
+# Input Formats
+The input format is the `HFInferenceClientInput` pydantic model. This is one of four
+input formats:
+
+1. [`HFClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFClassificationInferenceInput)
+2. [`HFTokenClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFTokenClassificationInferenceInput)
+3. [`HFTextGenerationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFTextGenerationInferenceInput)
+4. [`HFSummarizationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFSummarizationInferenceInput)
 
 """  # noqa: E501
 

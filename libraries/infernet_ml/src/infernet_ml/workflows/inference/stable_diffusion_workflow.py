@@ -12,12 +12,12 @@ You can install the required packages using the following command:
 
 === "uv"
     ``` bash
-    uv pip install infernet-ml[diffusion_inference]
+    uv pip install "infernet-ml[diffusion_inference]"
     ```
 
 === "pip"
     ``` bash
-    pip install infernet-ml[diffusion_inference]
+    pip install "infernet-ml[diffusion_inference]"
     ```
 
 ## Example Usage

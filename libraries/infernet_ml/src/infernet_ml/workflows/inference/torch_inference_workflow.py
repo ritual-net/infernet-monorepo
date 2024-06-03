@@ -24,22 +24,26 @@ The optional dependencies `"[torch_inference]"` are provided for your convenienc
 
 === "uv"
     ``` bash
-    uv pip install infernet-ml[torch_inference]
+    uv pip install "infernet-ml[torch_inference]"
     ```
 
 === "pip"
     ``` bash
-    pip install infernet-ml[torch_inference]
+    pip install "infernet-ml[torch_inference]"
     ```
 
 ## Example
 
 ```python
-from infernet_ml.workflows.inference.torch_inference_workflow import TorchInferenceWorkflow, TorchInferenceInput
+from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.workflows.inference.torch_inference_workflow import (
+    TorchInferenceWorkflow,
+    TorchInferenceInput,
+)
 from infernet_ml.utils.model_loader import ModelSource, HFLoadArgs
 
-def main():
 
+def main():
     # Instantiate the workflow
     workflow = TorchInferenceWorkflow(
         model_source=ModelSource.HUGGINGFACE_HUB,
@@ -56,19 +60,26 @@ def main():
     result = workflow.inference(
         TorchInferenceInput(
             input=TensorInput(
-                dtype="float",
+                dtype="double",
                 shape=(1, 8),
-                values=[-122.25, 37.85, 52.0, 1627.0, 322.0, 5.64, 2400.0, 9.0],
+                values=[[-122.25, 37.85, 52.0, 1627.0, 322.0, 5.64, 2400.0, 9.0]],
             )
         )
     )
 
-    print(result)
+    print(result.outputs)
 
 
 if __name__ == "__main__":
     main()
 ```
+
+Outputs:
+
+```bash
+tensor([164.8323], dtype=torch.float64, grad_fn=<ViewBackward0>)
+```
+
 """  # noqa: E501
 
 import logging

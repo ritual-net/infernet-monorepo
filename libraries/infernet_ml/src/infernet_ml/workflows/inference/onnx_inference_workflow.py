@@ -4,9 +4,11 @@ Workflow class for onnx inference workflows.
 This class is responsible for loading & running an onnx model.
 
 Models can be loaded in two ways:
+
 1. Preloading: The model is loaded & session is started in the setup method. This happens
     in the `setup()` method if model source and load args are provided when the class is
     instantiated.
+    
 2. On-demand: The model is loaded with an inference request. This happens if model source
     and load args are provided with the input (see the optional fields in the
     `ONNXInferenceInput` class).
@@ -22,22 +24,24 @@ convenience.
 
 === "uv"
     ``` bash
-    uv pip install infernet-ml[onnx_inference]
+    uv pip install "infernet-ml[onnx_inference]"
     ```
 
 === "pip"
     ``` bash
-    pip install infernet-ml[onnx_inference]
+    pip install "infernet-ml[onnx_inference]"
     ```
 
-### Example Usage
+## Example Usage
 
 ```python
+from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.utils.model_loader import ModelSource, HFLoadArgs
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceInput,
-    ONNXInferenceResult,
     ONNXInferenceWorkflow,
 )
+
 
 def main():
     input_data = ONNXInferenceInput(
@@ -59,10 +63,26 @@ def main():
     result = workflow.inference(input_data)
     print(result)
 
+
 if __name__ == "__main__":
     main()
-
 ```
+
+Outputs:
+
+```bash
+[TensorOutput(values=array([0.00101515, 0.01439102, 0.98459375], dtype=float32), dtype='float32', shape=(1, 3))]
+```
+
+## Input Format
+Input format is an instance of the `ONNXInferenceInput` class. The fields are:
+
+- `inputs`: Dict[str, [`TensorInput`](../../../utils/common_types/#infernet_ml.utils.common_types.TensorInput)]: Each key corresponds to an input tensor name.
+- `model_source`: Optional[[`ModelSource`](../../../utils/model_loader/#infernet_ml.utils.model_loader.ModelSource)]: Source of the model to be loaded
+- `load_args`: Optional[LoadArgs]: Arguments to be passed to the model loader, optiosn are 
+    - [`HFLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.HFLoadArgs)
+    - [`ArweaveLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.ArweaveLoadArgs)
+    - [`LocalLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.LocalLoadArgs)
 
 """  # noqa: E501
 

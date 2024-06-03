@@ -3,7 +3,7 @@
 The `infernet-ml` library comes with two classes of workflows:
 
 1. Inference Workflows
-2. Training Workflows (coming soon)
+2. Fine-tuning Workflows (Coming Soon)
 
 ## Inference Workflows
 
@@ -103,14 +103,17 @@ class BaseInferenceWorkflow {
 
 The following inference workflows are available in the `infernet-ml` library:
 
-1. `HFInferenceClientWorkflow`: Uses
-   Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
+1. [`HFInferenceClientWorkflow`](./reference/infernet_ml/workflows/inference/hf_inference_client_workflow.md): This worflow
+   uses the Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
    to run all models that are hosted on Huggingface.
-2. `ONNXInferenceWorkflow`: To run models that are in the ONNX format.
-3. `TorchInferenceWorkflow`: To run PyTorch models.
-4. `TTSInferenceWorkflow`: This workflow is the base class for all text-to-speech models.
-5. `TGIClientInferenceWorkflow`: This workflow uses the TGI client to run models hosted
-   on
-   a [Huggingface's Text Generation Interface](https://huggingface.co/docs/text-generation-inference/en/index)
-   server.
-6. `BarkHFInferenceWorkflow`: This workflow is used to run Suno's Bark model.
+2. [`ONNXInferenceWorkflow`](./reference/infernet_ml/workflows/inference/onnx_inference_workflow.md): This workflow is used
+   to run models that are in the ONNX format.
+3. [`TorchInferenceWorkflow`](./reference/infernet_ml/workflows/inference/torch_inference_workflow.md): This workflow is used
+   to run models that are in the PyTorch format.
+4. [`CSSInferenceWorkflow`](./reference/infernet_ml/workflows/inference/css_inference_workflow.md): This workflow is used to
+   run closed-source models: i.e. OpenAI's `GPT-4`, etc.
+5. [`TTSInferenceWorkflow`](./reference/infernet_ml/workflows/inference/tts_inference_workflow.md): This workflow is used to
+   run Text-to-Speech models.
+6. [`TGIClientInferenceWorkflow`](./reference/infernet_ml/workflows/inference/tgi_client_inference_workflow.md): This workflow is used to run models that are hosted on
+   a [Huggingface's Text Generation Interface](https://huggingface.co/docs/text-generation-inference/en/index) server.
+7. [`BarkHFInferenceWorkflow`](./reference/infernet_ml/workflows/inference/bark_hf_inference_workflow.md): This workflow is used to run Suno's Bark model.
