@@ -6,8 +6,7 @@ from eth_abi.abi import encode
 from eth_account.messages import SignableMessage, encode_typed_data
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
-from web3 import AsyncHTTPProvider, AsyncWeb3, Web3
-from web3.types import Nonce
+from web3 import Web3
 
 
 class Subscription:
@@ -174,54 +173,3 @@ class Subscription:
                 },
             }
         )
-<<<<<<< HEAD:libraries/infernet_client/src/infernet_client/chain_utils.py
-
-
-class RPC:
-    def __init__(self, rpc_url: str) -> None:
-        """Initializes new Ethereum-compatible JSON-RPC client
-
-        Args:
-            rpc_url (str): HTTP(s) RPC url
-
-        Raises:
-            ValueError: RPC URL is incorrectly formatted
-        """
-
-        # Setup new Web3 HTTP provider w/ 10 minute timeout
-        # Long timeout is useful for event polling, subscriptions
-        provider = AsyncHTTPProvider(
-            endpoint_uri=rpc_url, request_kwargs={"timeout": 60 * 10}
-        )
-
-        self._web3: AsyncWeb3 = AsyncWeb3(provider)
-
-    def get_checksum_address(self, address: str) -> ChecksumAddress:
-        """Returns a checksummed Ethereum address
-
-        Args:
-            address (str): Stringified address
-
-        Returns:
-            ChecksumAddress: Checksum-validated Ethereum address
-        """
-        return self._web3.to_checksum_address(address)
-
-    async def get_nonce(self, address: ChecksumAddress) -> Nonce:
-        """Collects nonce for an address
-
-        Args:
-            address (ChecksumAddress): Address to collect tx count
-
-        Returns:
-            Nonce: Transaction count (nonce)
-        """
-        return await self._web3.eth.get_transaction_count(address)
-
-    async def get_chain_id(self) -> int:
-        """Collects connected RPC's chain ID
-
-        Returns:
-            int: Chain ID
-        """
-        return await self._web3.eth.chain_id
