@@ -79,7 +79,7 @@ class NetworkConfig:
     registry_address: ChecksumAddress
     wallet_factory: ChecksumAddress
     node_private_key: str
-    node_payment_wallet: ChecksumAddress
+    node_payment_wallet: Optional[ChecksumAddress]
     protocol_fee_recipient: ChecksumAddress
     tester_private_key: str
     contract_address: Optional[ChecksumAddress] = None
@@ -93,7 +93,7 @@ class NetworkConfig:
         registry_address: ChecksumAddress,
         wallet_factory: ChecksumAddress,
         node_private_key: str,
-        node_payment_wallet: ChecksumAddress,
+        node_payment_wallet: Optional[ChecksumAddress],
         protocol_fee_recipient: ChecksumAddress,
         tester_private_key: str,
         contract_address: Optional[ChecksumAddress] = None,
@@ -126,6 +126,21 @@ class NetworkConfig:
             "tester_private_key": self.tester_private_key,
             "contract_address": self.contract_address,
         }
+
+    def copy(self) -> NetworkConfig:
+        return NetworkConfig(
+            rpc_url=self.rpc_url,
+            node_url=self.node_url,
+            infernet_rpc_url=self.infernet_rpc_url,
+            coordinator_address=self.coordinator_address,
+            registry_address=self.registry_address,
+            wallet_factory=self.wallet_factory,
+            node_private_key=self.node_private_key,
+            node_payment_wallet=self.node_payment_wallet,
+            protocol_fee_recipient=self.protocol_fee_recipient,
+            tester_private_key=self.tester_private_key,
+            contract_address=self.contract_address,
+        )
 
     async def initialize(self: NetworkConfig) -> NetworkConfig:
         w3 = AsyncWeb3(AsyncHTTPProvider(self.rpc_url))

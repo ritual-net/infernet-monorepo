@@ -12,7 +12,7 @@ from test_library.constants import (
     skip_teardown,
 )
 from test_library.infernet_fixture import handle_lifecycle
-from test_library.test_config import global_config
+from test_library.test_config import default_network_config, global_config
 from test_library.web3_utils import (
     get_account_address,
     get_deployed_contract_address,
@@ -107,6 +107,8 @@ def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:
 
 @pytest.fixture(scope="session", autouse=True)
 def node_lifecycle() -> Generator[None, None, None]:
+    config = default_network_config.copy()
+
     yield from handle_lifecycle(
         [],
         post_chain_start_hook=deploy_contracts,
@@ -114,4 +116,5 @@ def node_lifecycle() -> Generator[None, None, None]:
         skip_deploying=skip_deploying,
         skip_contract=True,
         skip_teardown=skip_teardown,
+        network_config=config,
     )

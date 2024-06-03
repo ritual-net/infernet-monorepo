@@ -117,6 +117,7 @@ def create_config_file(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_NODE_PRIVATE_KEY,
     registry_address: str = DEFAULT_REGISTRY_ADDRESS,
+    payment_address: Optional[str] = DEFAULT_NODE_PAYMENT_WALLET,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
     config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
 ) -> None:
@@ -125,6 +126,7 @@ def create_config_file(
         services,
         private_key=private_key,
         registry_address=registry_address,
+        payment_address=payment_address,
         rpc_url=rpc_url,
     )
 
@@ -156,7 +158,7 @@ def get_config(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_NODE_PRIVATE_KEY,
     registry_address: str = DEFAULT_REGISTRY_ADDRESS,
-    payment_address: str = DEFAULT_NODE_PAYMENT_WALLET,
+    payment_address: Optional[str] = DEFAULT_NODE_PAYMENT_WALLET,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> Dict[str, Any]:
     """
