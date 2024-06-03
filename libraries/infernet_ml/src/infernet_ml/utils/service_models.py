@@ -3,7 +3,7 @@ Module containing data models used by the service
 """
 
 from enum import IntEnum
-from typing import Annotated, Any, Union, Optional
+from typing import Annotated, Any, Optional, Union
 
 from pydantic import BaseModel, StringConstraints, model_validator
 
