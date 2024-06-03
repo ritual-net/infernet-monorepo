@@ -116,7 +116,7 @@ def handle_lifecycle(
             services,
             global_config.node_private_key,
             global_config.registry_address,
-            global_config.node_payment_wallet,
+            global_config.get_node_payment_wallet(),
             global_config.infernet_rpc_url,
             post_config_gen_hook,
         )

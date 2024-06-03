@@ -13,4 +13,4 @@ async def protocol_balance() -> int:
 
 
 async def node_balance() -> int:
-    return await balance_of(global_config.node_payment_wallet)
+    return await balance_of(global_config.get_node_payment_wallet())

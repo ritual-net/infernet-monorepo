@@ -104,18 +104,17 @@ class NetworkConfig:
         self.registry_address = registry_address
         self.wallet_factory = wallet_factory
         self.node_private_key = node_private_key
-        self._node_payment_wallet = node_payment_wallet
+        self.node_payment_wallet = node_payment_wallet
         self.protocol_fee_recipient = protocol_fee_recipient
         self.tester_private_key = tester_private_key
         self.contract_address = contract_address
         self._tx_submitter: Optional[TxSubmitter] = None
         self._account: Optional[Account] = None
 
-    @property
-    def node_payment_wallet(self: NetworkConfig) -> ChecksumAddress:
-        if self._node_payment_wallet is None:
+    def get_node_payment_wallet(self: NetworkConfig) -> ChecksumAddress:
+        if self.node_payment_wallet is None:
             raise ValueError("Node payment wallet is not set.")
-        return self._node_payment_wallet
+        return self.node_payment_wallet
 
     def as_dict(self: NetworkConfig) -> Dict[str, str | None]:
         return {
@@ -126,7 +125,7 @@ class NetworkConfig:
             "registry_address": self.registry_address,
             "wallet_factory": self.wallet_factory,
             "node_private_key": self.node_private_key,
-            "node_payment_wallet": self._node_payment_wallet,
+            "node_payment_wallet": self.node_payment_wallet,
             "protocol_fee_recipient": self.protocol_fee_recipient,
             "tester_private_key": self.tester_private_key,
             "contract_address": self.contract_address,
@@ -141,7 +140,7 @@ class NetworkConfig:
             registry_address=self.registry_address,
             wallet_factory=self.wallet_factory,
             node_private_key=self.node_private_key,
-            node_payment_wallet=self._node_payment_wallet,
+            node_payment_wallet=self.node_payment_wallet,
             protocol_fee_recipient=self.protocol_fee_recipient,
             tester_private_key=self.tester_private_key,
             contract_address=self.contract_address,

@@ -40,9 +40,9 @@ async def assert_output(sub_id: int, out: str = "hello", timeout: int = 20) -> N
 
 async def get_node_balance() -> int:
     rpc = await get_rpc()
-    if not global_config.node_payment_wallet:
+    if not global_config.get_node_payment_wallet():
         raise ValueError("Node payment wallet not set")
-    return await rpc.get_balance(global_config.node_payment_wallet)
+    return await rpc.get_balance(global_config.get_node_payment_wallet())
 
 
 @pytest.mark.asyncio
@@ -166,7 +166,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_before = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     await wallet.approve(
         get_deployed_contract_address("GenericCallbackConsumer"),
@@ -187,7 +189,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_after = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_after = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment

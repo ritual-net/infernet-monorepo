@@ -114,7 +114,7 @@ async def valid_proof_setup(
     wallet = await setup_wallet_with_eth_and_approve_contract(funding)
 
     # funding node's address so it can stake stuff for slashing
-    await fund_address_with_eth(global_config.node_payment_wallet, funding)
+    await fund_address_with_eth(global_config.get_node_payment_wallet(), funding)
 
     rpc = await get_rpc()
 
@@ -198,7 +198,7 @@ async def test_eager_proof_payment_invalid_proof() -> None:
     wallet = await setup_wallet_with_eth_and_approve_contract(funding)
 
     # funding node's address so it can stake stuff for slashing
-    await fund_address_with_eth(global_config.node_payment_wallet, funding)
+    await fund_address_with_eth(global_config.get_node_payment_wallet(), funding)
 
     rpc = await get_rpc()
 
