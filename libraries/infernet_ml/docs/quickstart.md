@@ -23,12 +23,14 @@ on a Huggingface model.
 
 ### Step 1: Import and Instantiate a Workflow
 
-Import the `HuggingfaceInferenceClientWorkflow` class from `infernet_ml` and create an
-instance of it.
+Import the `HFInferenceClientWorkflow` class as well as its input class from 
+`infernet_ml`. 
 
 ```python
-from infernet_ml.workflows.inference.hf_inference_client_workflow import
-    HuggingfaceInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFClassificationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+  HFInferenceClientWorkflow,
+)
 ```
 
 In this instance, we're going to use the `text_classification` task type, and use the
@@ -39,8 +41,9 @@ Classification`](https://huggingface.co/models?pipeline_tag=text-classification&
 from the Huggingface model hub.
 
 ```python
-workflow = HFInferenceClientWorkflow(task="text_classification",
-                                     model="Kaludi/Reviews-Sentiment-Analysis")
+workflow = HFInferenceClientWorkflow(
+  model="Kaludi/Reviews-Sentiment-Analysis",
+)
 ```
 
 ### Step 2: Setup the Workflow
@@ -61,14 +64,15 @@ workflow.setup()
 
 ### Step 3: Perform Inference
 
-Now we can perform inference on our model. All of the workflows in infernet-ml have
+Now we can perform inference on our model. All of the workflows in `infernet-ml` have
 a `inference()` method that
 takes in the input data and returns the output.
 
 ```python
-results = workflow.inference({
-    "text": "I was extremely disappointed with this product."
-})
+input = HFClassificationInferenceInput(
+  text="Decentralizing AI using crypto is awesome!"
+)
+output_data = workflow.inference(input)
 ```
 
 ### Step 4: Putting it All Together
@@ -78,29 +82,34 @@ of [`Kaludi/Reviews-Sentiment-Analysis`](https://huggingface.co/Kaludi/Reviews-S
 we expect the output to have different classes and their probabilities.
 
 ```python
-from infernet_ml.workflows.inference.hf_inference_client_workflow import
-    HuggingfaceInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFClassificationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
 
-workflow = HFInferenceClientWorkflow(task="text_classification",
-                                     model="Kaludi/Reviews-Sentiment-Analysis")
-workflow.setup()
-results = workflow.inference({
-    "text": "I was extremely disappointed with this product."
-})
-print(f"results: {results}")
+if __name__ == "__main__":
+    workflow = HFInferenceClientWorkflow(
+        model="Kaludi/Reviews-Sentiment-Analysis",
+    )
+    workflow.setup()
+    input = HFClassificationInferenceInput(
+        text="Decentralizing AI using crypto is awesome!"
+    )
+    output_data = workflow.inference(input)
+    print(output_data)
 ```
 
 Running this code, we'll get an output similar to the following:
 
 ```bash
-results: {'output': [{'label': 'Negative', 'score': 0.9863545298576355}, {'label': 'Positive', 'score': 0.013645444996654987}]}
+{'output': [TextClassificationOutputElement(label='POSITIVE', score=0.9997395873069763), TextClassificationOutputElement(label='NEGATIVE', score=0.00026040704688057303)]}
 ```
 
-And just like that, we've performed inference on a Huggingface model using infernet-ml!
+And just like that, we've performed inference on a Huggingface model using `infernet-ml`!
 
 # Where to next?
 
 This example shows one of our many workflows. Check
-out [our architecture documentation](./architecture), as well
-as [Inference Workflows](./architecture#available-inference-workflows)
+out [our architecture documentation](./architecture.md), as well
+as [Inference Workflows](./architecture.md#available-inference-workflows)
 to see what other workflows are available and how to use them.

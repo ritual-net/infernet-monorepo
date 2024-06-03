@@ -2,6 +2,7 @@
 Workflow object for requesting LLM inference on TGI-compliant inference servers.
 
 ## Additional Installations
+
 Since this workflow uses some additional libraries, you'll need to install `infernet-ml[tgi_inference]`. Alternatively,
 you can install those packages directly. The optional dependencies `"[tgi_inference]"` are provided for your
 convenience.
@@ -18,16 +19,19 @@ convenience.
 
 ## Example Usage
 
+In the example below we use an API key from Hugging Face to access the `Mixtral-8x7B-Instruct-v0.1` model. 
+You can obtain an API key by signing up on the [Hugging Face website](https://huggingface.co/).
+
 ```python
+import os
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
     TgiInferenceRequest,
 )
 
+
 def main():
-    server_url = (
-        "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
-    )
+    server_url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
     workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
         server_url,
         timeout=10,
@@ -36,20 +40,35 @@ def main():
     workflow.setup()
 
     res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
-    print(res)
+    print(f"response: {res}")
 
     collected_res = ""
     for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
         collected_res += r.token.text
-    print(collected_res)
+    print(f"streaming: {collected_res}")
+
 
 if __name__ == "__main__":
     main()
-
 ```
 
-"""  # noqa: E501
+Outputs:
 
+```bash
+response: 
+
+The answer is 4.
+
+streaming: 
+
+The answer is 4.
+```
+
+## More Information
+
+For more info, check out the reference docs below.
+
+"""  # noqa: E501
 
 from typing import Any, Iterator, Optional, cast
 
@@ -92,13 +111,13 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
     """
 
     def __init__(
-        self,
-        server_url: str,
-        timeout: int = 30,
-        headers: dict[str, str] | None = None,
-        cookies: dict[str, str] | None = None,
-        retry_params: Optional[RetryParams] = None,
-        **inference_params: dict[str, Any],
+            self,
+            server_url: str,
+            timeout: int = 30,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            retry_params: Optional[RetryParams] = None,
+            **inference_params: dict[str, Any],
     ) -> None:
         """
         constructor. Any named arguments passed to LLM during inference.
@@ -218,17 +237,17 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         try:
             return self.generate_inference(prompt)
         except (
-            BadRequestError,
-            GenerationError,
-            IncompleteGenerationError,
-            NotFoundError,
-            NotSupportedError,
-            OverloadedError,
-            RateLimitExceededError,
-            ShardNotReadyError,
-            ShardTimeoutError,
-            UnknownError,
-            ValidationError,
+                BadRequestError,
+                GenerationError,
+                IncompleteGenerationError,
+                NotFoundError,
+                NotSupportedError,
+                OverloadedError,
+                RateLimitExceededError,
+                ShardNotReadyError,
+                ShardTimeoutError,
+                UnknownError,
+                ValidationError,
         ) as e:
             # we catch expected service exceptions and return ServiceException
             # this is so we can handle unexpected vs. expected exceptions
