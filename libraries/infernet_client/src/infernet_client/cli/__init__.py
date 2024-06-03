@@ -144,7 +144,7 @@ def request_stream(url: str, container: str, input: IO[str], output: IO[str]) ->
 
     client = NodeClient(url)
     data = json.load(input)
-    request = JobRequest(containers=[container], data=data)
+    request = JobRequest(containers=[container], data=data, requires_proof=False)
 
     # Request the job
     stream = client.request_stream(request)
@@ -352,9 +352,8 @@ def create_infernet_wallet(
         rpc = RPC(rpc_url)
         await rpc.initialize_with_private_key(private_key)
         _factory = WalletFactory(Web3.to_checksum_address(factory), rpc)
-        _owner = (
-            owner if owner else Web3.to_checksum_address(rpc.account.address)  # type: ignore
-        )
+        _default_owner = Web3.to_checksum_address(rpc.account.address)  # type: ignore
+        _owner = owner if owner else _default_owner
         return await _factory.create_wallet(Web3.to_checksum_address(_owner))
 
     wallet = asyncio.run(create_wallet())

@@ -1,6 +1,4 @@
-from typing import Any, Literal, Optional, TypedDict
-
-from typing_extensions import NotRequired
+from typing import Any, Literal, NotRequired, Optional, TypedDict
 
 
 class HealthInfo(TypedDict):
@@ -107,7 +105,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
-    requires_proof: Optional[bool]
+    requires_proof: NotRequired[bool]
 
 
 JobID = str
