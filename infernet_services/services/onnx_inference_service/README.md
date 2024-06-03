@@ -147,7 +147,6 @@ class ContainerOutput(TypedDict):
   )
 
 result = (await client.get_job_result_sync(job_id))["result"]
-# result["dtype"], result["shape"], result["values"]
 ```
 
 === "CLI"
