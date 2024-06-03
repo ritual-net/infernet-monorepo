@@ -362,7 +362,7 @@ async def test_get_job_result_sync(node: NodeClient) -> None:
     """Test that get_job_result_sync returns job result after enough retries."""
 
     # Patch sleep to avoid waiting for retries
-    with patch("infernet_client.client.sleep", new=AsyncMock()), patch.object(
+    with patch("infernet_client.node.sleep", new=AsyncMock()), patch.object(
         node,
         "get_job_results",
         new=AsyncMock(side_effect=get_job_results_side_effect(5)),
@@ -391,7 +391,7 @@ async def test_get_job_result_sync_timeout(node: NodeClient) -> None:
     """Test that get_job_result_sync raises a TimeoutError after enough retries."""
 
     # Patch sleep to avoid waiting for retries
-    with patch("infernet_client.client.sleep", new=AsyncMock()), patch.object(
+    with patch("infernet_client.node.sleep", new=AsyncMock()), patch.object(
         node,
         "get_job_results",
         new=AsyncMock(side_effect=get_job_results_side_effect(6)),
