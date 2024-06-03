@@ -5,7 +5,7 @@ This service serves models via a `HFInferenceClientWorkflow` object, encapsulati
 
 ## Infernet Configuraton
 
-The service can be configuraed as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration in `config.json`.
 
 ```json
 {
@@ -49,7 +49,7 @@ class HFTaskId(IntEnum):
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the `infernet_client` package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -64,6 +64,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
+    requires_proof: NotRequired[bool]
 ```
 
 The schema format of a `infernet_client` job result looks like the following:
@@ -98,6 +99,8 @@ class ContainerOutput(TypedDict):
 ```
 
 ### Web2 Request
+
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
 
 === "Python"
 
@@ -206,6 +209,8 @@ function _receiveCompute(
 
 ### Delegated Subscription Request
 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+
 === "Python"
 
     ```python
@@ -271,3 +276,5 @@ function _receiveCompute(
     "task_id": 1,
         "prompt": "What is 2+2?",
     }
+    ```
+

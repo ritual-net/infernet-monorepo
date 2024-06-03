@@ -2,11 +2,11 @@
 
 This service serves closed source models via a `ONNXInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
 
-ONNX is an open format for representing machine learning models that enables interoperability between different frameworks and hardware platforms. This service allows you to deploy and run ONNX models for various inference tasks, such as image classification, object detection, or natural language processing.
+[ONNX](https://onnx.ai/) is an open format for representing machine learning models that enables interoperability between different frameworks and hardware platforms. This service allows you to deploy and run ONNX models for various inference tasks, such as image classification, object detection, or natural language processing.
 
 ## Infernet Configuraton
 
-The service can be configuraed as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration in `config.json`.
 
 ```json
 {
@@ -65,14 +65,16 @@ class CommonLoadArgs(BaseModel):
 ### MODEL_SOURCE
 - **Description**: The source of the model
 - **Default**: None
+- **Example**: `1` (ARWEAVE)
 
 ### LOAD_ARGS
 - **Description**: The arguments to load with the model
 - **Default**: None
+- **Example**: `{"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}`
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the `infernet_client` package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -87,6 +89,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
+    requires_proof: NotRequired[bool]
 ```
 
 The schema format of a `infernet_client` job result looks like the following:
@@ -121,6 +124,8 @@ class ContainerOutput(TypedDict):
 ```
 
 ### Web2 Request
+
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
 
 === "Python"
 
@@ -251,6 +256,8 @@ function _receiveCompute(
 
 ### Delegated Subscription Request
 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+
 === "Python"
 
   ```python
@@ -326,3 +333,4 @@ function _receiveCompute(
       },
       "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}
   }
+  ```

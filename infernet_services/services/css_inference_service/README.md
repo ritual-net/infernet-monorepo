@@ -4,7 +4,7 @@ This service serves closed source models via a `CSSInferenceWorkflow` object, en
 
 ## Infernet Configuraton
 
-The service can be configuraed as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration in `config.json`.
 
 ```json
 {
@@ -38,9 +38,9 @@ The service can be configuraed as part of the overall Infernet configuration in 
 
 The service supports three providers, each requiring an API key specified as an environment variable:
 
-- `PERPLEXITYAI_API_KEY` - API key for PerplexityAI
-- `GOOSEAI_API_KEY` - API key for GooseAI
-- `OPENAI_API_KEY` - API key for OpenAI
+- `PERPLEXITYAI_API_KEY` - API key for [PerplexityAI](https://docs.perplexity.ai/docs/getting-started)
+- `GOOSEAI_API_KEY` - API key for [GooseAI](https://goose.ai/docs)
+- `OPENAI_API_KEY` - API key for [OpenAI](https://platform.openai.com/docs/quickstart)
 
 ## Environment Variables
 
@@ -51,6 +51,7 @@ The service supports three providers, each requiring an API key specified as an 
 ### CSS_INF_WORKFLOW_KW_ARGS
 - **Description**: Any argument passed here will be defaulted when sending to the CSS provider.
 - **Default**: `{}`
+- **Example**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
 
 ### CSS_REQUEST_TRIES
 - **Description**: The number of retries for the inference workflow.
@@ -74,7 +75,7 @@ The service supports three providers, each requiring an API key specified as an 
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the `infernet_client` package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -89,6 +90,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
+    requires_proof: NotRequired[bool]
 ```
 
 The schema format of a `infernet_client` job result looks like the following:
@@ -122,7 +124,10 @@ class ContainerOutput(TypedDict):
 
 ```
 
+
 ### Web2 Request
+
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
 
 === "Python"
 
@@ -270,6 +275,8 @@ function _receiveCompute(
 
 ### Delegated Subscription Request
 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+
 === "Python"
 
     ```python
@@ -353,3 +360,4 @@ function _receiveCompute(
             "temperature": 0.5,
         },
     }
+    ```

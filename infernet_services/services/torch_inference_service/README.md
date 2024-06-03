@@ -1,12 +1,12 @@
-
-
 # Torch Inference Service
 
 This service serves closed source models via a `TorchInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic
 
+[PyTorch](https://pytorch.org/) is an open source deep learning framework that provides a flexible platform for building and deploying machine learning models. This service allows you to deploy and run PyTorch models for various inference tasks, such as image classification, object detection, or natural language processing.
+
 ## Infernet Configuraton
 
-The service can be configuraed as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration in `config.json`.
 
 ```json
 {
@@ -77,7 +77,7 @@ class CommonLoadArgs(BaseModel):
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the `infernet_client` package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -92,6 +92,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
+    requires_proof: NotRequired[bool]
 ```
 
 The schema format of a `infernet_client` job result looks like the following:
@@ -126,6 +127,8 @@ class ContainerOutput(TypedDict):
 ```
 
 ### Web2 Request
+
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
 
 === "Python"
 
@@ -257,6 +260,8 @@ function _receiveCompute(
 
 ### Delegated Subscription Request
 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+
 === "Python"
 
     ```python
@@ -324,3 +329,4 @@ function _receiveCompute(
     "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch", "version": "v1"},
     "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}
     }
+    ```
