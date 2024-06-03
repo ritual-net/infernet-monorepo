@@ -57,6 +57,7 @@ async def test_infernet_callback_consumer() -> None:
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_insufficient_allowance() -> None:
     wallet = await create_wallet()
+    await fund_wallet_with_eth(wallet, int(1e18))
     await request_web3_compute(
         ECHO_SERVICE,
         encoded_echo_input,
@@ -133,7 +134,9 @@ async def test_infernet_basic_payment_insufficient_balance() -> None:
         wallet=wallet.address,
     )
 
-    await assert_regex_in_node_logs("Token transfer failed")
+    await assert_regex_in_node_logs(
+        f".*subscription wallet.*insufficient balance.*{wallet.address}"
+    )
 
 
 async def setup_wallet_with_eth_and_approve_contract(
