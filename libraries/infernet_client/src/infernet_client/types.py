@@ -153,3 +153,17 @@ class ErrorResponse(TypedDict):
 
     error: str
     params: NotRequired[dict[str, Any]]
+
+
+class NetworkContainer:
+    """Network container.
+
+    Attributes:
+        id: The container ID.
+        count: The number of containers in the network.
+        description: The container description.
+    """
+
+    id: str
+    count: int
+    description: Optional[str]
