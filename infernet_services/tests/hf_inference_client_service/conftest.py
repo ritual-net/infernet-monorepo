@@ -19,7 +19,7 @@ def node_lifecycle() -> Generator[None, None, None]:
         "HF_TOKEN": os.environ["HF_TOKEN"],
     }
     network_config = default_network_config.copy()
-    network_config._node_payment_wallet = None
+    network_config.node_payment_wallet = None
 
     yield from handle_lifecycle(
         [
