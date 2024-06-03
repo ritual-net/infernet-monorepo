@@ -16,8 +16,8 @@ models. Currently, the following APIs are supported:
 
 ## Additional Installations
 
-Since this workflow uses some additional libraries, you'll need to install `infernet-ml[css_inference]`. 
-Alternatively, you can install those packages directly. The optional dependencies `"[css_inference]"` 
+Since this workflow uses some additional libraries, you'll need to install `infernet-ml[css_inference]`.
+Alternatively, you can install those packages directly. The optional dependencies `"[css_inference]"`
 are provided for your convenience.
 
 === "uv"
@@ -29,15 +29,17 @@ are provided for your convenience.
 === "pip"
 
     ``` bash
-    pip install "infernet-client[css_inference]"
+    pip install "infernet-ml[css_inference]"
     ```
 
 ## Completions Example
 
-The following is an example of how to use the CSS Inference Workflow to make a request to the
-OpenAI's completions API.
+The following is an example of how to use the CSS Inference Workflow to make a request to the OpenAI's completions API.
 
-```python
+``` python
+import os
+from dotenv import load_dotenv
+
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     ConvoMessage,
@@ -48,9 +50,12 @@ from infernet_ml.utils.css_mux import (
 
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 
+load_dotenv()
+
 api_keys: ApiKeys = {
-    Provider.OPENAI: "your_openai_api_key",
+    Provider.OPENAI: os.getenv("OPENAI_API_KEY"),
 }
+
 
 def main():
     endpoint = "completions"
@@ -66,6 +71,7 @@ def main():
     response = workflow.inference(req)
     print(response)
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -73,12 +79,20 @@ if __name__ == "__main__":
 Running the script above will make a request to the OpenAI's completions API and print
 the response.
 
+```bash
+Hello! I'm an AI and I don't have feelings, but I'm here to help you. How can I assist you today?
+```
+
 ## Streaming Example
 
 The following is an example of how to use the CSS Inference Workflow to stream the results
 from the OpenAI's completions API.
 
 ```python
+from infernet_import os
+
+from dotenv import load_dotenv
+
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     ConvoMessage,
@@ -86,12 +100,14 @@ from infernet_ml.utils.css_mux import (
     CSSRequest,
     Provider,
 )
-
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 
+load_dotenv()
+
 api_keys: ApiKeys = {
-    Provider.OPENAI: "your_openai_api_key",
+    Provider.OPENAI: os.getenv("OPENAI_API_KEY"),
 }
+
 
 def main():
     endpoint = "completions"
@@ -107,9 +123,25 @@ def main():
     for response in workflow.stream(req):
         print(response)
 
+
 if __name__ == "__main__":
     main()
+
 ```
+
+Outputs:
+
+```bash
+Hello
+!
+ I
+'m
+ an
+ ...
+```
+
+## Other Inputs
+To explore other inputs, check out the [`inference()`](./#infernet_ml.workflows.inference.css_inference_workflow.CSSInferenceWorkflow.inference) method's arguments.
 
 """  # noqa: E501
 
@@ -163,6 +195,15 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         return True
 
     def inference(self, input_data: CSSRequest) -> Any:
+        """
+        Perform inference on the model.
+
+        Args:
+            input_data (CSSRequest): input data from client
+
+        Returns:
+            Any: result of inference
+        """
         return super().inference(input_data)
 
     def stream(self, input_data: CSSRequest) -> Iterator[str]:

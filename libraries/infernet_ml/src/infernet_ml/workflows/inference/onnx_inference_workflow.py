@@ -8,7 +8,7 @@ Models can be loaded in two ways:
 1. Preloading: The model is loaded & session is started in the setup method. This happens
     in the `setup()` method if model source and load args are provided when the class is
     instantiated.
-    
+
 2. On-demand: The model is loaded with an inference request. This happens if model source
     and load args are provided with the input (see the optional fields in the
     `ONNXInferenceInput` class).
@@ -79,7 +79,7 @@ Input format is an instance of the `ONNXInferenceInput` class. The fields are:
 
 - `inputs`: Dict[str, [`TensorInput`](../../../utils/common_types/#infernet_ml.utils.common_types.TensorInput)]: Each key corresponds to an input tensor name.
 - `model_source`: Optional[[`ModelSource`](../../../utils/model_loader/#infernet_ml.utils.model_loader.ModelSource)]: Source of the model to be loaded
-- `load_args`: Optional[LoadArgs]: Arguments to be passed to the model loader, optiosn are 
+- `load_args`: Optional[LoadArgs]: Arguments to be passed to the model loader, optiosn are
     - [`HFLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.HFLoadArgs)
     - [`ArweaveLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.ArweaveLoadArgs)
     - [`LocalLoadArgs`](../../../utils/model_loader/#infernet_ml.utils.model_loader.LocalLoadArgs)
@@ -96,12 +96,11 @@ import torch
 from onnxruntime import InferenceSession  # type: ignore
 from pydantic import BaseModel
 
-from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.utils.common_types import DTYPES, TensorInput
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource, download_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
-from infernet_ml.workflows.utils.common_types import DTYPES
 
 logger: logging.Logger = logging.getLogger(__name__)
 
