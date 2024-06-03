@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 async def _fire_callback() -> None:
     i = f"{uuid4()}"
     sub_id = await request_web3_compute(ECHO_SERVICE, echo_input(i))
-    await assert_output(sub_id, i)
+    await assert_output(sub_id, i, timeout=40)
 
 
 async def _fire_delegated() -> None:

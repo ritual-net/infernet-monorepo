@@ -29,13 +29,13 @@ log = logging.getLogger(__name__)
 encoded_echo_input = echo_input("hello")
 
 
-async def assert_output(sub_id: int, out: str = "hello") -> None:
+async def assert_output(sub_id: int, out: str = "hello", timeout: int = 20) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         raw, processed = decode(["bytes", "bytes"], output)
         received = decode(["string"], raw, strict=False)[0]
         assert received == out
 
-    await assert_generic_callback_consumer_output(sub_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions, timeout=timeout)
 
 
 @pytest.mark.asyncio
