@@ -45,15 +45,15 @@ async def _fire_subscription() -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=2, reruns_delay=2)
-async def test_infernet_100_callback_consumers() -> None:
+async def test_infernet_bulk_callback_consumers() -> None:
     num_subscriptions = NUM_SUBSCRIPTIONS
 
     await asyncio.gather(*[_fire_callback() for _ in range(num_subscriptions)])
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip()
-async def test_infernet_100_delegated_subscription() -> None:
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
+async def test_infernet_bulk_delegated_subscription() -> None:
     num_subscriptions = NUM_SUBSCRIPTIONS
     await asyncio.gather(*[_fire_delegated() for _ in range(num_subscriptions)])
 
