@@ -1,13 +1,40 @@
-site_name: Infernet ML docs
+site_name: Infernet ML Docs
+
+extra_css:
+  - stylesheets/extra.css
+
 theme:
+  logo: assets/logo.svg
   name: material
+  palette:
+    - scheme: slate
+      primary: custom
+  features:
+    - content.tabs.link
+    - content.code.copy
+    - search.highlight
+    - search.suggest
+
 plugins:
-- search
-- mkdocstrings:
-    handlers:
-      python:
-        rendering:
-          show_source: true
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          rendering:
+            show_source: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+
 nav:
 - Quickstart: quickstart.md
 - Reference:
