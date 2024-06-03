@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 from eth_typing import ChecksumAddress
 
-from infernet_client.chain_utils import Subscription
+from infernet_client.chain.subscription import Subscription
 
 ZERO_ADDRESS = cast(ChecksumAddress, "0x0000000000000000000000000000000000000000")
 

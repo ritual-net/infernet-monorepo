@@ -8,7 +8,7 @@ import pytest
 from eth_typing import ChecksumAddress
 from infernet_client import NodeClient
 from infernet_client.chain.rpc import RPC
-from infernet_client.chain_utils import Subscription
+from infernet_client.chain.subscription import Subscription
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import setup_wallet_with_accepted_token
 from infernet_node.test_subscriptions import (

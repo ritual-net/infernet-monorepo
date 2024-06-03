@@ -21,7 +21,7 @@ from eth_account import Account
 from eth_typing import ChecksumAddress
 
 from .chain.rpc import RPC
-from .chain_utils import Subscription
+from .chain.subscription import Subscription
 from .error import APIError
 from .types import (
     ErrorResponse,

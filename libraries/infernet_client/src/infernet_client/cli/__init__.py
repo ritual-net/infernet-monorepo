@@ -6,9 +6,9 @@ import click
 from web3 import Web3
 
 from infernet_client.chain.rpc import RPC
+from infernet_client.chain.subscription import Subscription
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_client.chain.wallet_factory import WalletFactory
-from infernet_client.chain_utils import Subscription
 from infernet_client.cli.options import (
     input_option,
     output_option,

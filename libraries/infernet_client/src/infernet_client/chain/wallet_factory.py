@@ -19,6 +19,8 @@ payment wallet.
     rpc = RPC("http://localhost:8545")
     wallet_factory = WalletFactory("0x123...", rpc)
     wallet = await wallet_factory.create_wallet("0x456...")
+
+    is_valid = await wallet_factory.is_valid_wallet(wallet.address)
     ```
 """
 

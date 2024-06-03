@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, cast
 
 from aiohttp import ServerDisconnectedError
 from infernet_client.chain.rpc import RPC
-from infernet_client.chain_utils import Subscription
+from infernet_client.chain.subscription import Subscription
 from infernet_client.client import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.utils.codec.vector import DataType
