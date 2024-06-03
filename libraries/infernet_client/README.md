@@ -115,7 +115,6 @@ Usage: infernet-client job [OPTIONS]
 Options:
   --url TEXT                URL of the server. Can also set SERVER_URL
                             environment variable.  [required]
-  --requires-proof BOOLEAN  Whether this job requires proof
   -c, --containers TEXT     Comma-separated list of container IDs to request a
                             job from.  [required]
   -i, --input FILENAME      Input file to read the data from. Must be a JSON
@@ -126,6 +125,7 @@ Options:
                             the results.
   --retries INTEGER         Number of 1 second retries to attempt to fetch job
                             results. Defaults to 5.
+  --requires-proof BOOLEAN  Whether this job requires proof. Defaults to false.
 
 ```
 
