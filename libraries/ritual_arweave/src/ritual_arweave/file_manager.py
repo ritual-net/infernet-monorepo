@@ -11,8 +11,6 @@ import requests
 from ar import DEFAULT_API_URL, Peer, Transaction, Wallet  # type: ignore
 from ar.utils import b64dec  # type: ignore
 from ar.utils.transaction_uploader import get_uploader  # type: ignore
-from tqdm import tqdm
-
 from ritual_arweave.utils import (
     MAX_NODE_BYTES,
     get_sha256_digest,
@@ -20,10 +18,12 @@ from ritual_arweave.utils import (
     load_wallet,
 )
 from ritual_arweave.utils import log as default_logger
+from tqdm import tqdm
 
 
 class FileNotReadyException(Exception):
     """Exception raised when a file is not ready for download from Arweave."""
+
     pass
 
 
@@ -32,6 +32,7 @@ class FileManager:
     A class to manage file operations with Arweave, including downloading,
     uploading, and checking file existence.
     """
+
     def __init__(
         self,
         api_url: str = DEFAULT_API_URL,
@@ -87,7 +88,8 @@ class FileManager:
 
         with open(pathname, "wb") as binary_file:
             try:
-                # Try downloading the transaction data directly from the default data endpoint
+                # Try downloading the transaction data directly from the default data
+                # endpoint
                 data = self.peer.data(txid)
 
                 # Write downloaded file to disk
@@ -146,7 +148,8 @@ class FileManager:
 
         Args:
             file_path (Path): The path to the file to be uploaded.
-            tags_dict (dict[str, str]): A dictionary of tags to be added to the transaction.
+            tags_dict (dict[str, str]): A dictionary of tags to be added to the
+            transaction.
 
         Returns:
             Transaction: The created and signed transaction.

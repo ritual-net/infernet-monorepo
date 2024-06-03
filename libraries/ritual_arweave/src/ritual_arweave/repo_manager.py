@@ -25,7 +25,6 @@ from ar import Transaction  # type: ignore
 from ar.manifest import Manifest  # type: ignore
 from pydantic import BaseModel
 from requests.exceptions import HTTPError
-
 from ritual_arweave.file_manager import FileManager
 from ritual_arweave.types import RepoId, Tags
 from ritual_arweave.utils import edge_unix_ts, get_sha256_digest
@@ -35,11 +34,13 @@ log = logging.getLogger(__name__)
 
 class NotFinalizedException(Exception):
     """Exception raised when a transaction is not yet finalized."""
+
     pass
 
 
 class UploadRepoResult(BaseModel):
     """Model to represent the result of a repository upload."""
+
     repo_id: RepoId
     transaction_id: str
     manifest_url: str
@@ -196,7 +197,8 @@ class RepoManager(FileManager):
             ValueError: if wallet file path is not specified or wallet file is not found.
 
         Returns:
-            UploadRepoResult: Result of the upload containing repo_id, transaction_id, and manifest_url.
+            UploadRepoResult: Result of the upload containing repo_id, transaction_id,
+            and manifest_url.
         """
 
         # path to load files from

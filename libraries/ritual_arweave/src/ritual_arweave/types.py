@@ -23,6 +23,7 @@ class RepoId(BaseModel):
         owner (ArAddress): The owner of the repository.
         name (str): The name of the repository.
     """
+
     owner: ArAddress
     name: str
 
@@ -35,7 +36,8 @@ class RepoId(BaseModel):
             _id (str): A string in the format 'owner/name'.
 
         Returns:
-            RepoId: An instance of RepoId with the owner and name extracted from the input string.
+            RepoId: An instance of RepoId with the owner and name extracted from the
+            input string.
         """
         owner, name = _id.split("/")
         return cls(owner=ArAddress(owner), name=name)

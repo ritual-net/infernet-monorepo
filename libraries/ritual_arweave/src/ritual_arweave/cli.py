@@ -14,7 +14,6 @@ from typing import Any, Callable, Optional
 
 import click
 from ar import PUBLIC_GATEWAYS  # type: ignore
-
 from ritual_arweave.file_manager import FileManager
 from ritual_arweave.repo_manager import NotFinalizedException, RepoManager
 
@@ -177,7 +176,8 @@ def download_repo(
 
     Parameters:
         repo_id: The ID of the repository to download.
-        base_path: The base path to save the repo files. Defaults to the current directory.
+        base_path: The base path to save the repo files. Defaults to the current
+            directory.
         force_download: If set, it will override the existing repo files if they exist.
         api_url: Arweave gateway URL. Default is `https://arweave.net`.
 
