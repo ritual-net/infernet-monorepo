@@ -141,7 +141,7 @@ def main():
     workflow = HFInferenceClientWorkflow().setup()
 
     # Run the inference
-    
+
     min_length_tokens = 28
     max_length_tokens = 56
     summarization_config = HFSummarizationConfig(

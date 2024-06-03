@@ -14,12 +14,12 @@ You can install the required packages using the following command:
     ``` bash
     uv pip install infernet-ml[diffusion_inference]
     ```
-    
+
 === "pip"
     ``` bash
     pip install infernet-ml[diffusion_inference]
     ```
-    
+
 ## Example Usage
 
 ``` python
@@ -34,15 +34,15 @@ def main():
         pipeline=SupportedPipelines.STABLE_DIFFUSION,
         model="stabilityai/stable-diffusion-2-1",
     )
-    
+
     # Setup the workflow
     workflow.setup()
-    
+
     # Perform inference on the input data
     input_data = HFDiffusionInferenceInput(prompt="A photo of a cat")
-    
+
     output_data = workflow.run_model(input_data)
-    
+
 ```
 
 """  # noqa: E501

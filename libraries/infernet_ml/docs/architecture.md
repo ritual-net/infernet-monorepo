@@ -114,4 +114,3 @@ The following inference workflows are available in the `infernet-ml` library:
    a [Huggingface's Text Generation Interface](https://huggingface.co/docs/text-generation-inference/en/index)
    server.
 6. `BarkHFInferenceWorkflow`: This workflow is used to run Suno's Bark model.
-

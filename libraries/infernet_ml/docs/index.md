@@ -1,4 +1,4 @@
-# Infernet ML 
+# Infernet ML
 
 ### What is Infernet ML?
 
@@ -15,8 +15,8 @@ and even for closed-source models such as OpenAI's GPT-4.
 
 ### Getting Started
 
-Head over to the [next section](./quickstart.md) for installation and a quick 
-walkthrough of 
+Head over to the [next section](./quickstart.md) for installation and a quick
+walkthrough of
 the ML workflows.
 
 ### Tutorials & Videos

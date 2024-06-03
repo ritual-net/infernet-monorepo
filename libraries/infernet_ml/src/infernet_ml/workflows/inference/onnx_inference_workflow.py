@@ -15,8 +15,8 @@ Loaded models are cached in-memory using an LRU cache. The cache size can be con
 using the `ONNX_MODEL_LRU_CACHE_SIZE` environment variable.
 
 ## Additional Installations
-Since this workflow uses some additional libraries, you'll need to install 
-`infernet-ml[onnx_inference]`. Alternatively, you can install those packages directly. 
+Since this workflow uses some additional libraries, you'll need to install
+`infernet-ml[onnx_inference]`. Alternatively, you can install those packages directly.
 The optional dependencies `"[onnx_inference]"` are provided for your
 convenience.
 
@@ -24,7 +24,7 @@ convenience.
     ``` bash
     uv pip install infernet-ml[onnx_inference]
     ```
-    
+
 === "pip"
     ``` bash
     pip install infernet-ml[onnx_inference]
@@ -54,14 +54,14 @@ def main():
             filename="iris.onnx",
         ),
     )
-    
+
     workflow = ONNXInferenceWorkflow().setup()
     result = workflow.inference(input_data)
     print(result)
-    
+
 if __name__ == "__main__":
     main()
-    
+
 ```
 
 """  # noqa: E501

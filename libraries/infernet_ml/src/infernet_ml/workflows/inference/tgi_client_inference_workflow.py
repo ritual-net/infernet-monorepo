@@ -10,12 +10,12 @@ convenience.
     ``` bash
     uv pip install infernet-ml[tgi_inference]
     ```
-    
+
 === "pip"
     ``` bash
     pip install infernet-ml[tgi_inference]
     ```
-    
+
 ## Example Usage
 
 ```python
@@ -34,22 +34,21 @@ def main():
         headers={"Authorization": f"Bearer {os.environ['HF_TOKEN']}"},
     )
     workflow.setup()
-    
+
     res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
     print(res)
-    
+
     collected_res = ""
     for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
         collected_res += r.token.text
     print(collected_res)
-    
+
 if __name__ == "__main__":
     main()
-    
+
 ```
 
 """  # noqa: E501
-
 
 
 from typing import Any, Iterator, Optional, cast

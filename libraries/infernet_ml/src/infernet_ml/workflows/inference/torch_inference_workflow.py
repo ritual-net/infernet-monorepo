@@ -26,13 +26,13 @@ The optional dependencies `"[torch_inference]"` are provided for your convenienc
     ``` bash
     uv pip install infernet-ml[torch_inference]
     ```
-    
+
 === "pip"
     ``` bash
     pip install infernet-ml[torch_inference]
     ```
 
-## Example 
+## Example
 
 ```python
 from infernet_ml.workflows.inference.torch_inference_workflow import TorchInferenceWorkflow, TorchInferenceInput
@@ -48,10 +48,10 @@ def main():
             filename="california_housing.torch",
         ),
     )
-    
+
     # Setup the workflow
     workflow.setup()
-    
+
     # Run the model
     result = workflow.inference(
         TorchInferenceInput(
@@ -62,10 +62,10 @@ def main():
             )
         )
     )
-    
+
     print(result)
-    
-    
+
+
 if __name__ == "__main__":
     main()
 ```
@@ -235,7 +235,9 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         # uses lru_cache
         return load_torch_model(model_source, load_args, self.use_jit)
 
-    def do_run_model(self, inference_input: TorchInferenceInput) -> TorchInferenceResult:
+    def do_run_model(
+        self, inference_input: TorchInferenceInput
+    ) -> TorchInferenceResult:
         """
         Runs the model on the input data.
 
