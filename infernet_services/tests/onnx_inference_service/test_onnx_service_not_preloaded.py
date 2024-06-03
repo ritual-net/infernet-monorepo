@@ -52,7 +52,7 @@ async def test_basic_web2_inference_doesnt_provide_proof() -> None:
 
 
 @pytest.mark.asyncio
-async def test_hf_inference_client_doesnt_generate_proofs() -> None:
+async def test_onnx_service_doesnt_generate_proofs() -> None:
     task_id = await request_job(
         ONNX_WITH_PROOFS,
         {
@@ -64,7 +64,6 @@ async def test_hf_inference_client_doesnt_generate_proofs() -> None:
     )
     r = await get_job(task_id)
     assert r.get("code") == "400"
-    log.info(f"description: {r.get('description')}")
 
 
 @pytest.mark.asyncio

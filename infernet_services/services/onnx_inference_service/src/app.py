@@ -154,7 +154,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 hex_input = ""
                 match inf_input:
                     case InfernetInput(requires_proof=True):
-                        raise BadRequest("Proofs are not supported for ONNX inference")
+                        raise BadRequest("Proofs are not supported for ONNX Inference")
                     case InfernetInput(source=JobLocation.ONCHAIN, data=_in):
                         hex_input = cast(str, _in)
                         (_, _, _, _, vector) = decode(
