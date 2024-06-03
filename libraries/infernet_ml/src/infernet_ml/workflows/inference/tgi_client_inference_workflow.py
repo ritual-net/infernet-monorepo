@@ -19,7 +19,7 @@ convenience.
 
 ## Example Usage
 
-In the example below we use an API key from Hugging Face to access the `Mixtral-8x7B-Instruct-v0.1` model. 
+In the example below we use an API key from Hugging Face to access the `Mixtral-8x7B-Instruct-v0.1` model.
 You can obtain an API key by signing up on the [Hugging Face website](https://huggingface.co/).
 
 ```python
@@ -55,11 +55,11 @@ if __name__ == "__main__":
 Outputs:
 
 ```bash
-response: 
+response:
 
 The answer is 4.
 
-streaming: 
+streaming:
 
 The answer is 4.
 ```
@@ -111,13 +111,13 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
     """
 
     def __init__(
-            self,
-            server_url: str,
-            timeout: int = 30,
-            headers: dict[str, str] | None = None,
-            cookies: dict[str, str] | None = None,
-            retry_params: Optional[RetryParams] = None,
-            **inference_params: dict[str, Any],
+        self,
+        server_url: str,
+        timeout: int = 30,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
+        retry_params: Optional[RetryParams] = None,
+        **inference_params: dict[str, Any],
     ) -> None:
         """
         constructor. Any named arguments passed to LLM during inference.
@@ -237,17 +237,17 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         try:
             return self.generate_inference(prompt)
         except (
-                BadRequestError,
-                GenerationError,
-                IncompleteGenerationError,
-                NotFoundError,
-                NotSupportedError,
-                OverloadedError,
-                RateLimitExceededError,
-                ShardNotReadyError,
-                ShardTimeoutError,
-                UnknownError,
-                ValidationError,
+            BadRequestError,
+            GenerationError,
+            IncompleteGenerationError,
+            NotFoundError,
+            NotSupportedError,
+            OverloadedError,
+            RateLimitExceededError,
+            ShardNotReadyError,
+            ShardTimeoutError,
+            UnknownError,
+            ValidationError,
         ) as e:
             # we catch expected service exceptions and return ServiceException
             # this is so we can handle unexpected vs. expected exceptions

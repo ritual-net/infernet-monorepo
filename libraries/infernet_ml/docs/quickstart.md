@@ -23,8 +23,8 @@ on a Huggingface model.
 
 ### Step 1: Import and Instantiate a Workflow
 
-Import the `HFInferenceClientWorkflow` class as well as its input class from 
-`infernet_ml`. 
+Import the `HFInferenceClientWorkflow` class as well as its input class from
+`infernet_ml`.
 
 ```python
 from infernet_ml.utils.hf_types import HFClassificationInferenceInput
