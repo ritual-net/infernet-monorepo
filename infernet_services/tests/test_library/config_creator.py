@@ -58,9 +58,10 @@ class ServiceConfig(BaseModel):
 
     name: str
     image_id: str
+    port: int
     env_vars: ServiceEnvVars = {}
     accepted_payments: Dict[ChecksumAddress, int]
-    port: int
+    generates_proofs: bool = False
 
     @classmethod
     def build(
@@ -70,6 +71,7 @@ class ServiceConfig(BaseModel):
         port: int = 3000,
         env_vars: Optional[ServiceEnvVars] = None,
         accepted_payments: Optional[Dict[ChecksumAddress, int]] = None,
+        generates_proofs: bool = False,
     ) -> "ServiceConfig":
         """
         Build a service configuration object.
@@ -80,6 +82,7 @@ class ServiceConfig(BaseModel):
             port: The port on which the service will run
             env_vars: A dictionary of environment variables
             accepted_payments: A dictionary of accepted payments
+            generates_proofs: Whether the service generates proofs, defaults to False
 
         Returns:
             A ServiceConfig object
@@ -87,9 +90,10 @@ class ServiceConfig(BaseModel):
         return cls(
             name=name,
             image_id=image_id or f"ritualnetwork/{name}:latest",
-            env_vars=env_vars if env_vars else {},
             port=port,
+            env_vars=env_vars if env_vars else {},
             accepted_payments=accepted_payments or {ZERO_ADDRESS: 0},
+            generates_proofs=generates_proofs,
         )
 
     @property
@@ -105,6 +109,7 @@ class ServiceConfig(BaseModel):
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "external": True,
             "accepted_payments": self.accepted_payments,
+            "generates_proofs": self.generates_proofs,
         }
 
 

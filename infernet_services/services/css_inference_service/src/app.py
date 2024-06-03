@@ -23,7 +23,7 @@ from pydantic import ValidationError as PydValError
 from quart import Quart, abort
 from quart import request as req
 from quart.utils import run_sync
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 load_dotenv()
 
@@ -116,6 +116,8 @@ def create_app() -> Quart:
                 logging.info(f"received input: {inf_input}")
                 result: dict[str, Any]
                 match inf_input:
+                    case InfernetInput(requires_proof=True):
+                        raise BadRequest("Proofs are not supported for CSS inference")
                     case InfernetInput(
                         source=JobLocation.OFFCHAIN,
                         data=input_data,

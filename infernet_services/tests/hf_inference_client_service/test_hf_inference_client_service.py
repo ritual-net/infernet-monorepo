@@ -10,9 +10,26 @@ from test_library.web3_utils import (
     request_web3_compute,
 )
 
-from .conftest import SERVICE_NAME
+from .conftest import HF_WITH_PROOFS, SERVICE_NAME
 
 log = logging.getLogger(__name__)
+
+
+@pytest.mark.asyncio
+async def test_hf_inference_client_doesnt_generate_proofs() -> None:
+    task_id = await request_job(
+        HF_WITH_PROOFS,
+        {
+            "task_id": HFTaskId.TEXT_GENERATION,
+            "prompt": "What's 2 + 2?",
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
+    assert "Proofs are not supported for hf client inference service" in r.get(
+        "description"
+    )
 
 
 @pytest.mark.asyncio

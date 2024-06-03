@@ -20,6 +20,7 @@ TORCH_ARWEAVE_PRELOADED = "torch_inference_service_preloaded_arweave"
 TORCH_HF_PRELOADED = "torch_inference_service_preloaded_hf"
 TORCH_SERVICE_NOT_PRELOADED = "torch_inference_service_not_preloaded"
 TORCH_SERVICE_DOCKER_IMG = "ritualnetwork/torch_inference_service:latest"
+TORCH_WITH_PROOFS = "torch_inference_service_with_proofs"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -58,6 +59,12 @@ def torch_setup() -> Generator[None, None, None]:
                 TORCH_SERVICE_NOT_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3002,
+            ),
+            ServiceConfig.build(
+                TORCH_WITH_PROOFS,
+                image_id=TORCH_SERVICE_DOCKER_IMG,
+                port=3003,
+                generates_proofs=True,
             ),
         ],
         service_wait_timeout=60,

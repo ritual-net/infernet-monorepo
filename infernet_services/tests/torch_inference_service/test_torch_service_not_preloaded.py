@@ -15,7 +15,10 @@ from torch_inference_service.common import (
     california_housing_vector_params,
     california_housing_web2_assertions,
 )
-from torch_inference_service.conftest import TORCH_SERVICE_NOT_PRELOADED
+from torch_inference_service.conftest import (
+    TORCH_SERVICE_NOT_PRELOADED,
+    TORCH_WITH_PROOFS,
+)
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +31,25 @@ ar_model_source, ar_load_args = (
         "version": None,
     },
 )
+
+
+@pytest.mark.asyncio
+async def test_basic_web2_inference_doesnt_provide_proof() -> None:
+    task_id = await request_job(
+        TORCH_WITH_PROOFS,
+        {
+            "model_source": ar_model_source,
+            "load_args": ar_load_args,
+            "input": {
+                **california_housing_vector_params,
+                "dtype": "double",
+            },
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
+    assert "Proofs are not supported for Torch inference" in r.get("description")
 
 
 @pytest.mark.asyncio

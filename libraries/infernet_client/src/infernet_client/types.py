@@ -102,10 +102,12 @@ class JobRequest(TypedDict):
     Attributes:
         containers: The list of container names.
         data: The data to pass to the containers.
+        requires_proof: Whether the job requires proof.
     """
 
     containers: list[str]
     data: dict[str, Any]
+    requires_proof: Optional[bool]
 
 
 JobID = str

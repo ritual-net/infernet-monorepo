@@ -158,8 +158,10 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
         data: dict[str, Any] = cast(dict[str, Any], input.data)
         hex_input = ""
-        match input.source:
-            case JobLocation.ONCHAIN:
+        match input:
+            case InfernetInput(requires_proof=True):
+                raise BadRequest("Proofs are not supported for Torch inference")
+            case InfernetInput(source=JobLocation.ONCHAIN):
                 hex_input = cast(str, input.data)
                 (_, _, _, _, vector) = decode(
                     ["uint8", "string", "string", "string", "bytes"],
@@ -173,7 +175,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 inference_input = TorchInferenceInput(
                     input=_input, model_source=model_source, load_args=load_args
                 )
-            case JobLocation.OFFCHAIN:
+            case InfernetInput(source=JobLocation.OFFCHAIN):
                 log.info("received Offchain Request: %s", data)
                 inference_input = TorchInferenceInput(**data)
                 dtype = DataType[data["input"]["dtype"]]

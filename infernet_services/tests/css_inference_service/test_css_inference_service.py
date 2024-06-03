@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 import pytest
-from css_inference_service.conftest import SERVICE_NAME
+from css_inference_service.conftest import CSS_WITH_PROOFS, SERVICE_NAME
 from eth_abi.abi import decode
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
@@ -28,6 +28,42 @@ boolean_like_prompt = "Is the sky blue? return yes or no"
 
 def boolean_like_prompt_assertion(result: str) -> None:
     assert any(x in result.lower() for x in ["yes", "no", "sky", "blue"])
+
+
+@pytest.mark.asyncio
+async def test_css_inference_service_web2_doesnt_provide_proof() -> None:
+    try:
+        task_id = await request_job(
+            SERVICE_NAME,
+            {
+                "provider": CSSProvider.OPENAI,
+                "endpoint": "completions",
+                "model": CSSEndpoint.completions,
+                "params": [ConvoMessage(role="user", content="henlo").model_dump()],
+            },
+            requires_proof=True,
+        )
+        await get_job(task_id)
+        assert False, "Expected exception"
+    except Exception as e:
+        assert "container does not generate proof" in str(e).lower()
+
+
+@pytest.mark.asyncio
+async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() -> None:
+    task_id = await request_job(
+        CSS_WITH_PROOFS,
+        {
+            "provider": CSSProvider.OPENAI,
+            "endpoint": "completions",
+            "model": CSSEndpoint.completions,
+            "params": [ConvoMessage(role="user", content="henlo").model_dump()],
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
+    assert "Proofs are not supported for CSS inference" in r.get("description")
 
 
 @pytest.mark.parametrize(

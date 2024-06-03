@@ -54,6 +54,7 @@ def deploy_contracts() -> None:
 
 
 ECHO_SERVICE = "echo"
+ECHO_WITH_PROOFS = "echo_with_proofs"
 ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS = "echo_with_payment_requirements"
 
 
@@ -82,6 +83,17 @@ def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:
                 ZERO_ADDRESS: int(1e18),
                 accepted_money: int(1e18),
             },
+        ),
+        ServiceConfig.build(
+            name=ECHO_WITH_PROOFS,
+            image_id=f"ritualnetwork/{ECHO_SERVICE}:latest",
+            port=3002,
+            env_vars={"service_dir": "infernet_services/test_services"},
+            accepted_payments={
+                ZERO_ADDRESS: int(1e18),
+                accepted_money: int(1e18),
+            },
+            generates_proofs=True,
         ),
     ]
 

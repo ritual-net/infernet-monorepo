@@ -16,6 +16,8 @@ from test_library.infernet_fixture import handle_lifecycle
 ONNX_ARWEAVE_PRELOADED = "onnx_inference_service_preloaded_arweave"
 ONNX_HF_PRELOADED = "onnx_inference_service_preloaded_hf"
 ONNX_SERVICE_NOT_PRELOADED = "onnx_inference_service_not_preloaded"
+ONNX_WITH_PROOFS = "onnx_inference_service_with_proofs"
+
 ONNX_SERVICE_DOCKER_IMG = "ritualnetwork/onnx_inference_service:latest"
 
 
@@ -55,6 +57,12 @@ def onnx_setup() -> Generator[None, None, None]:
                 ONNX_SERVICE_NOT_PRELOADED,
                 image_id=ONNX_SERVICE_DOCKER_IMG,
                 port=3002,
+            ),
+            ServiceConfig.build(
+                ONNX_WITH_PROOFS,
+                image_id=ONNX_SERVICE_DOCKER_IMG,
+                port=3003,
+                generates_proofs=True,
             ),
         ],
         service_wait_timeout=30,

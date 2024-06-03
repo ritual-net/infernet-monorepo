@@ -31,7 +31,7 @@ from quart import Quart, abort
 from quart import request as req
 from quart.json.provider import DefaultJSONProvider
 from quart.utils import run_sync
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 
 class NumpyJsonEncodingProvider(DefaultJSONProvider):
@@ -153,6 +153,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 inf_input = InfernetInput(**req_data)
                 hex_input = ""
                 match inf_input:
+                    case InfernetInput(requires_proof=True):
+                        raise BadRequest("Proofs are not supported for ONNX inference")
                     case InfernetInput(source=JobLocation.ONCHAIN, data=_in):
                         hex_input = cast(str, _in)
                         (_, _, _, _, vector) = decode(
