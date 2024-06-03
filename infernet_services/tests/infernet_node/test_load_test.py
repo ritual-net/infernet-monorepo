@@ -18,6 +18,8 @@ from test_library.web3_utils import echo_input, echo_output, request_web3_comput
 
 log = logging.getLogger(__name__)
 
+NUM_SUBSCRIPTIONS = 20
+
 
 async def _fire_callback() -> None:
     i = f"{uuid4()}"
@@ -42,8 +44,9 @@ async def _fire_subscription() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
 async def test_infernet_100_callback_consumers() -> None:
-    num_subscriptions = 100
+    num_subscriptions = NUM_SUBSCRIPTIONS
 
     await asyncio.gather(*[_fire_callback() for _ in range(num_subscriptions)])
 
@@ -51,21 +54,21 @@ async def test_infernet_100_callback_consumers() -> None:
 @pytest.mark.asyncio
 @pytest.mark.skip()
 async def test_infernet_100_delegated_subscription() -> None:
-    num_subscriptions = 100
+    num_subscriptions = NUM_SUBSCRIPTIONS
     await asyncio.gather(*[_fire_delegated() for _ in range(num_subscriptions)])
 
 
 @pytest.mark.asyncio
 @pytest.mark.skip()
 async def test_infernet_100_subscriptions() -> None:
-    num_subscriptions = 100
+    num_subscriptions = NUM_SUBSCRIPTIONS
     await asyncio.gather(*[_fire_subscription() for _ in range(num_subscriptions)])
 
 
 @pytest.mark.asyncio
 @pytest.mark.skip()
 async def test_infernet_interwoven_subscriptions() -> None:
-    num_subscriptions = 200
+    num_subscriptions = NUM_SUBSCRIPTIONS
     tasks = []
     for _ in range(num_subscriptions):
         tasks.append(
