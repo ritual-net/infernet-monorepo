@@ -77,8 +77,7 @@ class RepoManager(FileManager):
             repo_id = RepoId.from_str(repo_id)
 
         base = Path(base_path)
-        if not Path.exists(base):
-            os.makedirs(base)
+        os.makedirs(base, exist_ok=True)
         owners = [repo_id.owner]
 
         file_version_str = (
@@ -315,8 +314,7 @@ class RepoManager(FileManager):
             repo_id = RepoId.from_str(repo_id)
         owners = [repo_id.owner]
         base = Path(base_path)
-        if not Path.exists(base):
-            os.makedirs(base)
+        os.makedirs(base, exist_ok=True)
 
         query_str = """
         query {

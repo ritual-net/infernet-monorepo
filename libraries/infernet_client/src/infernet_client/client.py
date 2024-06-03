@@ -1,3 +1,18 @@
+"""Module containing the NodeClient class, which is used to interact with the Infernet
+Node's REST API.
+
+### Example Usage
+
+You can initialize Node Client & use it like so:
+``` python
+from infernet_client import NodeClient
+
+client = NodeClient("http://localhost:8000")
+client.health()
+# True
+```
+"""
+
 from asyncio import sleep
 from typing import Any, AsyncGenerator, Optional, Union, cast
 
@@ -5,7 +20,8 @@ from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
 from eth_typing import ChecksumAddress
 
-from .chain_utils import RPC, Subscription
+from .chain.rpc import RPC
+from .chain.subscription import Subscription
 from .error import APIError
 from .types import (
     ErrorResponse,
@@ -118,9 +134,10 @@ class NodeClient:
         or an error response otherwise. Job status and results can be retrieved
         asynchronously using the job ID.
 
-        NOTE: The order of the responses corresponds to the order of the job requests.
-        It is the responsibility of the caller to match the responses with the requests,
-        and handle errors appropriately.
+        !!! note
+            The order of the responses corresponds to the order of the job requests. It
+            is the responsibility of the caller to match the responses with the requests,
+            and handle errors appropriately.
 
         Args:
             jobs (list[JobRequest]): The list of job requests

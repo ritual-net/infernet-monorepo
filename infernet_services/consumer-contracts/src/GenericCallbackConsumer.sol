@@ -4,21 +4,35 @@ pragma solidity ^0.8.13;
 import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 import {SubscriptionConsumer} from "infernet-sdk/consumer/Subscription.sol";
 import {console2} from "forge-std/console2.sol";
+import {Delegator} from "infernet-sdk/pattern/Delegator.sol";
 
-contract GenericCallbackConsumer is CallbackConsumer {
-    mapping(bytes32 => bytes) public receivedInput;
-    mapping(bytes32 => bytes) public receivedOutput;
-    mapping(bytes32 => bytes) public receivedProof;
+contract GenericCallbackConsumer is CallbackConsumer, Delegator {
+    mapping(uint32 => bytes) public receivedInput;
+    mapping(uint32 => bytes) public receivedOutput;
+    mapping(uint32 => bytes) public receivedProof;
 
-    constructor(address coordinator) CallbackConsumer(coordinator) {}
+    // Flag to check if the compute was received since the last request
+    bool public receivedToggle;
+    bytes public lastOutput;
 
-    function requestCompute(string calldata containerId, string memory randomness, bytes calldata inputs)
-        public
-        returns (bytes32)
-    {
-        bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
-        _requestCompute(containerId, abi.encodePacked(inputs, randomness), 20 gwei, 1_000_000, 1);
-        return generatedTaskId;
+    constructor(address registry, address signer) CallbackConsumer(registry) Delegator(signer) {
+        console2.log("registry address", address(registry));
+        console2.log("signer address", address(signer));
+        console2.log("coordinators address", address(COORDINATOR));
+    }
+
+    function requestCompute(
+        string memory containerId,
+        bytes memory inputs,
+        uint16 redundancy,
+        address paymentToken,
+        uint256 paymentAmount,
+        address wallet,
+        address prover
+    ) public returns (uint32) {
+        uint32 id = _requestCompute(containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, prover);
+        console2.log("Made subscription request", id);
+        return id;
     }
 
     function _receiveCompute(
@@ -28,14 +42,17 @@ contract GenericCallbackConsumer is CallbackConsumer {
         address node,
         bytes calldata input,
         bytes calldata output,
-        bytes calldata proof
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
     ) internal override {
         (bytes memory raw, bytes memory processed) = abi.decode(input, (bytes, bytes));
-        bytes32 taskId = keccak256(raw);
-        console2.log("Received compute");
-        console2.logBytes32(taskId);
-        receivedInput[taskId] = input;
-        receivedOutput[taskId] = output;
-        receivedProof[taskId] = proof;
+        console2.log("GenericCallbackConsumer: Received compute for subscription", subscriptionId);
+        receivedToggle = !receivedToggle;
+        lastOutput = output;
+
+        receivedInput[subscriptionId] = input;
+        receivedOutput[subscriptionId] = output;
+        receivedProof[subscriptionId] = proof;
     }
 }

@@ -13,6 +13,7 @@ dependencies = [
     "pyyaml>=6.0.1,<7.0.0",
     "types-pyyaml>=6.0.12.20240311,<7.0.0",
     "dominate>=2.9.1",
+    "python-dotenv>=1.0.1,<2.0.0"
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -38,12 +39,13 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/infernet_monorepo"]
 
+[tool.ruff]
+line-length = 89
+
 [tool.isort]
 profile = "black"
 skip = ["libraries/ritual_pyarweave", ".venv", "venv", ".gitignore"]
 
-[tool.ruff]
-line-length = 89
 
 [tool.pytest.ini_options]
 log_cli = true

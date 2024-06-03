@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock
 
-from infernet_client.chain_utils import Subscription
+from eth_typing import ChecksumAddress
+
+from infernet_client.chain.subscription import Subscription
+
+ZERO_ADDRESS = cast(ChecksumAddress, "0x0000000000000000000000000000000000000000")
 
 
 def get_job_results_side_effect(iter: int) -> Any:
@@ -77,9 +81,11 @@ def get_subscription_params() -> (
             period=3,
             frequency=2,
             redundancy=2,
-            max_gas_price=1000000000000,
-            max_gas_limit=3000000,
-            container_id="openai-client-inference-0.0.1",
-            inputs="",
+            containers=["some-llm"],
+            lazy=True,
+            prover=ZERO_ADDRESS,
+            payment_amount=100,
+            payment_token=ZERO_ADDRESS,
+            wallet=ZERO_ADDRESS,
         ),  # subscription
     )

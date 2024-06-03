@@ -1,40 +1,54 @@
-import json
-from typing import Generator
-
 import pytest
 from dotenv import load_dotenv
-from infernet_ml.utils.model_loader import ModelSource
+from eth_abi.abi import encode
+from infernet_ml.utils.codec.vector import encode_vector
 from onnx_inference_service.common import (
-    SERVICE_NAME,
-    assert_web2_inference,
-    assert_web3_inference,
+    iris_classification_web2_assertions_fn,
+    iris_input_vector_params,
 )
-from test_library.infernet_fixture import handle_lifecycle
+from onnx_inference_service.conftest import ONNX_HF_PRELOADED
+from test_library.web2_utils import get_job, request_job
+from test_library.web3_utils import (
+    assert_generic_callback_consumer_output,
+    iris_web3_assertions,
+    request_web3_compute,
+)
 
 load_dotenv()
 
 
-@pytest.fixture(scope="module", autouse=True)
-def hf_hub_setup() -> Generator[None, None, None]:
-    yield from handle_lifecycle(
-        SERVICE_NAME,
+@pytest.mark.asyncio
+async def test_basic_web2_inference_from_hf_hub() -> None:
+    task = await request_job(
+        ONNX_HF_PRELOADED,
         {
-            "MODEL_SOURCE": ModelSource.HUGGINGFACE_HUB.value,
-            "LOAD_ARGS": json.dumps(
-                {
-                    "repo_id": "Ritual-Net/iris-classification",
-                    "filename": "iris.onnx",
-                }
-            ),
+            "model_source": None,
+            "load_args": None,
+            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
         },
     )
 
+    job_result = await get_job(task)
+
+    iris_classification_web2_assertions_fn(job_result)
+
 
 @pytest.mark.asyncio
-async def test_basic_web2_inference_from_hf_hub() -> None:
-    await assert_web2_inference()
+async def test_basic_web3_inference_from_hf_hub() -> None:
+    sub_id = await request_web3_compute(
+        ONNX_HF_PRELOADED,
+        encode(
+            ["uint8", "string", "string", "string", "bytes"],
+            [
+                0,
+                "",
+                "",
+                "",
+                encode_vector(
+                    **iris_input_vector_params,
+                ),
+            ],
+        ),
+    )
 
-
-@pytest.mark.asyncio
-async def test_basic_inference_from_hf_hub() -> None:
-    await assert_web3_inference()
+    await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)

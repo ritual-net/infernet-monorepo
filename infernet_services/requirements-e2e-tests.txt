@@ -5,7 +5,10 @@ web3>=6.15.1,<7.0.0
 reretry>=0.11.8,<1.0.0
 retry2>=0.9.5,<1.0.0
 pydantic>=2.5.3,<3.0.0
-infernet-ml==1.0.0.21
+infernet-ml==1.0.0.41
+infernet-ml[torch_inference]==1.0.0.41
+infernet-ml[onnx_inference]==1.0.0.41
 torch>=2.0.1,<3.0.0
 reretry>=0.11.8,<1.0.0
 infernet-client>=0.3.0,<1.0.0
+pytest-rerunfailures>=14.0,<15.0

@@ -3,12 +3,18 @@ import json
 from typing import IO, Optional, cast
 
 import click
+from web3 import Web3
 
-from infernet_client.chain_utils import RPC, Subscription
+from infernet_client.chain.rpc import RPC
+from infernet_client.chain.subscription import Subscription
+from infernet_client.chain.wallet import InfernetWallet
+from infernet_client.chain.wallet_factory import WalletFactory
 from infernet_client.cli.options import (
     input_option,
     output_option,
     output_result,
+    private_key_option,
+    rpc_url_option,
     url_option,
 )
 from infernet_client.client import NodeClient
@@ -68,6 +74,13 @@ def info(url: str, output: IO[str]) -> None:
     type=str,
     help="Comma-separated list of container IDs to request a job from.",
 )
+@click.option(
+    "--requires-proof",
+    required=False,
+    default=False,
+    type=bool,
+    help="Whether this job requires proof",
+)
 @url_option
 @cli.command(
     name="job",
@@ -79,22 +92,25 @@ def request_job(
     output: IO[str],
     sync: Optional[bool] = False,
     retries: int = 5,
+    requires_proof: bool = False,
 ) -> None:
     """Request a job. Outputs a job ID, or results if sync is enabled."""
 
     client = NodeClient(url)
     data = json.load(input)
-    request = JobRequest(containers=containers.split(","), data=data)
+    request = JobRequest(
+        containers=containers.split(","), data=data, requires_proof=requires_proof
+    )
 
     # Request the job
-    jobID = asyncio.run(client.request_job(request))
+    job_id = asyncio.run(client.request_job(request))
 
     # By default, return the job ID
-    result = jobID
+    result = job_id
 
     # If sync is enabled, wait for job to complete and return results instead
     if sync:
-        job = asyncio.run(client.get_job_result_sync(jobID, retries=retries))
+        job = asyncio.run(client.get_job_result_sync(job_id, retries=retries))
 
         if not job:
             click.echo("Job not found.")
@@ -128,7 +144,7 @@ def request_stream(url: str, container: str, input: IO[str], output: IO[str]) ->
 
     client = NodeClient(url)
     data = json.load(input)
-    request = JobRequest(containers=[container], data=data)
+    request = JobRequest(containers=[container], data=data, requires_proof=False)
 
     # Request the job
     stream = client.request_stream(request)
@@ -238,13 +254,7 @@ def get_jobs(url: str, output: IO[str], status: str) -> None:
     type=str,
     help="Coordinator contract address. Can also set ADDRESS environment variable.",
 )
-@click.option(
-    "--rpc_url",
-    envvar="RPC_URL",
-    required=True,
-    type=str,
-    help="RPC url. Can also set RPC_URL environment variable.",
-)
+@rpc_url_option
 @click.option(
     "--nonce",
     required=False,
@@ -296,3 +306,58 @@ def request_subscription(
     )
 
     click.echo("Success: Subscription created.")
+
+
+@rpc_url_option
+@private_key_option
+@click.option(
+    "--factory",
+    required=True,
+    type=str,
+    envvar="FACTORY_ADDRESS",
+    help="Address of the `WalletFactory` contract. Can also set FACTORY_ADDRESS "
+    "environment variable.",
+)
+@click.option(
+    "--owner",
+    required=False,
+    type=str,
+    help="Address of the wallet owner. If not provided the public address associated "
+    "with the private key will be used.",
+)
+@cli.command(
+    name="create-wallet",
+)
+def create_infernet_wallet(
+    rpc_url: str,
+    factory: str,
+    private_key: str,
+    owner: Optional[str],
+) -> None:
+    """Uses `WalletFactory` to create an Infernet wallet.
+
+    Example:
+        infernet-client create-wallet --rpc-url http://localhost:8545 \
+            --factory 0xF6168876932289D073567f347121A267095f3DD6 \
+            --private-key 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6 \
+            --owner 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+        or
+
+        export PRIVATE_KEY=0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6 && \
+            infernet-client create-wallet --rpc-url http://localhost:8545 \
+            --factory 0xF6168876932289D073567f347121A267095f3DD6
+    """  # noqa
+
+    async def create_wallet() -> InfernetWallet:
+        rpc = RPC(rpc_url)
+        await rpc.initialize_with_private_key(private_key)
+        _factory = WalletFactory(Web3.to_checksum_address(factory), rpc)
+        _default_owner = Web3.to_checksum_address(rpc.account.address)  # type: ignore
+        _owner = owner if owner else _default_owner
+        return await _factory.create_wallet(Web3.to_checksum_address(_owner))
+
+    wallet = asyncio.run(create_wallet())
+    owner = asyncio.run(wallet.owner())
+    click.echo(
+        f"Success: wallet created.\n\tAddress: {wallet.address}\n\tOwner: {owner}"
+    )
