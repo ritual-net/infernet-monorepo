@@ -7,8 +7,51 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+common_config = """
+extra_css:
+- stylesheets/extra.css
+theme:
+  logo: assets/logo.svg
+  name: material
+  palette:
+  - scheme: slate
+    primary: custom
+  features:
+  - content.tabs.link
+  - content.code.copy
+  - search.highlight
+  - search.suggest
+  
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        rendering:
+          show_source: true
+          
+markdown_extensions:
+- pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format
+- pymdownx.inlinehilite
+- pymdownx.snippets
+- pymdownx.tabbed:
+    alternate_style: true
+- admonition
 
-def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
+"""
+
+
+def generate_docs(
+    src_root: str, docs_root: str, cfg_file_path: str, out_path: str
+) -> None:
     """
     Walks through the source directory, creates mirrored directories under docs root,
     and writes a Markdown file for each Python module with the mkdocstrings directive.
@@ -17,7 +60,8 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
         src_root (str): The root directory of the source files.
         docs_root (str): The root directory where the generated documentation files will
         be stored.
-        nav_file_path (str): The path to the MkDocs navigation configuration file.
+        cfg_file_path (str): The path to the config.yml file under the docs root.
+        out_path (str): The path to the generated mkdocs.yml file.
     """
 
     nav_entries: Dict[str, Any] = {}
@@ -92,14 +136,17 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
         return nav_list
 
-    def update_mkdocs_nav_file(nav_entries: Dict[str, str], config_path: str) -> None:
+    def update_mkdocs_nav_file(
+        nav_entries: Dict[str, str], config_path: str, out_path: str
+    ) -> None:
         """
-        Updates the navigation section in the MkDocs configuration file.
+        Generates the `mkdocs.yml` file with the updated navigation structure.
 
         Args:
             nav_entries (dict): A dictionary representing the navigation structure.
-            config_path (str): The path to the MkDocs configuration file.
+            config_path (str): The path to the config.yml file.
         """
+
         with open(config_path, "r") as file:
             config = yaml.safe_load(file)  # Load existing config
 
@@ -116,10 +163,20 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
 
         config["nav"] = navigation
 
-        with open(config_path, "w") as file:
+        with open(out_path, "w") as file:
             yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
 
-    update_mkdocs_nav_file(nav_entries, nav_file_path)
+        # insert common config before the nav: line
+        with open(out_path, "r") as file:
+            lines = file.readlines()
+            for i, line in enumerate(lines):
+                if "nav:" in line:
+                    lines.insert(i, common_config)
+                    break
+        with open(out_path, "w") as file:
+            file.writelines(lines)
+
+    update_mkdocs_nav_file(nav_entries, cfg_file_path, out_path)
 
 
 def generate_vercel_files(project_name: str) -> None:
@@ -172,5 +229,6 @@ if __name__ == "__main__":
     generate_docs(
         f"./libraries/{library}/src",
         f"./libraries/{library}/docs/reference",
+        f"./libraries/{library}/docs/config.yml",
         f"./libraries/{library}/mkdocs.yml",
     )

@@ -1,3 +1,57 @@
+"""
+Workflow object for requesting LLM inference on TGI-compliant inference servers.
+
+## Additional Installations
+Since this workflow uses some additional libraries, you'll need to install `infernet-ml[tgi_inference]`. Alternatively,
+you can install those packages directly. The optional dependencies `"[tgi_inference]"` are provided for your
+convenience.
+
+=== "uv"
+    ``` bash
+    uv pip install infernet-ml[tgi_inference]
+    ```
+    
+=== "pip"
+    ``` bash
+    pip install infernet-ml[tgi_inference]
+    ```
+    
+## Example Usage
+
+```python
+from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
+    TGIClientInferenceWorkflow,
+    TgiInferenceRequest,
+)
+
+def main():
+    server_url = (
+        "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+    )
+    workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
+        server_url,
+        timeout=10,
+        headers={"Authorization": f"Bearer {os.environ['HF_TOKEN']}"},
+    )
+    workflow.setup()
+    
+    res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
+    print(res)
+    
+    collected_res = ""
+    for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
+        collected_res += r.token.text
+    print(collected_res)
+    
+if __name__ == "__main__":
+    main()
+    
+```
+
+"""  # noqa: E501
+
+
+
 from typing import Any, Iterator, Optional, cast
 
 from pydantic import BaseModel

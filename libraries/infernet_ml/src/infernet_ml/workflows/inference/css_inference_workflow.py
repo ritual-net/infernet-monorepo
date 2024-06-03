@@ -1,11 +1,117 @@
 """
-Module containing a CSS (Closed Source Software) Inference Workflow object.
+# CSS Inference Workflow
 
-See css_mux.py for more details on supported closed source libraries.
-In addition to the constructor arguments "provider" and "endpoint", note the
-appropriate API key needs to be specified in environment variables.
+CSS (Closed-Source Software) Workflow is a utility workflow class that has support for various closed-source text-based
+models. Currently, the following APIs are supported:
 
-"""
+1. OpenAI completions
+2. OpenAI embeddings
+3. Perplexity AI completions
+4. GooseAI completions
+
+## Constructor Arguments
+
+- `api_keys`: API keys for the closed-source model
+- `retry_params`: Retry parameters for the closed-source model
+
+## Additional Installations
+
+Since this workflow uses some additional libraries, you'll need to install `infernet-ml[css_inference]`. Alternatively,
+you can install those packages directly. The optional dependencies `"[css_inference]"` are provided for your
+convenience.
+
+=== "uv"
+
+    ``` bash
+    uv pip install infernet-ml[css_inference]
+    ```
+
+=== "pip"
+
+    ``` bash
+    pip install infernet-client[css_inference]
+    ```
+
+## Completions Example
+
+The following is an example of how to use the CSS Inference Workflow to make a request to the
+OpenAI's completions API.
+
+```python
+from infernet_ml.utils.css_mux import (
+    ApiKeys,
+    ConvoMessage,
+    CSSCompletionParams,
+    CSSRequest,
+    Provider,
+)
+
+from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
+
+api_keys: ApiKeys = {
+    Provider.OPENAI: "your_openai_api_key",
+}
+
+def main():
+    endpoint = "completions"
+    model = "gpt-3.5-turbo-16k"
+    params: CSSCompletionParams = CSSCompletionParams(
+        messages=[ConvoMessage(role="user", content="hi how are you")]
+    )
+    req: CSSRequest = CSSRequest(
+        provider=Provider.OPENAI, endpoint=endpoint, model=model, params=params
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
+    workflow.setup()
+    response = workflow.inference(req)
+    print(response)
+
+if __name__ == "__main__":
+    main()
+```
+
+Running the script above will make a request to the OpenAI's completions API and print
+the response.
+
+## Streaming Example
+
+The following is an example of how to use the CSS Inference Workflow to stream the results
+from the OpenAI's completions API.
+
+```python
+from infernet_ml.utils.css_mux import (
+    ApiKeys,
+    ConvoMessage,
+    CSSCompletionParams,
+    CSSRequest,
+    Provider,
+)
+
+from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
+
+api_keys: ApiKeys = {
+    Provider.OPENAI: "your_openai_api_key",
+}
+
+def main():
+    endpoint = "completions"
+    model = "gpt-3.5-turbo-16k"
+    params: CSSCompletionParams = CSSCompletionParams(
+        messages=[ConvoMessage(role="user", content="hi how are you")]
+    )
+    req: CSSRequest = CSSRequest(
+        provider=Provider.OPENAI, endpoint=endpoint, model=model, params=params
+    )
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
+    workflow.setup()
+    for response in workflow.stream(req):
+        print(response)
+
+if __name__ == "__main__":
+    main()
+```
+
+"""  # noqa: E501
 
 import logging
 from typing import Any, Iterator, Optional, Union

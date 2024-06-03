@@ -6,7 +6,16 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class HFTaskId(IntEnum):
-    """Hugging Face task types"""
+    """Hugging Face task types
+
+    Args:
+        UNSET (int): Unset task
+        TEXT_GENERATION (int): Text generation task
+        TEXT_CLASSIFICATION (int): Text classification task
+        TOKEN_CLASSIFICATION (int): Token classification task
+        SUMMARIZATION (int): Summarization task
+        TEXT_TO_IMAGE (int): Text to image task
+    """
 
     UNSET = 0
     TEXT_GENERATION = 1
@@ -27,7 +36,11 @@ class HFInferenceBaseInput(BaseModel):
 
 
 class HFClassificationInferenceInput(HFInferenceBaseInput):
-    """Input data for classification models"""
+    """Input data for classification models
+
+    Args:
+        text (str): Text to classify
+    """
 
     task_id: HFTaskId = HFTaskId.TEXT_CLASSIFICATION
 
@@ -35,7 +48,11 @@ class HFClassificationInferenceInput(HFInferenceBaseInput):
 
 
 class HFTokenClassificationInferenceInput(HFInferenceBaseInput):
-    """Input data for token classification models"""
+    """Input data for token classification models
+
+    Args:
+        text (str): Text to classify
+    """
 
     task_id: HFTaskId = HFTaskId.TOKEN_CLASSIFICATION
 

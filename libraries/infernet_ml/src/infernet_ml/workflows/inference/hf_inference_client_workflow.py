@@ -1,8 +1,183 @@
 """
-Module for the generic HuggingFace Inference Workflow object.
-The goal of this module is to provide a generic interface to run inference on any
- Hugging Face models for any of the supported tasks across the domains.
-"""
+# Huggingface Inference Client Workflow
+This workflow uses Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
+to run all models that are hosted on Huggingface Hub.
+
+## Supported Tasks
+- `"text_generation"`
+- `"text_classification"`
+- `"token_classification"`
+- `"summarization"`
+
+## Input Format
+The input format is the `HFInferenceClientInput` pydantic model. This is one of four
+input formats:
+
+1. `HFClassificationInferenceInput`
+2. `HFTokenClassificationInferenceInput`
+3. `HFTextGenerationInferenceInput`
+4. `HFSummarizationInferenceInput`
+
+
+## Example Classification Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFClassificationInferenceInput, HFTaskId
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    output_data = workflow.inference(
+        HFClassificationInferenceInput(
+            text="Decentralizing AI using crypto is awesome!",
+        )
+    )
+
+    print(output_data)
+
+if name == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{
+    "output": [
+        {
+            "label": "POSITIVE",
+            "score": 0.999
+        }
+    ]
+}
+```
+
+## Example Token Classification Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFTokenClassificationInferenceInput, HFTaskId
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    output_data = workflow.inference(
+        HFTokenClassificationInferenceInput(
+            text="Ritual makes AI x crypto a great combination!",
+        )
+    )
+
+    print(output_data)
+
+if name == "__main__":
+    main()
+
+```
+
+Outputs:
+
+```bash
+{
+    "output": [
+        {
+            "entity_group": "MISC",
+            "score": 0.999
+        }
+    ]
+}
+```
+
+## Example Text Generation Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFTextGenerationInferenceInput, HFTaskId
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    output_data = workflow.inference(
+        HFTextGenerationInferenceInput(
+            text="Decentralizing AI using crypto is awesome!",
+        )
+    )
+
+    print(output_data)
+
+if name == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{
+    "output": [
+        {
+            "generated_text": "Decentralizing AI using crypto is awesome! The future is here."
+        }
+    ]
+}
+```
+
+## Example Summarization Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFSummarizationInferenceInput, HFTaskId
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+    
+    min_length_tokens = 28
+    max_length_tokens = 56
+    summarization_config = HFSummarizationConfig(
+        min_length=min_length_tokens,
+        max_length=max_length_tokens,
+    )
+    input_text = "Artificial Intelligence has the capacity to positively "
+    "impact humanity but the infrastructure in which it is being"
+    "developed is not yet ready for the future. Decentralizing AI using "
+    "crypto is awesome!"
+
+    input_data = HFSummarizationInferenceInput(
+        text=input_text,
+        parameters=summarization_config,
+    )
+    output_data = workflow.inference(input_data)
+
+    print(output_data)
+
+if name == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{
+    "output": [
+        {
+            "summary_text": "Decentralizing AI using crypto is awesome!"
+        }
+    ]
+}
+```
+
+"""  # noqa: E501
 
 import logging
 from typing import Any, Iterator, Optional, cast

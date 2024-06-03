@@ -1,3 +1,53 @@
+"""
+Inference workflow for Stable Diffusion pipelines.
+
+This module contains the implementation of the Stable Diffusion Inference Workflow.
+The workflow is responsible for setting up the Stable Diffusion pipeline and performing
+inference on the input data.
+
+## Additional Installation
+
+To use the Stable Diffusion pipeline, some additional packages need to be installed.
+You can install the required packages using the following command:
+
+=== "uv"
+    ``` bash
+    uv pip install infernet-ml[diffusion_inference]
+    ```
+    
+=== "pip"
+    ``` bash
+    pip install infernet-ml[diffusion_inference]
+    ```
+    
+## Example Usage
+
+``` python
+from infernet_ml.workflows.inference.stable_diffusion_workflow import (
+    StableDiffusionWorkflow,
+    SupportedPipelines,
+)
+
+def main():
+    # Initialize the Stable Diffusion Inference Workflow
+    workflow = StableDiffusionWorkflow(
+        pipeline=SupportedPipelines.STABLE_DIFFUSION,
+        model="stabilityai/stable-diffusion-2-1",
+    )
+    
+    # Setup the workflow
+    workflow.setup()
+    
+    # Perform inference on the input data
+    input_data = HFDiffusionInferenceInput(prompt="A photo of a cat")
+    
+    output_data = workflow.run_model(input_data)
+    
+```
+
+"""  # noqa: E501
+
+
 import logging
 from enum import Enum
 from typing import Any, Iterator, Optional
