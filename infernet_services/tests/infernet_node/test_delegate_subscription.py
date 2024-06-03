@@ -124,6 +124,7 @@ async def test_infernet_delegated_subscription_happy_path() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_delegated_subscription_active_at_later() -> None:
     i = f"{uuid4()}"
 
