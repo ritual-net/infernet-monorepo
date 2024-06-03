@@ -1,8 +1,9 @@
 import logging
-from typing import Tuple
+from typing import Tuple, cast
 
 import pytest
 from eth_abi.abi import decode
+from eth_typing import ChecksumAddress
 from infernet_client.chain.token import Token
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
@@ -36,6 +37,13 @@ async def assert_output(sub_id: int, out: str = "hello", timeout: int = 20) -> N
         assert received == out
 
     await assert_generic_callback_consumer_output(sub_id, _assertions, timeout=timeout)
+
+
+async def get_node_balance() -> int:
+    rpc = await get_rpc()
+    if not global_config.node_payment_wallet:
+        raise ValueError("Node payment wallet not set")
+    return await rpc.get_balance(global_config.node_payment_wallet)
 
 
 @pytest.mark.asyncio
@@ -77,7 +85,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
     protocol_balance_before = await rpc.get_balance(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await rpc.get_balance(global_config.node_payment_wallet)
+    node_balance_before = await get_node_balance()
 
     payment = int(0.1e18)
 
@@ -93,7 +101,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
     await assert_balance(wallet.address, funding - payment)
 
     protocol_balance_after = await rpc.get_balance(DEFAULT_PROTOCOL_FEE_RECIPIENT)
-    node_balance_after = await rpc.get_balance(global_config.node_payment_wallet)
+    node_balance_after = await get_node_balance()
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment
@@ -159,7 +167,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_before = await mock_token.balance_of(
+        cast(ChecksumAddress, global_config.node_payment_wallet)
+    )
 
     await wallet.approve(
         get_deployed_contract_address("GenericCallbackConsumer"),
@@ -180,7 +190,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_after = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_after = await mock_token.balance_of(
+        cast(ChecksumAddress, global_config.node_payment_wallet)
+    )
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment
