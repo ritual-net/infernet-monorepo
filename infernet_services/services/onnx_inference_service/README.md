@@ -125,7 +125,7 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
 
 === "Python"
 
@@ -256,7 +256,7 @@ function _receiveCompute(
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000. 
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
 
 === "Python"
 
