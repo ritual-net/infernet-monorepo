@@ -50,7 +50,8 @@ endif
 	pre-commit run ruff  --files $$files $(post) && \
 	pre-commit run end-of-file-fixer --files $$files $(post) && \
 	pre-commit run check-added-large-files --files $$files $(post) && \
-	pre-commit run trailing-whitespace --files $$files $(post)
+	pre-commit run trailing-whitespace --files $$files $(post) && \
+	pre-commit run mypy --files ./tools/*.py $(post)
 
 test-library:
 ifdef test_name

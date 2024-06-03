@@ -21,8 +21,4 @@ clean-docs:
 deploy-docs: clean-docs
 	rm -rf .vercel || true
 	$(MAKE) generate-docs build-docs
-	vercel pull --token $$VERCEL_TOKEN
-	cat .vercel/project.json
-	cat vercel.json
-	vercel build -y --token $$VERCEL_TOKEN
-	vercel deploy --prebuilt --token $$VERCEL_TOKEN
+	$(PYTHON) tools/deploy_docs.py $(library)

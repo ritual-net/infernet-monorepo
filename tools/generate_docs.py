@@ -2,7 +2,7 @@ import json
 import os
 from typing import Any, Dict
 
-import yaml  # type: ignore
+import yaml
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -65,9 +65,9 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
                     md_file.write(f"::: {module_path.strip('.')}\n")
 
                 # Add entry to the current directory's list in the navigation structure
-                current_dir_list[
-                    f"{module_name}.md"
-                ] = "reference/" + doc_relative_path.replace(os.sep, "/")
+                current_dir_list[f"{module_name}.md"] = (
+                    "reference/" + doc_relative_path.replace(os.sep, "/")
+                )
 
     def write_nav_entries(nav_entries: Dict[str, str]) -> list[Dict[str, Any]]:
         """
@@ -122,7 +122,7 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
     update_mkdocs_nav_file(nav_entries, nav_file_path)
 
 
-def generate_vercel_files(project_name: str):
+def generate_vercel_files(project_name: str) -> None:
     """
     Generates the Vercel configuration files for the specified project.
 
