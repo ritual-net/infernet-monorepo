@@ -1,9 +1,8 @@
 import logging
-from typing import Tuple, cast
+from typing import Tuple
 
 import pytest
 from eth_abi.abi import decode
-from eth_typing import ChecksumAddress
 from infernet_client.chain.token import Token
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
@@ -167,9 +166,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await mock_token.balance_of(
-        cast(ChecksumAddress, global_config.node_payment_wallet)
-    )
+    node_balance_before = await mock_token.balance_of(global_config.node_payment_wallet)
 
     await wallet.approve(
         get_deployed_contract_address("GenericCallbackConsumer"),
@@ -190,9 +187,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_after = await mock_token.balance_of(
-        cast(ChecksumAddress, global_config.node_payment_wallet)
-    )
+    node_balance_after = await mock_token.balance_of(global_config.node_payment_wallet)
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment
