@@ -46,8 +46,8 @@ endif
 	$(MAKE) pre-commit -C infernet_services ls_flag=$(ls_flag) $(post)
 	files=$$(git ls-files $(ls_flag) infernet_services) && \
 	pre-commit run black --files $$files $(post) && \
-	pre-commit run ruff  --files $$files $(post) && \
 	pre-commit run isort --files $$files $(post) && \
+	pre-commit run ruff  --files $$files $(post) && \
 	pre-commit run end-of-file-fixer --files $$files $(post) && \
 	pre-commit run check-added-large-files --files $$files $(post) && \
 	pre-commit run trailing-whitespace --files $$files $(post)

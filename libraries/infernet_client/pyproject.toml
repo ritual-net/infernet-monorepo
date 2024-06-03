@@ -40,7 +40,7 @@ allow-direct-references = true
 packages = ["src/infernet_client"]
 
 [tool.mypy]
-exclude = ['venv', '.venv']
+exclude = ['**/venv', '**/.venv']
 
 [tool.isort]
 profile = "black"

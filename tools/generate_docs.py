@@ -1,7 +1,11 @@
+import json
 import os
 from typing import Any, Dict
 
 import yaml  # type: ignore
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
@@ -61,9 +65,9 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
                     md_file.write(f"::: {module_path.strip('.')}\n")
 
                 # Add entry to the current directory's list in the navigation structure
-                current_dir_list[f"{module_name}.md"] = "reference/" + doc_relative_path.replace(
-                    os.sep, "/"
-                )
+                current_dir_list[
+                    f"{module_name}.md"
+                ] = "reference/" + doc_relative_path.replace(os.sep, "/")
 
     def write_nav_entries(nav_entries: Dict[str, str]) -> list[Dict[str, Any]]:
         """
@@ -118,6 +122,36 @@ def generate_docs(src_root: str, docs_root: str, nav_file_path: str) -> None:
     update_mkdocs_nav_file(nav_entries, nav_file_path)
 
 
+def generate_vercel_files(project_name: str):
+    """
+    Generates the Vercel configuration files for the specified project.
+
+    Args:
+        project_name (str): The name of the project.
+    """
+    os.makedirs(".vercel", exist_ok=True)
+    _lookup: Dict[str, str] = {
+        "infernet_ml": "INFERNET_ML_DOCS_ID",
+        "infernet_client": "INFERNET_CLIENT_DOCS_ID",
+        "ritual_arweave": "RITUAL_ARWEAVE_DOCS_ID",
+    }
+    org_id = os.environ["VERCEL_ORG_ID"]
+    project_id = os.environ[_lookup[project_name]]
+
+    with open(".vercel/project.json", "w") as f:
+        f.write(f'{{"orgId": "{org_id}", "projectId": "{project_id}"}}')
+
+    with open("vercel.json", "w") as f:
+        config = {
+            "version": 2,
+            "builds": [
+                {"src": f"libraries/{project_name}/site/**", "use": "@vercel/static"}
+            ],
+            "routes": [{"src": "/(.*)", "dest": f"libraries/{project_name}/site/$1"}],
+        }
+        f.write(json.dumps(config, indent=4))
+
+
 if __name__ == "__main__":
     """
     read 'library' from arguments
@@ -132,6 +166,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
     library = sys.argv[1]
+
+    generate_vercel_files(library)
 
     generate_docs(
         f"./libraries/{library}/src",

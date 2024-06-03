@@ -38,12 +38,13 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/infernet_monorepo"]
 
+[tool.ruff]
+line-length = 89
+
 [tool.isort]
 profile = "black"
 skip = ["libraries/ritual_pyarweave", ".venv", "venv", ".gitignore"]
 
-[tool.ruff]
-line-length = 89
 
 [tool.pytest.ini_options]
 log_cli = true
