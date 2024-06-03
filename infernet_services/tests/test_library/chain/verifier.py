@@ -3,25 +3,25 @@ from __future__ import annotations
 from typing import Optional
 
 from eth_typing import ChecksumAddress
-from test_library.chain.wallet import Wallet
+from infernet_client.chain.rpc import RPC
+from infernet_client.chain.wallet import InfernetWallet
 from test_library.test_config import global_config
 from test_library.web3_utils import get_abi
-from web3 import AsyncWeb3
 
 
 class GenericAtomicVerifier:
-    def __init__(self: GenericAtomicVerifier, address: ChecksumAddress, w3: AsyncWeb3):
+    def __init__(self: GenericAtomicVerifier, address: ChecksumAddress, rpc: RPC):
         self.address = address
-        self._w3 = w3
-        self._contract = w3.eth.contract(
+        self._rpc = rpc
+        self._contract = rpc.get_contract(
             address=address,
             abi=get_abi("GenericVerifier.sol", "GenericAtomicVerifier"),
         )
-        self._wallet: Optional[Wallet] = None
+        self._wallet: Optional[InfernetWallet] = None
 
     async def initialize(self: GenericAtomicVerifier) -> GenericAtomicVerifier:
-        self._wallet = Wallet(
-            await self._contract.functions.getWallet().call(), self._w3
+        self._wallet = InfernetWallet(
+            await self._contract.functions.getWallet().call(), self._rpc
         )
         return self
 
@@ -31,11 +31,11 @@ class GenericAtomicVerifier:
         tx = await global_config.tx_submitter.submit(
             self._contract.functions.setPrice(token, price)
         )
-        await self._w3.eth.wait_for_transaction_receipt(tx)
+        await self._rpc.get_tx_receipt(tx)
         assert await self._contract.functions.fee(token).call() == price
 
     @property
-    def wallet(self: GenericAtomicVerifier) -> Wallet:
+    def wallet(self: GenericAtomicVerifier) -> InfernetWallet:
         if self._wallet is None:
             raise ValueError("Verifier not initialized")
         return self._wallet
@@ -54,14 +54,14 @@ class GenericAtomicVerifier:
         tx = await global_config.tx_submitter.submit(
             self._contract.functions.disallowToken(token)
         )
-        await self._w3.eth.wait_for_transaction_receipt(tx)
+        await self._rpc.get_tx_receipt(tx)
         assert await self._contract.functions.acceptedPayments(token).call() is False
 
 
 class GenericLazyVerifier(GenericAtomicVerifier):
-    def __init__(self, address: ChecksumAddress, w3: AsyncWeb3):
-        super().__init__(address, w3)
-        self._contract = w3.eth.contract(
+    def __init__(self, address: ChecksumAddress, rpc: RPC):
+        super().__init__(address, rpc)
+        self._contract = rpc.get_contract(
             address=address,
             abi=get_abi("GenericVerifier.sol", "GenericLazyVerifier"),
         )
@@ -72,4 +72,4 @@ class GenericLazyVerifier(GenericAtomicVerifier):
         tx = await global_config.tx_submitter.submit(
             self._contract.functions.finalize(sub_id, interval, node)
         )
-        await self._w3.eth.wait_for_transaction_receipt(tx)
+        await self._rpc.get_tx_receipt(tx)

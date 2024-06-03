@@ -14,7 +14,7 @@ from test_library.constants import (
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.test_config import global_config
 from test_library.web3_utils import (
-    get_account,
+    get_account_address,
     get_deployed_contract_address,
     run_forge_script,
 )
@@ -31,7 +31,7 @@ def deploy_contracts() -> None:
         script_contract_name="DeployEverything",
         extra_params={
             "registry": global_config.registry_address,
-            "signer": get_account(),
+            "signer": get_account_address(),
         },
     )
     log.info("deployed contracts")

@@ -26,15 +26,14 @@ class LogCollector:
         async def read_stream(stream: StreamReader, tag: str) -> None:
             while True:
                 line = await stream.readline()
-                if line:
-                    decoded_line = line.decode().strip()
-                    self.logs.append((tag, decoded_line))
-                    if self.regex_pattern and re.search(
-                        self.regex_pattern, decoded_line, self.regex_flags
-                    ):
-                        self.line_event.set()
-                else:
+                if not line:
                     break
+                decoded_line = line.decode().strip()
+                self.logs.append((tag, decoded_line))
+                if self.regex_pattern and re.search(
+                    self.regex_pattern, decoded_line, self.regex_flags
+                ):
+                    self.line_event.set()
 
         tasks = [
             asyncio.create_task(

@@ -13,8 +13,8 @@ from test_library.web3_utils import (
     echo_input,
     echo_output,
     get_consumer_contract,
+    get_rpc,
     get_sub_id_from_receipt,
-    get_w3,
 )
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
@@ -64,7 +64,7 @@ async def set_subscription_consumer_input(
     tx = await global_config.tx_submitter.submit(
         consumer.functions.setSubscriptionInput(sub_id, echo_input(i))
     )
-    return await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+    return await (await get_rpc()).get_tx_receipt(tx)
 
 
 async def create_sub_with_random_input(
@@ -99,7 +99,7 @@ async def create_sub_with_random_input(
         )
     )
 
-    receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+    receipt = await (await get_rpc()).get_tx_receipt(tx)
     sub_id = get_sub_id_from_receipt(receipt)
 
     return sub_id, i
