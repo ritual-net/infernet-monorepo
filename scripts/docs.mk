@@ -24,5 +24,5 @@ build-docs-index:
 deploy-docs: clean-docs
 	rm -rf .vercel || true
 	$(MAKE) generate-docs build-docs
-	vercel build -y
-	vercel deploy --prebuilt
+	vercel build -y --token $$VERCEL_TOKEN
+	vercel deploy --prebuilt --token $$VERCEL_TOKEN
