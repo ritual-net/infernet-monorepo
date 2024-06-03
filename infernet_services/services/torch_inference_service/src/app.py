@@ -86,14 +86,14 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     )
 
     use_jit_env = os.getenv("USE_JIT")
-    
+
     default_use_jit = False if use_jit_env is None else use_jit_env.lower() == "true"
 
     app_config = test_config or {
         "kwargs": {
             "model_source": default_model_source,
             "load_args": default_load_args,
-            "use_jit": default_use_jit
+            "use_jit": default_use_jit,
         }
     }
 
