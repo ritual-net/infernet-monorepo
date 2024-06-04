@@ -1,83 +1,103 @@
 # CSS (Closed-Source Software) Inference Service
 
-This service serves closed source models via a `CSSInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic
+This service serves closed source models via
+a [`CSSInferenceWorkflow`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/workflows/inference/css_inference_workflow/)
+object, encapsulating the backend, preprocessing, and postprocessing logic
 
 ## Infernet Configuraton
 
-The service can be configured as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration
+in `config.json`. For documentation on the overall configuration,
+consult [the infernet node documentation](https://docs.ritual.net/infernet/node/configuration)
 
 ```json
 {
-  "log_path": "infernet_node.log",
-  //...... contents abbreviated
-  "containers": [
-    {
-      "id": "css_inference_service",
-      "image": "your_org/css_inference_service:latest",
-      "external": true,
-      "port": "3000",
-      "allowed_delegate_addresses": [],
-      "allowed_addresses": [],
-      "allowed_ips": [],
-      "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {
-        "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
-        "CSS_INF_WORKFLOW_KW_ARGS": "{}",
-        "CSS_REQUEST_TRIES": "3",
-        "CSS_REQUEST_DELAY": "3",
-        "CSS_REQUEST_MAX_DELAY": "10",
-        "CSS_REQUEST_BACKOFF": "2",
-        "CSS_REQUEST_JITTER": "[0.5, 1.5]"
-      }
-    }
-  ]
+    "log_path": "infernet_node.log",
+    //...... contents abbreviated
+    "containers": [
+        {
+            "id": "css_inference_service",
+            "image": "your_org/css_inference_service:latest",
+            "external": true,
+            "port": "3000",
+            "allowed_delegate_addresses": [],
+            "allowed_addresses": [],
+            "allowed_ips": [],
+            "command": "--bind=0.0.0.0:3000 --workers=2",
+            "env": {
+                "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
+                "CSS_INF_WORKFLOW_KW_ARGS": "{}",
+                "CSS_REQUEST_TRIES": "3",
+                "CSS_REQUEST_DELAY": "3",
+                "CSS_REQUEST_MAX_DELAY": "10",
+                "CSS_REQUEST_BACKOFF": "2",
+                "CSS_REQUEST_JITTER": "[0.5, 1.5]"
+            }
+        }
+    ]
 }
 ```
 
 ## Supported Providers
 
-The service supports three providers, each requiring an API key specified as an environment variable:
+The service supports three providers, each requiring an API key specified as an
+environment variable:
 
-- `PERPLEXITYAI_API_KEY` - API key for [PerplexityAI](https://docs.perplexity.ai/docs/getting-started)
+- `PERPLEXITYAI_API_KEY` - API key
+  for [PerplexityAI](https://docs.perplexity.ai/docs/getting-started)
 - `GOOSEAI_API_KEY` - API key for [GooseAI](https://goose.ai/docs)
 - `OPENAI_API_KEY` - API key for [OpenAI](https://platform.openai.com/docs/quickstart)
 
 ## Environment Variables
 
 ### CSS_INF_WORKFLOW_POSITIONAL_ARGS
-- **Description**: The first argument is the name of the provider, and the second argument is the endpoint.
+
+- **Description**: The first argument is the name of the provider, and the second
+  argument is the endpoint.
 - **Default**: `["OPENAI", "completions"]`
 
 ### CSS_INF_WORKFLOW_KW_ARGS
-- **Description**: Any argument passed here will be defaulted when sending to the CSS provider.
+
+- **Description**: Any argument passed here will be defaulted when sending to the CSS
+  provider.
 - **Default**: `{}`
 - **Example**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
 
 ### CSS_REQUEST_TRIES
+
 - **Description**: The number of retries for the inference workflow.
 - **Default**: `3`
 
 ### CSS_REQUEST_DELAY
+
 - **Description**: The delay (in seconds) between retries.
 - **Default**: `3`
 
 ### CSS_REQUEST_MAX_DELAY
+
 - **Description**: The maximum delay (in seconds) between retries.
 - **Default**: `10`
 
 ### CSS_REQUEST_BACKOFF
+
 - **Description**: The backoff (in seconds) between retries.
 - **Default**: `2`
 
 ### CSS_REQUEST_JITTER
+
 - **Description**: The jitter (in seconds) to add to requests.
 - **Default**: `[0.5, 1.5]`
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python`
+or `cli` by utilizing the [`infernet_client`](https://infernet-client.docs.ritual.net/)
+library, as well as with HTTP requests against the infernet node directly (using a client
+like `cURL`).
 
-The schema format of a `infernet_client` job request looks like the following:
+The schema format of
+an `infernet_client` [`JobRequest`](https://infernet-client.docs.ritual.net/reference/infernet_client/types/?h=jobreque#infernet_client.types.JobRequest)
+looks like the following:
 
 ```python
 class JobRequest(TypedDict):
@@ -93,7 +113,9 @@ class JobRequest(TypedDict):
     requires_proof: NotRequired[bool]
 ```
 
-The schema format of a `infernet_client` job result looks like the following:
+Also, the schema format of
+a `infernet_client` [`JobResult`](https://infernet-client.docs.ritual.net/reference/infernet_client/types/?h=jobreque#infernet_client.types.JobResult)
+looks like the following:
 
 ```python
 class JobResult(TypedDict):
@@ -111,6 +133,7 @@ class JobResult(TypedDict):
     result: Optional[ContainerOutput]
     intermediate: NotRequired[list[ContainerOutput]]
 
+
 class ContainerOutput(TypedDict):
     """Container output.
 
@@ -124,14 +147,14 @@ class ContainerOutput(TypedDict):
 
 ```
 
-
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+**Please Note**: The examples below assume that you have an infernet node running
+locally on port `4000`.
 
 === "Python"
 
-    ```python
+    ```python 
     from infernet_client.client import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
@@ -192,90 +215,73 @@ class ContainerOutput(TypedDict):
         -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
     ```
 
+### Web3 Request (Onchain Subscription)
 
-### Web3 Request (onchain subscription)
+You will need to import the `infernet-sdk` in your requesting contract. In this example
+we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
+pattern, which is an example of a one-off subscription. Please refer to
+the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) documentation for
+further details.
 
-You will need to import the `infernet-sdk` in your requesting contract. In this example we showcase the Callback pattern, which is an example of a one-off subscription. Please refer to the `infernet-sdk` documentation for further details.
+Input requests should be passed in as an encoded byte string. Here is an example of how
+to generate this for a CSS inference request:
 
-Input requests should be passed in as an encoded byte string. Here is an example of how to generate this for a CSS inference request:
 ```python
-class CSSEndpoint(IntEnum):
-    """Enum for CSS Inference Endpoints"""
-
-    completions = 0
-    embeddings = 1
-
-
-class CSSProvider(IntEnum):
-    """Enum for CSS Inference Providers"""
-
-    OPENAI = 0
-    GOOSEAI = 1
-    PERPLEXITYAI = 2
-
-from eth_abi.abi import encode
-
-input_bytes= encode(
-    ["uint8", "uint8", "string", "(string,string)[]"],
-    [
-        provider,
-        endpoint,
-        model,
-        [(m.role, m.content) for m in messages],
-    ],
+from infernet_ml.utils.css_mux import ConvoMessage
+from infernet_ml.utils.codec.css import (
+    CSSEndpoint,
+    CSSProvider,
+    encode_css_completion_request,
 )
+
+provider = CSSProvider.OPENAI
+endpoint = CSSEndpoint.completions
+model = "gpt-3.5-turbo-16k"
+messages = [
+    ConvoMessage(role="user", content="give me an essay about cats")
+]
+
+encoded = encode_css_completion_request(provider, endpoint, model, messages)
 ```
 
-Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`, you can use the following functions to request and recieve compute:
+You then can pass this encoded byte string as an input to the contract function, let's
+say your contract has a function called `getLLMResponse(bytes calldata input)`:
+
 ```solidity
-function requestCompute(
-    string memory randomness,
-    string memory containerId,
-    bytes memory inputs,
-    uint16 redundancy,
-    address paymentToken,
-    uint256 paymentAmount,
-    address wallet,
-    address prover
-)
-    public
-    returns (bytes32)
-{
-    bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
-    console2.log("generated task id, now requesting compute");
-    console2.logBytes32(generatedTaskId);
+function getLLMResponse(bytes calldata input) public {
+    redundancy = 1;
+    paymentToken = address(0);
+    paymentAmount = 0;
+    wallet = address(0);
+    prover = address(0);
     _requestCompute(
-        containerId,
-        abi.encodePacked(inputs, randomness),
+        "my-css-inference-service",
+        input,
         redundancy,
         paymentToken,
         paymentAmount,
         wallet,
         prover
     );
-    console2.log("requested compute");
-    return generatedTaskId;
 }
+```
 
-function _receiveCompute(
-    uint32 subscriptionId,
-    uint32 interval,
-    uint16 redundancy,
-    address node,
-    bytes calldata input,
-    bytes calldata output,
-    bytes calldata proof,
-    bytes32 containerId,
-    uint256 index
-) internal override {
-    console2.log("received output!");
-    console2.logBytes(output);
-}
+You can call this function with the encoded bytestring from python like so:
+
+```python
+from web3 import Web3
+
+# Assuming you have a contract instance
+contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+
+# Call the function, `encoded` here is the same as the one generated above
+tx_hash = contract.functions.getLLMResponse.call(encoded).transact()
 ```
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+**Please note**: the examples below assume that you have an infernet node running locally
+on port `4000`.
 
 === "Python"
 

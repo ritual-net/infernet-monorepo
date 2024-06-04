@@ -1,37 +1,39 @@
 # HF Inference Client Service
 
-This service serves models via a `HFInferenceClientWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
-
+This service serves models via a `HFInferenceClientWorkflow` object, encapsulating the
+backend, preprocessing, and postprocessing logic.
 
 ## Infernet Configuraton
 
-The service can be configured as part of the overall Infernet configuration in `config.json`.
+The service can be configured as part of the overall Infernet configuration
+in `config.json`.
 
 ```json
 {
-  "log_path": "infernet_node.log",
-  //...... contents abbreviated
-  "containers": [
-     {
-      "id": "hf_inference_client_service",
-      "image": "ritualnetwork/hf_inference_client_service:latest",
-      "external": true,
-      "port": "3000",
-      "allowed_delegate_addresses": [],
-      "allowed_addresses": [],
-      "allowed_ips": [],
-      "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {
-        "HF_TOKEN": "hf_token_goes_here"
-      }
-    }
-  ]
+    "log_path": "infernet_node.log",
+    //...... contents abbreviated
+    "containers": [
+        {
+            "id": "hf_inference_client_service",
+            "image": "ritualnetwork/hf_inference_client_service:latest",
+            "external": true,
+            "port": "3000",
+            "allowed_delegate_addresses": [],
+            "allowed_addresses": [],
+            "allowed_ips": [],
+            "command": "--bind=0.0.0.0:3000 --workers=2",
+            "env": {
+                "HF_TOKEN": "hf_token_goes_here"
+            }
+        }
+    ]
 }
 ```
 
 ## Supported Tasks
 
 This workflow supports the following Hugging Face task types
+
 ```python
 class HFTaskId(IntEnum):
     """Hugging Face task types"""
@@ -49,7 +51,9 @@ class HFTaskId(IntEnum):
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+Inference requests to the service that orginate offchain can be initiated with `python`
+or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with
+HTTP requests against the infernet node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -85,6 +89,7 @@ class JobResult(TypedDict):
     result: Optional[ContainerOutput]
     intermediate: NotRequired[list[ContainerOutput]]
 
+
 class ContainerOutput(TypedDict):
     """Container output.
 
@@ -100,7 +105,8 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+**Please note**: the examples below assume that you have an infernet node running locally
+on port 4000.
 
 === "Python"
 
@@ -144,23 +150,29 @@ class ContainerOutput(TypedDict):
         -d '{"containers": ["SERVICE_NAME"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
     ```
 
+### Web3 Request (Onchain Subscription)
 
-### Web3 Request (onchain subscription)
+You will need to import the `infernet-sdk` in your requesting contract. In this example
+we showcase the Callback pattern, which is an example of a one-off subscription. Please
+refer to the `infernet-sdk` documentation for further details.
 
-You will need to import the `infernet-sdk` in your requesting contract. In this example we showcase the Callback pattern, which is an example of a one-off subscription. Please refer to the `infernet-sdk` documentation for further details.
+Input requests should be passed in as an encoded byte string. Here is an example of how
+to generate this for a CSS inference request:
 
-Input requests should be passed in as an encoded byte string. Here is an example of how to generate this for a CSS inference request:
 ```python
 from infernet_ml.utils.hf_types import HFTaskId
 from eth_abi.abi import encode
 
+# The first item is the task id, the second item is the model id, and the third item is a prompt.
 input_bytes = encode(
     ["uint8", "string", "string"],
     [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
 )
 ```
 
-Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`, you can use the following functions to request and recieve compute:
+Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
+you can use the following functions to request and receive compute:
+
 ```solidity
 function requestCompute(
     string memory randomness,
@@ -172,8 +184,8 @@ function requestCompute(
     address wallet,
     address prover
 )
-    public
-    returns (bytes32)
+public
+returns (bytes32)
 {
     bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
     console2.log("generated task id, now requesting compute");
@@ -191,25 +203,26 @@ function requestCompute(
     return generatedTaskId;
 }
 
-function _receiveCompute(
-    uint32 subscriptionId,
-    uint32 interval,
-    uint16 redundancy,
-    address node,
-    bytes calldata input,
-    bytes calldata output,
-    bytes calldata proof,
-    bytes32 containerId,
-    uint256 index
-) internal override {
-    console2.log("received output!");
-    console2.logBytes(output);
-}
+    function _receiveCompute(
+        uint32 subscriptionId,
+        uint32 interval,
+        uint16 redundancy,
+        address node,
+        bytes calldata input,
+        bytes calldata output,
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
+    ) internal override {
+        console2.log("received output!");
+        console2.logBytes(output);
+    }
 ```
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+**Please note**: the examples below assume that you have an infernet node running locally
+on port 4000.
 
 === "Python"
 

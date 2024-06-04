@@ -1,7 +1,7 @@
 site_name: Inference Services
 nav:
-- css_inference_service: reference/css_inference_service.md
-- onnx_inference_service: reference/onnx_inference_service.md
-- tgi_client_inference_service: reference/tgi_client_inference_service.md
-- torch_inference_service: reference/torch_inference_service.md
-- hf_inference_client_service: reference/hf_inference_client_service.md
+- CSS Inference Service: reference/css_inference_service.md
+- ONNX Inference Service: reference/onnx_inference_service.md
+- TGI Client Inference Service: reference/tgi_client_inference_service.md
+- Torch Inference Service: reference/torch_inference_service.md
+- HF Inference Client Service: reference/hf_inference_client_service.md

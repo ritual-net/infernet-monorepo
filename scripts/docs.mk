@@ -31,12 +31,24 @@ clean-services-docs:
 	rm -rf infernet_services/site
 	rm -rf infernet_services/docs/reference
 
+prod :=
+
 deploy-library-docs: clean-library-docs
 	rm -rf .vercel || true
 	$(MAKE) generate-library-docs build-library-docs
-	$(PYTHON) tools/deploy_docs.py $(library)
+	$(PYTHON) tools/deploy_docs.py $(library) $(prod)
 
 deploy-services-docs: clean-services-docs
 	rm -rf .vercel || true
 	$(MAKE) generate-services-docs build-services-docs
-	$(PYTHON) tools/deploy_docs.py infernet_services
+	$(PYTHON) tools/deploy_docs.py infernet_services $(prod)
+
+sync-readme:
+	rsync infernet_services/services/$(service)/README.md \
+		infernet_services/docs/reference/$(service).md
+
+watch:
+	fswatch -0 "infernet_services/services/$(service)/README.md" | while read -d "" event ; \
+	do \
+	    $(MAKE) sync-readme; \
+	done
