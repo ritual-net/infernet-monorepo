@@ -262,7 +262,7 @@ class HFInferenceClientWorkflow(BaseInferenceWorkflow):
         Initialize the Huggingface Inference Workflow object
 
         Args:
-            token (Optional[str], optional): API token for the inference client.
+            token (Optional[str]): API token for the inference client.
                 Defaults to None.
 
         """

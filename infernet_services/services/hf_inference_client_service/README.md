@@ -1,12 +1,7 @@
-# TGI Inference Service
+# HF Inference Client Service
 
-This service serves models via a `TGIClientInferenceWorkflow` object, encapsulating the
+This service serves models via a `HFInferenceClientWorkflow` object, encapsulating the
 backend, preprocessing, and postprocessing logic.
-
-[Text Generation Inference (TGI)](https://huggingface.co/docs/text-generation-inference/en/index)
-is a toolkit from HuggingFace for deploying and serving Large Language Models (LLMs). TGI
-enables high-performance text generation for the most popular open-source LLMs, including
-Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and T5.
 
 ## Infernet Configuraton
 
@@ -19,8 +14,8 @@ in `config.json`.
     //...... contents abbreviated
     "containers": [
         {
-            "id": "tgi_client_inference_service",
-            "image": "your_org/tgi_client_inference_service:latest",
+            "id": "hf_inference_client_service",
+            "image": "ritualnetwork/hf_inference_client_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -28,57 +23,31 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{}",
-                "TGI_REQUEST_TRIES": "3",
-                "TGI_REQUEST_DELAY": "3",
-                "TGI_REQUEST_MAX_DELAY": "10",
-                "TGI_REQUEST_BACKOFF": "2",
-                "TGI_REQUEST_JITTER": "[0.5, 1.5]"
+                "HF_TOKEN": "hf_token_goes_here"
             }
         }
     ]
 }
 ```
 
+## Supported Tasks
+
+This workflow supports the following Hugging Face task types
+
+```python
+class HFTaskId(IntEnum):
+    """Hugging Face task types"""
+
+    UNSET = 0
+    TEXT_GENERATION = 1
+    TEXT_CLASSIFICATION = 2
+    TOKEN_CLASSIFICATION = 3
+    SUMMARIZATION = 4
+```
+
 ## Environment Variables
 
-### TGI_INF_WORKFLOW_POSITIONAL_ARGS
-
-- **Description**: The first argument is the TGI service URL, and the second argument is
-  the connection timeout.
-- **Default**: `["http://FILL_HOSTNAME_HERE", 30]`
-
-### TGI_INF_WORKFLOW_KW_ARGS
-
-- **Description**: Any argument passed here will be defaulted when sending to the TGI
-  service.
-- **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
-
-### TGI_REQUEST_TRIES
-
-- **Description**: The number of retries for the TGI inference workflow.
-- **Default**: `3`
-
-### TGI_REQUEST_DELAY
-
-- **Description**: The delay (in seconds) between retries.
-- **Default**: `3`
-
-### TGI_REQUEST_MAX_DELAY
-
-- **Description**: The maximum delay (in seconds) between retries.
-- **Default**: `10`
-
-### TGI_REQUEST_BACKOFF
-
-- **Description**: The backoff (in seconds) between retries.
-- **Default**: `2`
-
-### TGI_REQUEST_JITTER
-
-- **Description**: The jitter (in seconds) to add to requests.
-- **Default**: `[0.5, 1.5]`
+`HF_TOKEN` - the token to use for authentication with the Hugging Face API
 
 ## Usage
 
@@ -148,10 +117,13 @@ on port 4000.
     job_id = await client.request_job(
         "SERVICE_NAME",
         {
-            "text": "Can shrimp actually fry rice fr?",
+            # HFTaskId.TEXT_GENERATION
+            "task_id": 1,
+            "prompt": "What is 2+2?",
         },
     )
 
+    # result should be "4"
     result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
     ```
 
@@ -165,7 +137,8 @@ on port 4000.
     where `input.json` looks like this:
     ```json
     {
-        "text": "Can shrimp actually fry rice fr?"
+        "task_id": 1,
+        "prompt": "What is 2+2?",
     }
     ```
 
@@ -174,10 +147,10 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"text": "Can shrimp actually fry rice fr?"}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
     ```
 
-### Web3 Request (On-chain Subscription)
+### Web3 Request (Onchain Subscription)
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
@@ -186,82 +159,84 @@ the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) document
 further details.
 
 Input requests should be passed in as an encoded byte string. Here is an example of how
-to generate this for a TGI Client Inference request:
+to generate this for a Huggingface Task. In this example we're using the `TextGeneration`
+task, while not providing a specific model (Huggingface will use the default model) and
+prompting the model with a simple math question.
 
 ```python
+from infernet_ml.utils.hf_types import HFTaskId
 from eth_abi.abi import encode
 
+# The first item is the task id, the second item is the model id, and the third item is a prompt.
 input_bytes = encode(
-    ["string"],
-    [
-        "Can shrimp actually fry rice fr?"
-    ],
+    ["uint8", "string", "string"],
+    [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
 )
 ```
 
 Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
-you can use the following functions to request and recieve compute:
+you can use the following functions to request and receive compute:
 
 ```solidity
-pragma solidity ^0.8.0;
 
-import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
+import {CallbackConsumer} from "infernet-sdk/contracts/CallbackConsumer.sol";
 
-contract MyOnchainSubscription is CallbackConsumer {
-
-    constructor(address registry) CallbackConsumer(registry) {}
-
-    // Function to chat with LLM
-    function chatWithLLM(bytes memory inputs) public {
-        string memory containerId = "my-container";
-        uint16 redundancy = 1;
-        address paymentToken = address(0);
-        uint256 paymentAmount = 0;
-        address wallet = address(0);
-        address prover = address(0);
-
+contract MyContract is CallbackConsumer {
+    function doMath(bytes calldata input) public returns (bytes32) {
         _requestCompute(
             containerId,
-            inputs,
-            redundancy,
-            paymentToken,
-            paymentAmount,
-            wallet,
-            prover
+            input, // same encoded input as above
+            1,
+            address(0), // paymentToken
+            0, // paymentAmount
+            address(0), // wallet
+            address(0) // prover
         );
-
-        console.log("Requested compute");
+        return generatedTaskId;
     }
 
-    // Function to receive the compute result
-    function receiveCompute(
-        bytes32 taskId,
-        bytes memory output,
-        bytes memory proof
-    ) public {
-        console.log("Received output!");
-        console.logBytes(output);
-        // Handle the received output and proof
+    function _receiveCompute(
+        uint32 subscriptionId,
+        uint32 interval,
+        uint16 redundancy,
+        address node,
+        bytes calldata input,
+        bytes calldata output,
+        bytes calldata proof,
+        bytes32 containerId,
+        uint256 index
+    ) internal override {
+        console2.log("received output!");
+        console2.logBytes(output);
     }
 }
 ```
 
-You can call the chatWithLLM function with the encoded byte string from Python like so:
+Or, you can call your container directly from your contract:
 
-```python
-from web3 import Web3
+```solidity
+import {ContainerLookup} from "infernet-sdk/contracts/ContainerLookup.sol";
 
-# Assuming you have a contract instance
-contract = w3.eth.contract(address=contract_address, abi=contract_abi)
-
-# Call the function, `input_bytes` here is the same as the one generated above
-tx_hash = contract.functions.chatWithLLM(input_bytes).transact()
+contract MyContract {
+    function doMath() public returns (bytes32) {
+        container.requestCompute(
+            "my-container-id",
+            abi.encode(0, "", "What's 2+2?"), // same encoded input as above. 
+            // Here, 0 corresponds to the task id: TEXT_GENERATION
+            1,
+            address(0), // paymentToken
+            0, // paymentAmount
+            address(0), // wallet
+            address(0) // prover
+        );
+    }
+}
 ```
 
 ### Delegated Subscription Request
 
-**Please Note**: the examples below assume that you have an infernet node running locally
-on port `4000`.
+**Please note**: the examples below assume that you have an infernet node running locally
+on port 4000.
 
 === "Python"
 
@@ -293,7 +268,8 @@ on port `4000`.
         nonce=nonce,
         private_key="0x...",
         data={
-            "text": "Can shrimp actually fry rice fr?"
+            "task_id": 1,
+            "prompt": "What is 2+2?",
         },
     )
     ```
@@ -324,6 +300,7 @@ on port `4000`.
     and where `input.json` looks like this:
     ```json
     {
-        "text": "Can shrimp actually fry rice fr?"
+    "task_id": 1,
+        "prompt": "What is 2+2?",
     }
     ```

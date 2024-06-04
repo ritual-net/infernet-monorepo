@@ -49,6 +49,23 @@ markdown_extensions:
 """
 
 
+def add_common_config(out_path: str) -> None:
+    """
+    Adds common config to the mkdocs.yml file.
+
+    Args:
+        out_path (str): The path to the generated mkdocs.yml file.
+    """
+    with open(out_path, "r") as file:
+        lines = file.readlines()
+        for i, line in enumerate(lines):
+            if "nav:" in line:
+                lines.insert(i, common_config)
+                break
+    with open(out_path, "w") as file:
+        file.writelines(lines)
+
+
 def generate_docs(
     src_root: str, docs_root: str, cfg_file_path: str, out_path: str
 ) -> None:
@@ -167,14 +184,7 @@ def generate_docs(
             yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
 
         # insert common config before the nav: line
-        with open(out_path, "r") as file:
-            lines = file.readlines()
-            for i, line in enumerate(lines):
-                if "nav:" in line:
-                    lines.insert(i, common_config)
-                    break
-        with open(out_path, "w") as file:
-            file.writelines(lines)
+        add_common_config(out_path)
 
     update_mkdocs_nav_file(nav_entries, cfg_file_path, out_path)
 
