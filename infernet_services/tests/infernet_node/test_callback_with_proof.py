@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 from infernet_client.chain.wallet import InfernetWallet
-from infernet_node.conftest import ECHO_SERVICE
+from infernet_node.conftest import ECHO_SERVICE, ECHO_WITH_PROOFS
 from infernet_node.test_callback import (
     assert_output,
     setup_wallet_with_eth_and_approve_contract,
@@ -12,7 +12,7 @@ from infernet_node.test_callback import (
 from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.chain.utils import balance_of, node_balance, protocol_balance
 from test_library.chain.verifier import GenericAtomicVerifier, GenericLazyVerifier
-from test_library.chain.wallet import fund_address_with_eth
+from test_library.chain.wallet import create_wallet, fund_address_with_eth
 from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
 from test_library.test_config import global_config
 from test_library.web3_utils import (
@@ -31,6 +31,22 @@ INVALID_PROOF = "do NOT trust me bro"
 
 
 @pytest.mark.asyncio
+async def test_proof_payment_service_does_not_provide_proof() -> None:
+    wallet = await create_wallet()
+    sub_id = await request_web3_compute(
+        ECHO_SERVICE,
+        echo_input(f"{uuid4()}", VALID_PROOF),
+        payment_amount=funding,
+        payment_token=ZERO_ADDRESS,
+        wallet=wallet.address,
+        prover=get_deployed_contract_address("GenericAtomicVerifier"),
+    )
+    await assert_regex_in_node_logs(
+        f"Ignored subscription creation.*{sub_id}.*container does not generate proof.*"
+    )
+
+
+@pytest.mark.asyncio
 async def test_proof_payment_unsupported_token_by_verifier() -> None:
     funding = int(1e18)
     wallet = await setup_wallet_with_eth_and_approve_contract(funding)
@@ -45,7 +61,7 @@ async def test_proof_payment_unsupported_token_by_verifier() -> None:
     await verifier.disallow_token(ZERO_ADDRESS)
 
     await request_web3_compute(
-        ECHO_SERVICE,
+        ECHO_WITH_PROOFS,
         echo_input(f"{uuid4()}", VALID_PROOF),
         payment_amount=funding,
         payment_token=ZERO_ADDRESS,
@@ -98,7 +114,7 @@ async def valid_proof_setup(
     wallet = await setup_wallet_with_eth_and_approve_contract(funding)
 
     # funding node's address so it can stake stuff for slashing
-    await fund_address_with_eth(global_config.node_payment_wallet, funding)
+    await fund_address_with_eth(global_config.get_node_payment_wallet(), funding)
 
     rpc = await get_rpc()
 
@@ -118,12 +134,13 @@ async def valid_proof_setup(
     return wallet, verifier
 
 
+funding = int(2000000000000000000)
+verifier_payment = int(funding / 10)
+subscription_payment = int(funding / 2)
+
+
 @pytest.mark.asyncio
 async def test_eager_proof_payment_valid_proof() -> None:
-    funding = int(200)
-    verifier_payment = int(funding / 10)  # 20
-    subscription_payment = int(funding / 2)  # 100
-
     wallet, verifier = await valid_proof_setup(
         funding, verifier_payment, "GenericAtomicVerifier"
     )
@@ -138,7 +155,7 @@ async def test_eager_proof_payment_valid_proof() -> None:
     _in = f"{uuid4()}"
 
     sub_id = await request_web3_compute(
-        ECHO_SERVICE,
+        ECHO_WITH_PROOFS,
         echo_input(_in, VALID_PROOF),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
@@ -178,14 +195,10 @@ async def test_eager_proof_payment_valid_proof() -> None:
 
 @pytest.mark.asyncio
 async def test_eager_proof_payment_invalid_proof() -> None:
-    funding = int(200)
-    verifier_payment = int(funding / 10)  # 20
-    subscription_payment = int(funding / 2)  # 100
-
     wallet = await setup_wallet_with_eth_and_approve_contract(funding)
 
     # funding node's address so it can stake stuff for slashing
-    await fund_address_with_eth(global_config.node_payment_wallet, funding)
+    await fund_address_with_eth(global_config.get_node_payment_wallet(), funding)
 
     rpc = await get_rpc()
 
@@ -202,7 +215,7 @@ async def test_eager_proof_payment_invalid_proof() -> None:
     _in = f"{uuid4()}"
 
     sub_id = await request_web3_compute(
-        ECHO_SERVICE,
+        ECHO_WITH_PROOFS,
         echo_input(_in, INVALID_PROOF),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
@@ -260,7 +273,7 @@ async def _lazy_proof_setup(
     _in = f"{uuid4()}"
 
     sub_id = await request_web3_compute(
-        ECHO_SERVICE,
+        ECHO_WITH_PROOFS,
         echo_input(_in, proof),
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
@@ -310,12 +323,6 @@ async def _lazy_proof_setup(
         node_balance_before,
         verifier_balance_before,
     )
-
-
-# common params
-funding = int(200)
-verifier_payment = int(funding / 10)  # 20
-subscription_payment = int(funding / 2)  # 100
 
 
 @pytest.mark.asyncio

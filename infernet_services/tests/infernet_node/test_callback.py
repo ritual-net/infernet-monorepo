@@ -38,6 +38,13 @@ async def assert_output(sub_id: int, out: str = "hello", timeout: int = 20) -> N
     await assert_generic_callback_consumer_output(sub_id, _assertions, timeout=timeout)
 
 
+async def get_node_balance() -> int:
+    rpc = await get_rpc()
+    if not global_config.get_node_payment_wallet():
+        raise ValueError("Node payment wallet not set")
+    return await rpc.get_balance(global_config.get_node_payment_wallet())
+
+
 @pytest.mark.asyncio
 async def test_infernet_callback_consumer() -> None:
     sub_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
@@ -50,6 +57,7 @@ async def test_infernet_callback_consumer() -> None:
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_insufficient_allowance() -> None:
     wallet = await create_wallet()
+    await fund_wallet_with_eth(wallet, int(1e18))
     await request_web3_compute(
         ECHO_SERVICE,
         encoded_echo_input,
@@ -77,7 +85,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
     protocol_balance_before = await rpc.get_balance(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await rpc.get_balance(global_config.node_payment_wallet)
+    node_balance_before = await get_node_balance()
 
     payment = int(0.1e18)
 
@@ -93,7 +101,7 @@ async def test_infernet_basic_payment_happy_path() -> None:
     await assert_balance(wallet.address, funding - payment)
 
     protocol_balance_after = await rpc.get_balance(DEFAULT_PROTOCOL_FEE_RECIPIENT)
-    node_balance_after = await rpc.get_balance(global_config.node_payment_wallet)
+    node_balance_after = await get_node_balance()
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment
@@ -126,7 +134,9 @@ async def test_infernet_basic_payment_insufficient_balance() -> None:
         wallet=wallet.address,
     )
 
-    await assert_regex_in_node_logs("Token transfer failed")
+    await assert_regex_in_node_logs(
+        f".*subscription wallet.*insufficient balance.*{wallet.address}"
+    )
 
 
 async def setup_wallet_with_eth_and_approve_contract(
@@ -159,7 +169,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_before = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_before = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     await wallet.approve(
         get_deployed_contract_address("GenericCallbackConsumer"),
@@ -180,7 +192,9 @@ async def test_infernet_basic_payment_custom_token() -> None:
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_after = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_after = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment

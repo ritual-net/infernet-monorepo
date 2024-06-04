@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from dotenv import load_dotenv
 from eth_abi.abi import encode
@@ -7,7 +9,7 @@ from onnx_inference_service.common import (
     iris_classification_web2_assertions_fn,
     iris_input_vector_params,
 )
-from onnx_inference_service.conftest import ONNX_SERVICE_NOT_PRELOADED
+from onnx_inference_service.conftest import ONNX_SERVICE_NOT_PRELOADED, ONNX_WITH_PROOFS
 from test_library.constants import arweave_model_id, hf_model_id
 from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
@@ -27,6 +29,41 @@ ar_model_source, ar_load_args = (
         "version": None,
     },
 )
+
+log = logging.getLogger(__name__)
+
+
+@pytest.mark.asyncio
+async def test_basic_web2_inference_doesnt_provide_proof() -> None:
+    try:
+        task_id = await request_job(
+            ONNX_SERVICE_NOT_PRELOADED,
+            {
+                "model_source": ar_model_source,
+                "load_args": ar_load_args,
+                "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
+            },
+            requires_proof=True,
+        )
+        await get_job(task_id)
+        assert False, "Expected exception"
+    except Exception as e:
+        assert "container does not generate proof" in str(e).lower()
+
+
+@pytest.mark.asyncio
+async def test_onnx_service_doesnt_generate_proofs() -> None:
+    task_id = await request_job(
+        ONNX_WITH_PROOFS,
+        {
+            "model_source": ar_model_source,
+            "load_args": ar_load_args,
+            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
 
 
 @pytest.mark.asyncio

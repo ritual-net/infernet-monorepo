@@ -74,6 +74,13 @@ def info(url: str, output: IO[str]) -> None:
     type=str,
     help="Comma-separated list of container IDs to request a job from.",
 )
+@click.option(
+    "--requires-proof",
+    required=False,
+    default=False,
+    type=bool,
+    help="Whether this job requires proof",
+)
 @url_option
 @cli.command(
     name="job",
@@ -85,22 +92,25 @@ def request_job(
     output: IO[str],
     sync: Optional[bool] = False,
     retries: int = 5,
+    requires_proof: bool = False,
 ) -> None:
     """Request a job. Outputs a job ID, or results if sync is enabled."""
 
     client = NodeClient(url)
     data = json.load(input)
-    request = JobRequest(containers=containers.split(","), data=data)
+    request = JobRequest(
+        containers=containers.split(","), data=data, requires_proof=requires_proof
+    )
 
     # Request the job
-    jobID = asyncio.run(client.request_job(request))
+    job_id = asyncio.run(client.request_job(request))
 
     # By default, return the job ID
-    result = jobID
+    result = job_id
 
     # If sync is enabled, wait for job to complete and return results instead
     if sync:
-        job = asyncio.run(client.get_job_result_sync(jobID, retries=retries))
+        job = asyncio.run(client.get_job_result_sync(job_id, retries=retries))
 
         if not job:
             click.echo("Job not found.")
@@ -134,7 +144,7 @@ def request_stream(url: str, container: str, input: IO[str], output: IO[str]) ->
 
     client = NodeClient(url)
     data = json.load(input)
-    request = JobRequest(containers=[container], data=data)
+    request = JobRequest(containers=[container], data=data, requires_proof=False)
 
     # Request the job
     stream = client.request_stream(request)
@@ -342,11 +352,8 @@ def create_infernet_wallet(
         rpc = RPC(rpc_url)
         await rpc.initialize_with_private_key(private_key)
         _factory = WalletFactory(Web3.to_checksum_address(factory), rpc)
-        _owner = (
-            owner
-            if owner
-            else Web3.to_checksum_address(rpc.account.address)  # type: ignore
-        )
+        _default_owner = Web3.to_checksum_address(rpc.account.address)  # type: ignore
+        _owner = owner if owner else _default_owner
         return await _factory.create_wallet(Web3.to_checksum_address(_owner))
 
     wallet = asyncio.run(create_wallet())
