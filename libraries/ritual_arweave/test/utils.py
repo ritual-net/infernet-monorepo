@@ -56,7 +56,7 @@ def from_ar(amount: float) -> int:
     return int(amount * (10**ARWEAVE_DECIMALS))
 
 
-@retry(tries=100, delay=0.1)
+@retry(tries=200, delay=0.1)
 def mint_ar(address: str, balance: int = from_ar(69)) -> None:
     requests.get(f"{api_url}/mint/{address}/{balance}")
 

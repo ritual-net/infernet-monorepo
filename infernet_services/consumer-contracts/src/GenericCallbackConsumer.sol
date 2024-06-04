@@ -30,9 +30,7 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         address wallet,
         address prover
     ) public returns (uint32) {
-        uint32 id = _requestCompute(
-            containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, prover
-        );
+        uint32 id = _requestCompute(containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, prover);
         console2.log("Made subscription request", id);
         return id;
     }
@@ -49,7 +47,7 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         uint256 index
     ) internal override {
         (bytes memory raw, bytes memory processed) = abi.decode(input, (bytes, bytes));
-        console2.log("Received compute for subscription", subscriptionId);
+        console2.log("GenericCallbackConsumer: Received compute for subscription", subscriptionId);
         receivedToggle = !receivedToggle;
         lastOutput = output;
 

@@ -1,11 +1,11 @@
 from eth_typing import ChecksumAddress
 from test_library.test_config import global_config
-from test_library.web3_utils import get_w3
+from test_library.web3_utils import get_rpc
 
 
 async def balance_of(address: ChecksumAddress) -> int:
-    w3 = await get_w3()
-    return await w3.eth.get_balance(address)
+    rpc = await get_rpc()
+    return await rpc.get_balance(address)
 
 
 async def protocol_balance() -> int:
@@ -13,4 +13,4 @@ async def protocol_balance() -> int:
 
 
 async def node_balance() -> int:
-    return await balance_of(global_config.node_payment_wallet)
+    return await balance_of(global_config.get_node_payment_wallet())

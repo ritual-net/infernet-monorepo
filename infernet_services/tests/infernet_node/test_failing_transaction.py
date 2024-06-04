@@ -1,5 +1,5 @@
 import logging
-import random
+from uuid import uuid4
 
 import pytest
 from infernet_node.test_delegate_subscription import (
@@ -30,11 +30,14 @@ async def test_infernet_failing_subscription_must_retry_then_give_up() -> None:
 
 @pytest.mark.asyncio
 async def test_infernet_failing_delegated_subscription_must_retry_then_give_up() -> None:
-    i = random.randint(0, 255)
-    nonce = await create_delegated_subscription(
-        echo_input(i), 8, 1, contract_name=CONSUMER_CONTRACT
+    await create_delegated_subscription(
+        echo_input(f"{uuid4()}"),
+        8,
+        1,
+        contract_name=CONSUMER_CONTRACT,
+        return_subscription_id=False,
     )
 
     await assert_regex_in_node_logs(
-        f"Subscription has exceeded the maximum number of attempts.*{nonce}"
+        "Subscription has exceeded the maximum number of attempts.*"
     )

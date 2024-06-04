@@ -10,6 +10,7 @@ from test_library.infernet_fixture import handle_lifecycle
 load_dotenv()
 
 SERVICE_NAME = "tgi_client_inference_service"
+TGI_WITH_PROOFS = "tgi_client_inference_service_with_proofs"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -23,7 +24,14 @@ def lifecycle() -> Generator[None, None, None]:
             ServiceConfig.build(
                 SERVICE_NAME,
                 env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args},
-            )
+            ),
+            ServiceConfig.build(
+                TGI_WITH_PROOFS,
+                image_id=f"ritualnetwork/{SERVICE_NAME}:latest",
+                env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args},
+                generates_proofs=True,
+                port=3001,
+            ),
         ],
         skip_deploying=skip_deploying,
         skip_contract=skip_contract,

@@ -22,3 +22,4 @@ build-docs-index:
 
 deploy-docs:
 	vercel --prod
+  

@@ -4,12 +4,13 @@ import json
 import logging
 import shlex
 import subprocess
-from typing import Any, Callable, Dict, List, Optional, cast
+from typing import Any, Callable, Dict, List, Optional
 
 from eth_abi.abi import decode, encode
 from eth_abi.exceptions import InsufficientDataBytes
-from eth_typing import ChecksumAddress, HexAddress
+from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
+from infernet_client.chain.rpc import RPC
 from infernet_ml.utils.codec.vector import DataType, decode_vector
 from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
@@ -25,8 +26,7 @@ from test_library.test_config import global_config
 from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
-from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
-from web3.types import LogReceipt, TxReceipt
+from web3.types import ABI, LogReceipt, TxReceipt
 
 log = logging.getLogger(__name__)
 
@@ -123,7 +123,7 @@ def run_forge_script(
 ABIType = List[Dict[str, Any]]
 
 
-def get_abi(filename: str, contract_name: str) -> ABIType:
+def get_abi(filename: str, contract_name: str) -> ABI:
     """
     Reads the ABI from a contract file. Uses the `out` directory in the
     `consumer-contracts` foundry project.
@@ -138,7 +138,7 @@ def get_abi(filename: str, contract_name: str) -> ABIType:
     with open(
         f"{infernet_services_dir()}/consumer-contracts/out/{filename}/{contract_name}.json"
     ) as f:
-        _abi: ABIType = json.load(f)["abi"]
+        _abi: ABI = json.load(f)["abi"]
         return _abi
 
 
@@ -190,21 +190,7 @@ async def assert_generic_callback_consumer_output(
     await _assert(sub_id)
 
 
-async def get_w3() -> AsyncWeb3:
-    """
-    Gets a web3 instance.
-
-    Returns:
-        AsyncWeb3: The web3 instance.
-    """
-    w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
-    account = w3.eth.account.from_key(global_config.tester_private_key)
-    w3.middleware_onion.add(await async_construct_sign_and_send_raw_middleware(account))
-    w3.eth.default_account = account.address
-    return w3
-
-
-def get_account(_private_key: Optional[str] = None) -> ChecksumAddress:
+def get_account_address(_private_key: Optional[str] = None) -> ChecksumAddress:
     private_key = _private_key or global_config.tester_private_key
     w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
     account = w3.eth.account.from_key(private_key)
@@ -246,32 +232,29 @@ async def get_consumer_contract(
 
     log.info(f"querying consumer contract at address {contract_address}")
 
-    w3 = await get_w3()
+    rpc = await get_rpc()
 
-    return w3.eth.contract(
+    return rpc.get_contract(
         address=contract_address,
         abi=get_abi(filename, consumer_contract),
     )
 
 
 async def assert_balance(address: ChecksumAddress, amount: int) -> None:
-    w3 = await get_w3()
-    balance = await w3.eth.get_balance(address)
+    rpc = await get_rpc()
+    balance = await rpc.get_balance(address)
     log.info(f"asserting balance {balance} == {amount}")
     assert balance == amount
 
 
 async def get_coordinator_contract() -> AsyncContract:
-    contract_address = cast(HexAddress, global_config.coordinator_address)
-    w3 = await get_w3()
+    contract_address = global_config.coordinator_address
+    rpc = await get_rpc()
     contract_name = "EIP712Coordinator"
 
-    return cast(
-        AsyncContract,
-        w3.eth.contract(  # type: ignore
-            address=contract_address,
-            abi=get_abi(f"{contract_name}.sol", contract_name),
-        ),
+    return rpc.get_contract(
+        address=contract_address,
+        abi=get_abi(f"{contract_name}.sol", contract_name),
     )
 
 
@@ -302,7 +285,8 @@ async def request_web3_compute(
     """
     consumer = await get_consumer_contract()
     log.info(f"requesting compute {service_id} {input!r}")
-    tx = await consumer.functions.requestCompute(
+
+    fn = consumer.functions.requestCompute(
         service_id,
         input,
         redundancy,
@@ -310,10 +294,11 @@ async def request_web3_compute(
         payment_amount,
         wallet,
         prover,
-    ).transact()
+    )
+    tx = await global_config.tx_submitter.submit(fn)
 
     log.info(f"awaiting transaction {tx.hex()}")
-    receipt = await (await get_w3()).eth.wait_for_transaction_receipt(tx)
+    receipt = await (await get_rpc()).get_tx_receipt(tx)
     return get_sub_id_from_receipt(receipt)
 
 
@@ -335,7 +320,7 @@ def get_sub_id_from_receipt(receipt: TxReceipt) -> int:
 
     sub_id = extract_subscription_id(receipt["logs"])
 
-    log.info(f"transaction receipt {receipt} - subscription id {sub_id}")
+    log.info(f"got transaction receipt for sub {sub_id}")
     return sub_id
 
 
@@ -373,19 +358,25 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
         sender=global_config.tester_private_key,
         rpc_url=global_config.rpc_url,
         registry=DEFAULT_REGISTRY_ADDRESS,
-        extra_params={"signer": get_account()},
+        extra_params={"signer": get_account_address()},
     )
 
 
-def echo_input(i: int, proof: str = "") -> bytes:
+def echo_input(_in: str, proof: str = "") -> bytes:
     """
     Creates an echo input, to be used with the echo service.
     """
-    return encode(["uint8", "string"], [i, proof])
+    return encode(["string", "string"], [_in, proof])
 
 
-def echo_output(i: int) -> bytes:
+def echo_output(_in: str) -> bytes:
     """
     Output from echo service
     """
-    return encode(["uint8"], [i])
+    return encode(["string"], [_in])
+
+
+async def get_rpc() -> RPC:
+    return await RPC(global_config.rpc_url).initialize_with_private_key(
+        global_config.tester_private_key
+    )
