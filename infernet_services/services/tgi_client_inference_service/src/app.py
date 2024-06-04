@@ -82,6 +82,10 @@ def create_app() -> Quart:
                 hex_input: str = ""
 
                 match inf_input:
+                    case InfernetInput(requires_proof=True):
+                        raise BadRequest(
+                            "Proofs are not supported for TGI Client Inference Service"
+                        )
                     case InfernetInput(
                         source=JobLocation.OFFCHAIN,
                         data=input_data,

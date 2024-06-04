@@ -113,18 +113,20 @@ Usage: infernet-client job [OPTIONS]
   Request a job. Outputs a job ID, or results if sync is enabled.
 
 Options:
-  --url TEXT             URL of the server. Can also set SERVER_URL
-                         environment variable.  [required]
-  -c, --containers TEXT  Comma-separated list of container IDs to request a
-                         job from.  [required]
-  -i, --input FILENAME   Input file to read the data from. Must be a JSON
-                         file. Skip or use '-' for stdin.
-  -o, --output FILENAME  Output file to write the result to. Skip or use '-'
-                         for stdout.
-  --sync                 Whether to wait for the job to complete and return
-                         the results.
-  --retries INTEGER      Number of 1 second retries to attempt to fetch job
-                         results. Defaults to 5.
+  --url TEXT                URL of the server. Can also set SERVER_URL
+                            environment variable.  [required]
+  -c, --containers TEXT     Comma-separated list of container IDs to request a
+                            job from.  [required]
+  -i, --input FILENAME      Input file to read the data from. Must be a JSON
+                            file. Skip or use '-' for stdin.
+  -o, --output FILENAME     Output file to write the result to. Skip or use '-'
+                            for stdout.
+  --sync                    Whether to wait for the job to complete and return
+                            the results.
+  --retries INTEGER         Number of 1 second retries to attempt to fetch job
+                            results. Defaults to 5.
+  --requires-proof BOOLEAN  Whether this job requires proof. Defaults to false.
+
 ```
 
 **Example:**

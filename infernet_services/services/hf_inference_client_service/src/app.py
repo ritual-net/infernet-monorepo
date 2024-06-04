@@ -27,7 +27,7 @@ from pydantic import ValidationError as PydValError
 from quart import Quart, abort
 from quart import request as req
 from quart.utils import run_sync
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 
 def decode_web3_hf_input(hex_input: str) -> HFInferenceClientInput:
@@ -150,6 +150,10 @@ def create_app() -> Quart:
                 hex_input = ""
 
                 match inf_input:
+                    case InfernetInput(requires_proof=True):
+                        raise BadRequest(
+                            "Proofs are not supported for HF Client Inference Service"
+                        )
                     case InfernetInput(source=JobLocation.OFFCHAIN, data=input_data):
                         hf_inf_input = parse_hf_inference_input_from_dict(
                             cast(Dict[str, Any], input_data)

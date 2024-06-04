@@ -3,7 +3,7 @@ Module containing data models used by the service
 """
 
 from enum import IntEnum
-from typing import Annotated, Any, Union
+from typing import Annotated, Any, Optional, Union
 
 from pydantic import BaseModel, StringConstraints, model_validator
 
@@ -30,6 +30,7 @@ class InfernetInput(BaseModel):
     source: JobLocation
     destination: JobLocation
     data: Union[HexStr, dict[str, Any]]
+    requires_proof: Optional[bool] = False
 
     @model_validator(mode="after")
     def check_data_correct(self) -> "InfernetInput":

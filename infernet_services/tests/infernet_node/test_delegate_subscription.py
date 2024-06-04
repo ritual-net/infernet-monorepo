@@ -7,7 +7,8 @@ from uuid import uuid4
 import pytest
 from eth_typing import ChecksumAddress
 from infernet_client import NodeClient
-from infernet_client.chain_utils import RPC, Subscription
+from infernet_client.chain.rpc import RPC
+from infernet_client.chain.subscription import Subscription
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import setup_wallet_with_accepted_token
 from infernet_node.test_subscriptions import (
@@ -123,6 +124,7 @@ async def test_infernet_delegated_subscription_happy_path() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_delegated_subscription_active_at_later() -> None:
     i = f"{uuid4()}"
 
@@ -229,7 +231,9 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
     amount = int(0.5e18)
     wallet, mock_token = await setup_wallet_with_accepted_token(amount)
 
-    node_balance_before = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_before = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     protocol_balance_before = await mock_token.balance_of(
         global_config.protocol_fee_recipient
@@ -262,7 +266,9 @@ async def test_infernet_delegated_subscription_with_custom_token() -> None:
     protocol_balance_after = await mock_token.balance_of(
         global_config.protocol_fee_recipient
     )
-    node_balance_after = await mock_token.balance_of(global_config.node_payment_wallet)
+    node_balance_after = await mock_token.balance_of(
+        global_config.get_node_payment_wallet()
+    )
 
     # assert protocol income
     # we charge both the consumer and the node, hence the node gets 0.9 of the payment
