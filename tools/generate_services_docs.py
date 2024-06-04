@@ -1,9 +1,13 @@
+import json
 import os
 import shutil
 
 import yaml
+from dotenv import load_dotenv
 
-from generate_docs import add_common_config
+from generate_docs import add_common_config  # type: ignore
+
+load_dotenv()
 
 
 def generate_service_docs() -> None:
@@ -44,15 +48,26 @@ def generate_service_docs() -> None:
         yaml.safe_dump(config, file, default_flow_style=False, sort_keys=False)
 
     add_common_config(output_path)
+    os.makedirs(".vercel", exist_ok=True)
 
     # generate vercel file
-    with open(".vercel/project.json", "w") as file:
+    with open("vercel.json", "w") as file:
         vercel_config = {
             "version": 2,
             "builds": [{"src": "infernet_services/site/**", "use": "@vercel/static"}],
             "routes": [{"src": "/(.*)", "dest": "infernet_services/site/$1"}],
         }
-        yaml.safe_dump(vercel_config, file, default_flow_style=False, sort_keys=False)
+        json.dump(vercel_config, file, indent=4)
+
+    with open(".vercel/project.json", "w") as file:
+        json.dump(
+            {
+                "orgId": os.environ["VERCEL_ORG_ID"],
+                "projectId": os.environ["INFERNET_SERVICES_DOCS_ID"],
+            },
+            file,
+            indent=4,
+        )
 
 
 if __name__ == "__main__":

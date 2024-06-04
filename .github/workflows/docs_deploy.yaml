@@ -10,10 +10,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        library: [ "infernet_ml", "infernet_client", "ritual_arweave" ]
-      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -37,11 +33,16 @@ jobs:
       - name: Install Vercel CLI
         run: bun install --global vercel@latest
 
-      - name: Build & Generate docs
+      - name: Build & Deploy Docs
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           INFERNET_CLIENT_DOCS_ID: ${{ secrets.INFERNET_CLIENT_DOCS_ID }}
           INFERNET_ML_DOCS_ID: ${{ secrets.INFERNET_ML_DOCS_ID }}
           RITUAL_ARWEAVE_DOCS_ID: ${{ secrets.RITUAL_ARWEAVE_DOCS_ID }}
-        run: make deploy-docs library=${{ matrix.library }}
+          INFERNET_SERVICES_DOCS_ID: ${{ secrets.INFERNET_SERVICES_DOCS_ID }}
+        run:
+          make deploy-library-docs library=infernet_ml
+          make deploy-library-docs library=ritual_arweave
+          make deploy-library-docs library=infernet_client
+          make deploy-services-docs

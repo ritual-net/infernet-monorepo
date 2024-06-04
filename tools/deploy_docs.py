@@ -19,6 +19,7 @@ def deploy_to_vercel(project_name: str) -> None:
         "infernet_ml": "INFERNET_ML_DOCS_ID",
         "infernet_client": "INFERNET_CLIENT_DOCS_ID",
         "ritual_arweave": "RITUAL_ARWEAVE_DOCS_ID",
+        "infernet_services": "INFERNET_SERVICES_DOCS_ID",
     }
     org_id = os.environ["VERCEL_ORG_ID"]
     project_id = os.environ[_lookup[project_name]]
