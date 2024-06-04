@@ -117,12 +117,9 @@ The following inference workflows are available in the `infernet-ml` library:
 4. [`CSSInferenceWorkflow`](./reference/infernet_ml/workflows/inference/css_inference_workflow.md):
    This workflow is used to
    run closed-source models: i.e. OpenAI's `GPT-4`, etc.
-5. [`TTSInferenceWorkflow`](./reference/infernet_ml/workflows/inference/tts_inference_workflow.md):
-   This workflow is used to
-   run Text-to-Speech models.
-6. [`TGIClientInferenceWorkflow`](./reference/infernet_ml/workflows/inference/tgi_client_inference_workflow.md):
+5. [`TGIClientInferenceWorkflow`](./reference/infernet_ml/workflows/inference/tgi_client_inference_workflow.md):
    This workflow is used to run models that are hosted on
    a [Huggingface's Text Generation Interface](https://huggingface.co/docs/text-generation-inference/en/index)
    server.
-7. [`BarkHFInferenceWorkflow`](./reference/infernet_ml/workflows/inference/bark_hf_inference_workflow.md):
+6. [`BarkHFInferenceWorkflow`](./reference/infernet_ml/workflows/inference/bark_hf_inference_workflow.md):
    This workflow is used to run Suno's Bark model.
