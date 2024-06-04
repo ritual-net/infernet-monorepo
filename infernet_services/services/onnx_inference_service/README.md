@@ -1,158 +1,336 @@
 # ONNX Inference Service
 
-A simple service to run onnx models.
+This service serves closed source models via a `ONNXInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
 
-# Endpoints
+[ONNX](https://onnx.ai/) is an open format for representing machine learning models that enables interoperability between different frameworks and hardware platforms. This service allows you to deploy and run ONNX models for various inference tasks, such as image classification, object detection, or natural language processing.
 
-### `/`
+## Infernet Configuraton
 
-Simple ping endpoint, returns "ONNX Inference Service!"
-
-```bash
-$ curl localhost:3000
-ONNX Inference Service!
-```
-
-### `/service_output"`
-
-Use this endpoint to run the model. It expects a JSON payload with the following schema:
-`InfernetInput`:
-
-```python
-class InfernetInputSource(IntEnum):
-    CHAIN = 0
-    OFFCHAIN = 1
-
-
-class InfernetInput(BaseModel):
-    source: InfernetInputSource
-    data: dict[str, Any]
-```
-
-* The `source` field is an enum, either 0 or 1. 0 if the request is coming from a
-  contract call, 1 if it's coming from an offchain source.
-* The `data` field is the `input_feed` to the ONNX runtime session. The schema for this
-  field is model dependent. It is a dictionary that maps input names to arrays of
-  values.
-  These arrays of values are converted to pytorch tensors and fed into the model.
-
-As an example, we have trained a simple neural net on scikit-learn's
-[Iris Dataset](https://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html).
-The code for the model
-is [here](https://github.com/ritual-net/simple-ml-models/blob/main/iris_classification/README.md).
-Refer to the README for the structure of the model, as well as the pre-processing that
-happened to scale the input.
-
-A normalized sample input to the model that would result in the highest prediction for
-the third class is:
-
-```python
-[1.03800476, 0.55861082, 1.10378283, 1.71209594]
-```
-
-In our request that would look like:
+The service can be configured as part of the overall Infernet configuration in `config.json`.
 
 ```json
 {
-  "source": 1,
-  "data": {
-    "input": [
-      [
-        1.03800476,
-        0.55861082,
-        1.10378283,
-        1.71209594
-      ]
-    ]
-  }
+  "log_path": "infernet_node.log",
+  //...... contents abbreviated
+  "containers": [
+    {
+      "id": "onnx_inference_service",
+      "image": "your_org/onnx_inference_service:latest",
+      "external": true,
+      "port": "3000",
+      "allowed_delegate_addresses": [],
+      "allowed_addresses": [],
+      "allowed_ips": [],
+      "command": "--bind=0.0.0.0:3000 --workers=2",
+      "env": {
+        "MODEL_SOURCE": "1",
+        "LOAD_ARGS":"{}"
+      }
+    }
+  ]
 }
 ```
 
-## On-chain requests
+## Supported Model Sources
 
-> TODO
+The ONNX inference service supports the following model sources:
+```python
+class ModelSource(IntEnum):
+  """
+  Enum for the model source
+  """
 
-# Environment Arguments
-
-### `OUTPUT_NAMES`
-
-A comma separated list of output names in the `ONNX` model.
-
-### `MODEL_SOURCE`
-
-How you want the model to be loaded. Options are `LOCAL`, `ARWEAVE` or `HUGGINGFACE_HUB`.
-
-### `MODEL_ARGS`
-
-Arguments for loading the model. This will be a string of dictionary. The schema for
-that string is different for each `MODEL_SOURCE`.
-
-* `LOCAL`:
-    * `model_path`: The path to the onnx model file.
-
-* `ARWEAVE`:
-  * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `{wallet_address}/finbert`
-  * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
-  * `version`: The version of the model to load. e.g. `1.0.0`
-
-* `HUGGINGFACE_HUB`:
-    * `repo_id`: The name of the model's repository on the huggingface hub. e.g. `ProsusAI/finbert`
-    * `filename`: Name of the file in the model repo. e.g. `onnx_model.onnx`
-
-## Example Environment File
-
-In this example, the model is loaded from the huggingface hub. The repo is
-`arshan-ritual/iris`, and we're loading the `iris.onnx` file from that repo. The output
-name in the ONNX model is `output`.
-
-```bash
-MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
-OUTPUT_NAMES=output
+  LOCAL = 0
+  ARWEAVE = 1
+  HUGGINGFACE_HUB = 2
 ```
 
-# Building
+and the following `LOAD_ARGS` are common across these model sources:
+```python
+class CommonLoadArgs(BaseModel):
+  """
+  Common arguments for loading a model
+  """
 
-To build the docker image, run the following command:
+  model_config = ConfigDict(frozen=True)
 
-```bash
-docker build -t "onnx_inference:local" -f services/onnx_inference_service.Dockerfile .
+  cache_path: Optional[str] = None
+  version: Optional[str] = None
+  repo_id: str
+  filename: str
 ```
 
-# Running
+## Environment Variables
 
-Before running, please make sure that you've made a `.env` file with the environment.
-Here's an example `.env` file for quick testing:
+### MODEL_SOURCE
+- **Description**: The source of the model
+- **Default**: None
+- **Example**: `1` (ARWEAVE)
 
-```bash
-touch onnx_inference_service.env
+### LOAD_ARGS
+- **Description**: The arguments to load with the model
+- **Default**: None
+- **Example**: `{"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}`
+
+## Usage
+
+Inference requests to the service that orginate offchain can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the infernet node directly (using a client like `cURL`).
+
+The schema format of a `infernet_client` job request looks like the following:
+
+```python
+class JobRequest(TypedDict):
+    """Job request.
+
+    Attributes:
+        containers: The list of container names.
+        data: The data to pass to the containers.
+    """
+
+    containers: list[str]
+    data: dict[str, Any]
+    requires_proof: NotRequired[bool]
 ```
 
-```bash
-# content of onnx_inference_service.env
-MODEL_SOURCE=HUGGINGFACE_HUB
-MODEL_ARGS='{"repo_id": "arshan-ritual/iris", "filename": "iris.onnx"}'
+The schema format of a `infernet_client` job result looks like the following:
+
+```python
+class JobResult(TypedDict):
+    """Job result.
+
+    Attributes:
+        id: The job ID.
+        status: The job status.
+        result: The job result.
+        intermediate: Job result from intermediate containers.
+    """
+
+    id: str
+    status: JobStatus
+    result: Optional[ContainerOutput]
+    intermediate: NotRequired[list[ContainerOutput]]
+
+class ContainerOutput(TypedDict):
+    """Container output.
+
+    Attributes:
+        container: The container name.
+        output: The output of the container.
+    """
+
+    container: str
+    output: Any
+
 ```
 
-Then run the container
+### Web2 Request
 
-```bash
-docker run --name=onnx_inference_service --rm -p 3000:3000 --env-file onnx_inference_service.env "onnx_inference:local" --bind=0.0.0.0:3000 --workers=2
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+
+=== "Python"
+
+  ```python
+  from infernet_client.client import NodeClient
+
+  client = NodeClient("http://127.0.0.1:4000")
+  iris_input_vector_params = {
+      "values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
+      "shape": (1, 4),
+      "dtype": 0 # float
+  }
+  job_id = await client.request_job(
+      "SERVICE_NAME",
+      {
+        "model_source": 1, # ARWEAVE
+        "load_args": {
+          "repo_id": "your_org/model",
+          "filename": "iris.onnx",
+          "version": "v1"
+        },
+        "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}}
+      },
+  )
+
+result = (await client.get_job_result_sync(job_id))["result"]
 ```
 
-# Requesting the Service
+=== "CLI"
 
-The format of the input to the service depends on the model. For our iris model, you can
-use the following `curl` command to test the service:
+  ```bash
+  # Note that the sync flag is optional and will wait for the job to complete.
+  # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
+  infernet-client job -c SERVICE_NAME -i input.json --sync
+  ```
+  where `input.json` looks like this:
+  ```json
+  {
+      "model_source": 1,
+      "load_args": {
+          "repo_id": "your_org/model",
+          "filename": "iris.onnx",
+          "version": "v1"
+      },
+      "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}
+  }
+  ```
 
-```bash
- ~ curl -X POST http://127.0.0.1:3000/service_output \
-     -H "Content-Type: application/json" \
-     -d '{"source":1, "data": {"input": [[1.0380048, 0.5586108, 1.1037828, 1.712096]]}}'
-[[[0.0010151526657864451,0.014391022734344006,0.9845937490463257]]]
+=== "cURL"
+
+  ```bash
+  curl -X POST http://127.0.0.1:4000/api/jobs \
+      -H "Content-Type: application/json" \
+      -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}, "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}}}'
+  ```
+
+
+### Web3 Request (onchain subscription)
+
+You will need to import the `infernet-sdk` in your requesting contract. In this example we showcase the Callback pattern, which is an example of a one-off subscription. Please refer to the `infernet-sdk` documentation for further details.
+
+Input requests should be passed in as an encoded byte string. Here is an example of how to generate this for a CSS inference request:
+```python
+
+from eth_abi.abi import encode
+
+input_bytes = encode(
+  ["uint8", "string", "string", "string", "bytes"],
+  [
+      1, # model_source
+      "your_org/model",
+      "iris.onnx",
+      "v1",
+      encode(
+        ["uint8", "uint16[]", f"uint256[]"],
+        [dtype, shape, __values],
+      ),
+  ],
+)
 ```
 
-In this case the model responds with the probability of the input belonging to each of
-the three classes. The highest probability is for the third class. Refer to the
-[iris-classification](https://github.com/ritual-net/simple-ml-models/blob/main/iris_classification/README.md).
-codebase for the specifics of the model.
+Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`, you can use the following functions to request and recieve compute:
+```solidity
+function requestCompute(
+    string memory randomness,
+    string memory containerId,
+    bytes memory inputs,
+    uint16 redundancy,
+    address paymentToken,
+    uint256 paymentAmount,
+    address wallet,
+    address prover
+)
+    public
+    returns (bytes32)
+{
+    bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
+    console2.log("generated task id, now requesting compute");
+    console2.logBytes32(generatedTaskId);
+    _requestCompute(
+        containerId,
+        abi.encodePacked(inputs, randomness),
+        redundancy,
+        paymentToken,
+        paymentAmount,
+        wallet,
+        prover
+    );
+    console2.log("requested compute");
+    return generatedTaskId;
+}
+
+function _receiveCompute(
+    uint32 subscriptionId,
+    uint32 interval,
+    uint16 redundancy,
+    address node,
+    bytes calldata input,
+    bytes calldata output,
+    bytes calldata proof,
+    bytes32 containerId,
+    uint256 index
+) internal override {
+    console2.log("received output!");
+    console2.logBytes(output);
+}
+```
+
+### Delegated Subscription Request
+
+**Please note**: the examples below assume that you have an infernet node running locally on port 4000.
+
+=== "Python"
+
+  ```python
+  from infernet_client.client import NodeClient
+  from infernet_client.chain_utils import Subscription, RPC
+
+  sub = Subscription(
+      owner="0x...",
+      active_at=int(time()),
+      period=0,
+      frequency=1,
+      redundancy=1,
+      containers=["SERVICE_NAME"],
+      lazy=False,
+      prover=ZERO_ADDRESS,
+      payment_amount=0,
+      payment_token=ZERO_ADDRESS,
+      wallet=ZERO_ADDRESS,
+  )
+
+  client = NodeClient("http://127.0.0.1:4000")
+  nonce = random.randint(0, 2**32 - 1)
+  await client.request_delegated_subscription(
+      sub=sub,
+      rpc=RPC("http://127.0.0.1:8545")
+      coordinator_address=global_config.coordinator_address,
+      expiry=int(time() + 10),
+      nonce=nonce,
+      private_key="0x...",
+      data={
+          "model_source": 1,
+          "load_args": {
+              "repo_id": "your_org/model",
+              "filename": "iris.onnx",
+              "version": "v1"
+          },
+          "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}
+      },
+  )
+```
+
+=== "CLI"
+
+  ```bash
+  infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+      --params params.json --input input.json
+  # Success: Subscription created.
+  ```
+  where `params.json` looks like this:
+  ```json
+  {
+      "owner": "0x00Bd138aBD7....................", // Subscription Owner
+      "active_at": 0, // Instantly active
+      "period": 3, // 3 seconds between intervals
+      "frequency": 2, // Process 2 times
+      "redundancy": 2, // 2 nodes respond each time
+      "containers": ["SERVICE_NAME"], // comma-separated list of containers
+      "lazy": false,
+      "prover": "0x0000000000000000000000000000000000000000",
+      "payment_amount": 0,
+      "payment_token": "0x0000000000000000000000000000000000000000",
+      "wallet": "0x0000000000000000000000000000000000000000",
+  }
+  ```
+  and where `input.json` looks like this:
+  ```json
+  {
+      "model_source": 1,
+      "load_args": {
+          "repo_id": "your_org/model",
+          "filename": "iris.onnx",
+          "version": "v1"
+      },
+      "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}
+  }
+  ```

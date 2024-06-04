@@ -1,6 +1,7 @@
-# CSS (Closed-Source Software) Inference Service
+# HF Inference Client Service
 
-This service serves closed source models via a `CSSInferenceWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic
+This service serves models via a `HFInferenceClientWorkflow` object, encapsulating the backend, preprocessing, and postprocessing logic.
+
 
 ## Infernet Configuraton
 
@@ -11,9 +12,9 @@ The service can be configured as part of the overall Infernet configuration in `
   "log_path": "infernet_node.log",
   //...... contents abbreviated
   "containers": [
-    {
-      "id": "css_inference_service",
-      "image": "your_org/css_inference_service:latest",
+     {
+      "id": "hf_inference_client_service",
+      "image": "ritualnetwork/hf_inference_client_service:latest",
       "external": true,
       "port": "3000",
       "allowed_delegate_addresses": [],
@@ -21,57 +22,30 @@ The service can be configured as part of the overall Infernet configuration in `
       "allowed_ips": [],
       "command": "--bind=0.0.0.0:3000 --workers=2",
       "env": {
-        "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
-        "CSS_INF_WORKFLOW_KW_ARGS": "{}",
-        "CSS_REQUEST_TRIES": "3",
-        "CSS_REQUEST_DELAY": "3",
-        "CSS_REQUEST_MAX_DELAY": "10",
-        "CSS_REQUEST_BACKOFF": "2",
-        "CSS_REQUEST_JITTER": "[0.5, 1.5]"
+        "HF_TOKEN": "hf_token_goes_here"
       }
     }
   ]
 }
 ```
 
-## Supported Providers
+## Supported Tasks
 
-The service supports three providers, each requiring an API key specified as an environment variable:
+This workflow supports the following Hugging Face task types
+```python
+class HFTaskId(IntEnum):
+    """Hugging Face task types"""
 
-- `PERPLEXITYAI_API_KEY` - API key for [PerplexityAI](https://docs.perplexity.ai/docs/getting-started)
-- `GOOSEAI_API_KEY` - API key for [GooseAI](https://goose.ai/docs)
-- `OPENAI_API_KEY` - API key for [OpenAI](https://platform.openai.com/docs/quickstart)
+    UNSET = 0
+    TEXT_GENERATION = 1
+    TEXT_CLASSIFICATION = 2
+    TOKEN_CLASSIFICATION = 3
+    SUMMARIZATION = 4
+```
 
 ## Environment Variables
 
-### CSS_INF_WORKFLOW_POSITIONAL_ARGS
-- **Description**: The first argument is the name of the provider, and the second argument is the endpoint.
-- **Default**: `["OPENAI", "completions"]`
-
-### CSS_INF_WORKFLOW_KW_ARGS
-- **Description**: Any argument passed here will be defaulted when sending to the CSS provider.
-- **Default**: `{}`
-- **Example**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
-
-### CSS_REQUEST_TRIES
-- **Description**: The number of retries for the inference workflow.
-- **Default**: `3`
-
-### CSS_REQUEST_DELAY
-- **Description**: The delay (in seconds) between retries.
-- **Default**: `3`
-
-### CSS_REQUEST_MAX_DELAY
-- **Description**: The maximum delay (in seconds) between retries.
-- **Default**: `10`
-
-### CSS_REQUEST_BACKOFF
-- **Description**: The backoff (in seconds) between retries.
-- **Default**: `2`
-
-### CSS_REQUEST_JITTER
-- **Description**: The jitter (in seconds) to add to requests.
-- **Default**: `[0.5, 1.5]`
+`HF_TOKEN` - the token to use for authentication with the Hugging Face API
 
 ## Usage
 
@@ -124,7 +98,6 @@ class ContainerOutput(TypedDict):
 
 ```
 
-
 ### Web2 Request
 
 **Please note**: the examples below assume that you have an infernet node running locally on port 4000.
@@ -138,23 +111,13 @@ class ContainerOutput(TypedDict):
     job_id = await client.request_job(
         "SERVICE_NAME",
         {
-            "provider": "OPENAI",
-            "endpoint": "completions",
-            "model": "gpt-4",
-            "params": {
-                "endpoint": "completions",
-                "messages": [
-                    {"role": "user", "content": "give me an essay about cats"}
-                ],
-            },
-            # note the ability to add extra_args to the request.
-            "extra_args": {
-                "max_tokens": 10,
-                "temperature": 0.5,
-            },
+            # HFTaskId.TEXT_GENERATION
+            "task_id": 1,
+            "prompt": "What is 2+2?",
         },
     )
 
+    # result should be "4"
     result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
     ```
 
@@ -168,19 +131,8 @@ class ContainerOutput(TypedDict):
     where `input.json` looks like this:
     ```json
     {
-        "provider": "OPENAI",
-        "endpoint": "completions",
-        "model": "gpt-4",
-        "params": {
-            "endpoint": "completions",
-            "messages": [
-                {"role": "user", "content": "give me an essay about cats"}
-            ],
-        },
-        "extra_args": {
-            "max_tokens": 10,
-            "temperature": 0.5,
-        },
+        "task_id": 1,
+        "prompt": "What is 2+2?",
     }
     ```
 
@@ -189,7 +141,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
     ```
 
 
@@ -199,30 +151,12 @@ You will need to import the `infernet-sdk` in your requesting contract. In this 
 
 Input requests should be passed in as an encoded byte string. Here is an example of how to generate this for a CSS inference request:
 ```python
-class CSSEndpoint(IntEnum):
-    """Enum for CSS Inference Endpoints"""
-
-    completions = 0
-    embeddings = 1
-
-
-class CSSProvider(IntEnum):
-    """Enum for CSS Inference Providers"""
-
-    OPENAI = 0
-    GOOSEAI = 1
-    PERPLEXITYAI = 2
-
+from infernet_ml.utils.hf_types import HFTaskId
 from eth_abi.abi import encode
 
-input_bytes= encode(
-    ["uint8", "uint8", "string", "(string,string)[]"],
-    [
-        provider,
-        endpoint,
-        model,
-        [(m.role, m.content) for m in messages],
-    ],
+input_bytes = encode(
+    ["uint8", "string", "string"],
+    [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
 )
 ```
 
@@ -307,15 +241,8 @@ function _receiveCompute(
         nonce=nonce,
         private_key="0x...",
         data={
-            "provider": "OPENAI",
-            "endpoint": "completions",
-            "model": "gpt-4",
-            "params": {
-                "endpoint": "completions",
-                "messages": [
-                    {"role": "user", "content": "give me an essay about cats"}
-                ],
-            },
+            "task_id": 1,
+            "prompt": "What is 2+2?",
         },
     )
     ```
@@ -346,18 +273,7 @@ function _receiveCompute(
     and where `input.json` looks like this:
     ```json
     {
-        "provider": "OPENAI",
-        "endpoint": "completions",
-        "model": "gpt-4",
-        "params": {
-            "endpoint": "completions",
-            "messages": [
-                {"role": "user", "content": "give me an essay about cats"}
-            ],
-        },
-        "extra_args": {
-            "max_tokens": 10,
-            "temperature": 0.5,
-        },
+    "task_id": 1,
+        "prompt": "What is 2+2?",
     }
     ```
