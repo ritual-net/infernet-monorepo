@@ -1,2 +1,2 @@
 pre-commit:
-	pre-commit run --all-files
+	pre-commit run --files `git ls-files $(ls_flag) | grep -vE 'consumer-contracts/lib'`

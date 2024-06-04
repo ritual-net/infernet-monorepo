@@ -1,1 +1,1 @@
-# Henlo Ritual arweave Quickstart
+# Henlo Ritual Arweave Quickstart

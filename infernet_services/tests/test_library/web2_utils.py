@@ -1,9 +1,10 @@
 import random
 from time import time
-from typing import Any, Callable, Dict, cast
+from typing import Any, Callable, Dict, Optional, cast
 
 from aiohttp import ServerDisconnectedError
-from infernet_client.chain_utils import RPC, Subscription
+from infernet_client.chain.rpc import RPC
+from infernet_client.chain.subscription import Subscription
 from infernet_client.client import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.utils.codec.vector import DataType
@@ -46,7 +47,10 @@ def get_service_url(service_name: str) -> str:
 
 
 async def request_job(
-    service_name: str, data: Dict[str, Any], timeout: int = 3
+    service_name: str,
+    data: Dict[str, Any],
+    requires_proof: Optional[bool] = None,
+    timeout: int = 3,
 ) -> JobID:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError),
@@ -58,6 +62,7 @@ async def request_job(
             JobRequest(
                 containers=[service_name],
                 data=data,
+                requires_proof=requires_proof,
             )
         )
 
@@ -112,6 +117,7 @@ async def request_streaming_job(
         JobRequest(
             containers=[service_name],
             data=data,
+            requires_proof=False,
         ),
         timeout=timeout,
     ):

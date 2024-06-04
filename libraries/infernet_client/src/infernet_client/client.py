@@ -20,7 +20,8 @@ from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
 from eth_typing import ChecksumAddress
 
-from .chain_utils import RPC, Subscription
+from .chain.rpc import RPC
+from .chain.subscription import Subscription
 from .error import APIError
 from .types import (
     ErrorResponse,

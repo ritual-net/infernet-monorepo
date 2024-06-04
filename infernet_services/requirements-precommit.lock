@@ -43,7 +43,7 @@ hypercorn==0.16.0
 hyperframe==6.0.1
 identify==2.5.36
 idna==3.7
-infernet-ml==1.0.0.39
+infernet-ml==1.0.0.41
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0
@@ -119,4 +119,4 @@ websockets==12.0
 werkzeug==3.0.3
 wsproto==1.2.0
 yarl==1.9.4
-infernet-client==1.0.0.1
+infernet-client==1.0.0.9

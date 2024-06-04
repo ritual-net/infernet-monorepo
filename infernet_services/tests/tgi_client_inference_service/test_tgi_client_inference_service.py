@@ -1,6 +1,10 @@
+import logging
+
 import pytest
 from eth_abi.abi import decode, encode
+from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.constants import ANVIL_NODE
+from test_library.test_config import global_config
 from test_library.web2_utils import (
     get_job,
     request_delegated_subscription,
@@ -11,15 +15,50 @@ from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     request_web3_compute,
 )
-from tgi_client_inference_service.conftest import SERVICE_NAME
+from tgi_client_inference_service.conftest import SERVICE_NAME, TGI_WITH_PROOFS
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
 w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 
+log = logging.getLogger(__name__)
+
+
+@pytest.mark.asyncio
+async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None:
+    task_id = await request_job(
+        TGI_WITH_PROOFS,
+        {
+            "text": "Can shrimp actually fry rice fr?",
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
+    assert "Proofs are not supported for TGI Client Inference Service" in r.get(
+        "description"
+    )
+
+
+@pytest.mark.asyncio
+async def test_completion_web3_doesnt_provide_proof() -> None:
+    sub_id = await request_web3_compute(
+        TGI_WITH_PROOFS,
+        encode(
+            ["string"],
+            ["whats 2 + 2?"],
+        ),
+        # a non-zero address means this requires proof
+        prover=global_config.coordinator_address,
+    )
+
+    await assert_regex_in_node_logs(
+        f"container execution errored.*{sub_id}.*proofs are not supported"
+    )
+
 
 @pytest.mark.asyncio
 async def test_completion_web3() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         encode(
             ["string"],
@@ -31,7 +70,7 @@ async def test_completion_web3() -> None:
         result: str = decode(["string"], output, strict=False)[0]
         assert "4" in result, f"expected 4 to be returned, instead got {result}"
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
 
 @pytest.mark.asyncio

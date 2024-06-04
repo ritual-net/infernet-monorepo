@@ -39,7 +39,7 @@ async def test_web2_inference_from_arweave() -> None:
 
 @pytest.mark.asyncio
 async def test_web3_inference_from_arweave() -> None:
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         TORCH_ARWEAVE_PRELOADED,
         encode(
             ["uint8", "string", "string", "string", "bytes"],
@@ -56,5 +56,5 @@ async def test_web3_inference_from_arweave() -> None:
     )
 
     await assert_generic_callback_consumer_output(
-        task_id, california_housing_web3_assertions
+        sub_id, california_housing_web3_assertions
     )

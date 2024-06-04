@@ -1,4 +1,4 @@
-## Information
+## Infernet Node's REST API
 
 Retrieve information about the node. See [NodeInfo](./api#nodeinfo).
 
@@ -156,6 +156,76 @@ and [JobResponse](./api#jobresponse).
                     "messages": [{"role": "user", "content": "how do I make pizza?"}]
                 }
             }
+        }'
+    ```
+    **Expected Output:**
+    ```json
+    {
+        "id": "29dd2f8b-05c3-4b1c-a103-370c04c6850f"
+    }
+    ```
+
+### Request a job with proofs
+
+Create a direct compute request, along with a proof requirement.
+
+=== "Python"
+
+    ```python
+    from infernet_client import NodeClient
+    from infernet_client.types import JobRequest
+
+    client = NodeClient("http://localhost:4000")
+
+    # Format request
+    request = JobRequest(
+        containers=["classify-as-spam"],
+        data={
+            "model": "spam-classifier",
+            "params": {
+                ...etc.
+            }
+        },
+        requires_proof=True
+    )
+
+    # Send request
+    job_id = await client.request_job(request)
+
+    print(job_id)
+    ```
+    **Expected Output:**
+    ```bash
+    29dd2f8b-05c3-4b1c-a103-370c04c6850f
+    ```
+
+=== "CLI"
+
+    ```bash
+    export SERVER_URL=http://localhost:4000
+
+    infernet-client job -c classify-as-spam -i input-data.json --requires-proof
+
+    ```
+    **Expected Output:**
+    ```bash
+    29dd2f8b-05c3-4b1c-a103-370c04c6850f
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl -X POST http://localhost:4000/api/jobs \
+        -H "Content-Type: application/json" \
+        -d '{
+            "containers": ["classify-as-spam"],
+            "data": {
+                "model": "spam-classifier",
+                "params": {
+                    ...etc.
+                }
+            },
+            "requires_proof": true
         }'
     ```
     **Expected Output:**
@@ -560,7 +630,7 @@ and [DelegatedSubscriptionRequest](./api#delegatedsubscriptionrequest).
 
     ```python
     from infernet_client import NodeClient
-    from infernet_client.chain_utils import Subscription
+    from infernet_client.chain.subscription import Subscription
 
     client = NodeClient("http://localhost:4000")
 
@@ -683,3 +753,63 @@ See [/api/status](./api#put-apistatus).
 ```bash
 # No error
 ```
+
+## Infernet Wallet
+
+To make use of Infernet's payment features, you'll need to have an Infernet wallet. This
+is a wallet that is created via Infernet's `WalletFactory` contract.
+
+=== "Python"
+
+    ```python
+    from web3 import Web3
+
+    from infernet_client.chain.rpc import RPC
+    from infernet_client.chain.wallet_factory import WalletFactory
+
+
+    async def create_wallet():
+        rpc_url = "http://localhost:8545"
+        private_key = "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6"
+        rpc = RPC(rpc_url)
+        await rpc.initialize_with_private_key(private_key)
+        factory_address = "0xF6168876932289D073567f347121A267095f3DD6"
+        factory = WalletFactory(Web3.to_checksum_address(factory_address), rpc)
+        owner = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+        wallet = await factory.create_wallet(Web3.to_checksum_address(owner))
+        print(f"Wallet created! {wallet.address}")
+
+
+    if __name__ == "__main__":
+        import asyncio
+
+        asyncio.run(create_wallet())
+
+    ```
+
+    **Expected Output:**
+    ```bash
+    Wallet created! 0xB8Ae57CE429FaD3663d780294888f8F3Adac84f0
+    ```
+
+=== "CLI"
+
+    ``` bash
+    infernet-client create-wallet --rpc-url http://localhost:8545 \
+        --factory 0xF6168876932289D073567f347121A267095f3DD6 \
+        --private-key 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6 \
+        --owner 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+
+    ```
+
+    **Expected Output:**
+
+    ```json
+    Success: wallet created.
+	    Address: 0xFC88d25810C68a7686178b534e0c5e22787DF22d
+	    Owner: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+    ```
+
+### More Info
+To learn more about the library, consult the [`Wallet`](../reference/infernet_client/chain/wallet/) &
+[`WalletFactory`](../reference/infernet_client/chain/wallet_factory/) reference pages.

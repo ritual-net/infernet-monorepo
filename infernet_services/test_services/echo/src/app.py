@@ -1,6 +1,6 @@
 from typing import Any, Dict, cast
 
-from eth_abi import decode, encode  # type: ignore
+from eth_abi.abi import decode, encode
 from flask import Flask, request
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from pydantic import ValidationError
@@ -30,15 +30,22 @@ def create_app() -> Flask:
                     "input type"
                 )
 
-        (input,) = decode(["uint8"], bytes.fromhex(hex_input), strict=False)
-        print(f"decoded data: {input}")
+        (input, proof) = decode(
+            ["string", "string"], bytes.fromhex(hex_input), strict=False
+        )
+
+        match inf_input:
+            case InfernetInput(requires_proof=True):
+                proof = encode(["string"], [proof]).hex()
+            case _:
+                proof = ""
 
         return {
             "raw_input": hex_input,
             "processed_input": "",
-            "raw_output": encode(["uint8"], [input]).hex(),
+            "raw_output": encode(["string"], [input]).hex(),
             "processed_output": "",
-            "proof": "",
+            "proof": proof,
         }
 
     return app

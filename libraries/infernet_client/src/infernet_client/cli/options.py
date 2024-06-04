@@ -30,6 +30,29 @@ def output_option(f: GenericCallable) -> GenericCallable:
     )(f)
 
 
+def rpc_url_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add an rpc url option to a command."""
+    return click.option(
+        "--rpc-url",
+        envvar="RPC_URL",
+        required=True,
+        type=str,
+        help="RPC url. Can also set RPC_URL environment variable.",
+    )(f)
+
+
+def private_key_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add a private key option to a command."""
+    return click.option(
+        "-pk",
+        "--private-key",
+        envvar="PRIVATE_KEY",
+        required=True,
+        type=str,
+        help="Private key. Can also set PRIVATE_KEY environment variable.",
+    )(f)
+
+
 def input_option(f: GenericCallable) -> GenericCallable:
     """Decorator to add an input option to a command."""
     return click.option(
