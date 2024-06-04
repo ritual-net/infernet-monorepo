@@ -85,10 +85,15 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         )
     )
 
+    use_jit_env = os.getenv("USE_JIT")
+
+    default_use_jit = False if use_jit_env is None else use_jit_env.lower() == "true"
+
     app_config = test_config or {
         "kwargs": {
             "model_source": default_model_source,
             "load_args": default_load_args,
+            "use_jit": default_use_jit,
         }
     }
 
@@ -160,7 +165,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         hex_input = ""
         match input:
             case InfernetInput(requires_proof=True):
-                raise BadRequest("Proofs are not supported for Torch inference")
+                raise BadRequest("Proofs are not supported for Torch Inference Service")
             case InfernetInput(source=JobLocation.ONCHAIN):
                 hex_input = cast(str, input.data)
                 (_, _, _, _, vector) = decode(

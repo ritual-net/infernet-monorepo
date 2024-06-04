@@ -22,3 +22,6 @@ deploy-docs: clean-docs
 	rm -rf .vercel || true
 	$(MAKE) generate-docs build-docs
 	$(PYTHON) tools/deploy_docs.py $(library)
+
+build-docs-index:
+	$(PYTHON) tools/build_docs_index.py
