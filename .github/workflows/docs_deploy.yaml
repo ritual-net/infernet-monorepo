@@ -41,7 +41,7 @@ jobs:
           INFERNET_ML_DOCS_ID: ${{ secrets.INFERNET_ML_DOCS_ID }}
           RITUAL_ARWEAVE_DOCS_ID: ${{ secrets.RITUAL_ARWEAVE_DOCS_ID }}
           INFERNET_SERVICES_DOCS_ID: ${{ secrets.INFERNET_SERVICES_DOCS_ID }}
-        run:
+        run: |
           make deploy-library-docs library=infernet_ml
           make deploy-library-docs library=ritual_arweave
           make deploy-library-docs library=infernet_client
