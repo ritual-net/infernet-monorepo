@@ -153,11 +153,15 @@ on port 4000.
 ### Web3 Request (Onchain Subscription)
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
-we showcase the Callback pattern, which is an example of a one-off subscription. Please
-refer to the `infernet-sdk` documentation for further details.
+we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
+pattern, which is an example of a one-off subscription. Please refer to
+the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) documentation for
+further details.
 
 Input requests should be passed in as an encoded byte string. Here is an example of how
-to generate this for a CSS inference request:
+to generate this for a Huggingface Task. In this example we're using the `TextGeneration`
+task, while not providing a specific model (Huggingface will use the default model) and
+prompting the model with a simple math question.
 
 ```python
 from infernet_ml.utils.hf_types import HFTaskId
@@ -174,34 +178,22 @@ Assuming your contract inherits from the `CallbackConsumer` provided by `inferne
 you can use the following functions to request and receive compute:
 
 ```solidity
-function requestCompute(
-    string memory randomness,
-    string memory containerId,
-    bytes memory inputs,
-    uint16 redundancy,
-    address paymentToken,
-    uint256 paymentAmount,
-    address wallet,
-    address prover
-)
-public
-returns (bytes32)
-{
-    bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, randomness));
-    console2.log("generated task id, now requesting compute");
-    console2.logBytes32(generatedTaskId);
-    _requestCompute(
-        containerId,
-        abi.encodePacked(inputs, randomness),
-        redundancy,
-        paymentToken,
-        paymentAmount,
-        wallet,
-        prover
-    );
-    console2.log("requested compute");
-    return generatedTaskId;
-}
+
+import {CallbackConsumer} from "infernet-sdk/contracts/CallbackConsumer.sol";
+
+contract MyContract is CallbackConsumer {
+    function doMath(bytes calldata input) public returns (bytes32) {
+        _requestCompute(
+            containerId,
+            input, // same encoded input as above
+            1,
+            address(0), // paymentToken
+            0, // paymentAmount
+            address(0), // wallet
+            address(0) // prover
+        );
+        return generatedTaskId;
+    }
 
     function _receiveCompute(
         uint32 subscriptionId,
@@ -217,6 +209,28 @@ returns (bytes32)
         console2.log("received output!");
         console2.logBytes(output);
     }
+}
+```
+
+Or, you can call your container directly from your contract:
+
+```solidity
+import {ContainerLookup} from "infernet-sdk/contracts/ContainerLookup.sol";
+
+contract MyContract {
+    function doMath() public returns (bytes32) {
+        container.requestCompute(
+            "my-container-id",
+            abi.encode(0, "", "What's 2+2?"), // same encoded input as above. 
+            // Here, 0 corresponds to the task id: TEXT_GENERATION
+            1,
+            address(0), // paymentToken
+            0, // paymentAmount
+            address(0), // wallet
+            address(0) // prover
+        );
+    }
+}
 ```
 
 ### Delegated Subscription Request
