@@ -27,8 +27,9 @@ async def test_hf_inference_client_doesnt_generate_proofs() -> None:
     )
     r = await get_job(task_id)
     assert r.get("code") == "400"
-    assert "Proofs are not supported for hf client inference service" in r.get(
-        "description"
+    assert (
+        "Proofs are not supported for HF Client Inference Service".lower()
+        in r.get("description").lower()
     )
 
 

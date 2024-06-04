@@ -117,7 +117,7 @@ def create_app() -> Quart:
                 result: dict[str, Any]
                 match inf_input:
                     case InfernetInput(requires_proof=True):
-                        raise BadRequest("Proofs are not supported for CSS inference")
+                        raise BadRequest("Proofs are not supported for CSS Inference")
                     case InfernetInput(
                         source=JobLocation.OFFCHAIN,
                         data=input_data,

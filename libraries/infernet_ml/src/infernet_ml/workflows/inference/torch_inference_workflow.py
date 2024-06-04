@@ -1,9 +1,12 @@
 """
+# Torch Inference Workflow
+
 Workflow for running inference on Torch models.
 
 This class is responsible for loading & running a Torch model.
 
 Models can be loaded in two ways:
+
 1. Preloading: The model is loaded in the setup method. This happens in the `setup()`
     method if model source and load args are provided when the class is instantiated.
 2. On-demand: The model is loaded with an inference request. This happens if model source
@@ -12,7 +15,72 @@ Models can be loaded in two ways:
 
 Loaded models are cached in-memory using an LRU cache. The cache size can be configured
 using the `TORCH_MODEL_LRU_CACHE_SIZE` environment variable.
-"""
+
+## Additional Installations
+
+Since this workflow uses some additional libraries, you'll need to install
+`infernet-ml[torch_inference]`. Alternatively, you can install those packages directly.
+The optional dependencies `"[torch_inference]"` are provided for your convenience.
+
+=== "uv"
+    ``` bash
+    uv pip install "infernet-ml[torch_inference]"
+    ```
+
+=== "pip"
+    ``` bash
+    pip install "infernet-ml[torch_inference]"
+    ```
+
+## Example
+
+```python
+from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.workflows.inference.torch_inference_workflow import (
+    TorchInferenceWorkflow,
+    TorchInferenceInput,
+)
+from infernet_ml.utils.model_loader import ModelSource, HFLoadArgs
+
+
+def main():
+    # Instantiate the workflow
+    workflow = TorchInferenceWorkflow(
+        model_source=ModelSource.HUGGINGFACE_HUB,
+        load_args=HFLoadArgs(
+            repo_id="Ritual-Net/california-housing",
+            filename="california_housing.torch",
+        ),
+    )
+
+    # Setup the workflow
+    workflow.setup()
+
+    # Run the model
+    result = workflow.inference(
+        TorchInferenceInput(
+            input=TensorInput(
+                dtype="double",
+                shape=(1, 8),
+                values=[[-122.25, 37.85, 52.0, 1627.0, 322.0, 5.64, 2400.0, 9.0]],
+            )
+        )
+    )
+
+    print(result.outputs)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+tensor([164.8323], dtype=torch.float64, grad_fn=<ViewBackward0>)
+```
+
+"""  # noqa: E501
 
 import logging
 import os
@@ -25,12 +93,11 @@ import torch.jit
 from pydantic import BaseModel, ConfigDict, field_validator
 from torch import Tensor
 
-from infernet_ml.utils.common_types import TensorInput
+from infernet_ml.utils.common_types import DTYPES, TensorInput
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource, download_model
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )
-from infernet_ml.workflows.utils.common_types import DTYPES
 
 logger: logging.Logger = logging.getLogger(__name__)
 

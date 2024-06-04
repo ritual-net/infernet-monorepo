@@ -6,13 +6,23 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class HFTaskId(IntEnum):
-    """Hugging Face task types"""
+    """Hugging Face task types
+
+    Args:
+        UNSET (int): Unset task
+        TEXT_GENERATION (int): Text generation task
+        TEXT_CLASSIFICATION (int): Text classification task
+        TOKEN_CLASSIFICATION (int): Token classification task
+        SUMMARIZATION (int): Summarization task
+        TEXT_TO_IMAGE (int): Text to image task
+    """
 
     UNSET = 0
     TEXT_GENERATION = 1
     TEXT_CLASSIFICATION = 2
     TOKEN_CLASSIFICATION = 3
     SUMMARIZATION = 4
+    TEXT_TO_IMAGE = 5
 
 
 class HFInferenceBaseInput(BaseModel):
@@ -26,7 +36,11 @@ class HFInferenceBaseInput(BaseModel):
 
 
 class HFClassificationInferenceInput(HFInferenceBaseInput):
-    """Input data for classification models"""
+    """Input data for classification models
+
+    Args:
+        text (str): Text to classify
+    """
 
     task_id: HFTaskId = HFTaskId.TEXT_CLASSIFICATION
 
@@ -34,7 +48,11 @@ class HFClassificationInferenceInput(HFInferenceBaseInput):
 
 
 class HFTokenClassificationInferenceInput(HFInferenceBaseInput):
-    """Input data for token classification models"""
+    """Input data for token classification models
+
+    Args:
+        text (str): Text to classify
+    """
 
     task_id: HFTaskId = HFTaskId.TOKEN_CLASSIFICATION
 
@@ -139,6 +157,34 @@ HFInferenceClientInput = Union[
     HFTextGenerationInferenceInput,
     HFSummarizationInferenceInput,
 ]
+
+
+class HFDiffusionInferenceInput(HFInferenceBaseInput):
+    """Input data for diffusion models
+
+    Args:
+        prompt (str): Text prompt for image generation
+        negative_prompt (Optional[str]): Negative text prompt for the model
+        height (Optional[int]): Height in pixels of the image to generate.
+            Default 512.
+        width (Optional[int]): Width in pixels of the image to generate.
+            Default 512.
+        num_inference_steps (Optional[int]): Number of denoising steps.
+            More steps --> higher quality but slower inference.
+        guidance_scale (Optional[float]): Guidance scale for the model to
+            control the influence of the prompt on the generated image.
+            Higher values --> more influence of the prompt on the generated
+            image but may lead to lower image quality. Default values are
+            model dependent but usually between 7 and 8.
+    """
+
+    task_id: HFTaskId = HFTaskId.TEXT_TO_IMAGE
+    prompt: str
+    negative_prompt: Optional[str] = None
+    height: Optional[int] = None
+    width: Optional[int] = None
+    num_inference_steps: Optional[int] = None
+    guidance_scale: Optional[float] = None
 
 
 def parse_hf_inference_input_from_dict(r: Dict[str, Any]) -> HFInferenceClientInput:

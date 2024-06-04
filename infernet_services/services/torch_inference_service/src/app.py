@@ -160,7 +160,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         hex_input = ""
         match input:
             case InfernetInput(requires_proof=True):
-                raise BadRequest("Proofs are not supported for Torch inference")
+                raise BadRequest("Proofs are not supported for Torch Inference Service")
             case InfernetInput(source=JobLocation.ONCHAIN):
                 hex_input = cast(str, input.data)
                 (_, _, _, _, vector) = decode(

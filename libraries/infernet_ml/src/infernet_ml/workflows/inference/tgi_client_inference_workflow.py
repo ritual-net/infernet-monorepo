@@ -1,3 +1,75 @@
+"""
+Workflow object for requesting LLM inference on TGI-compliant inference servers.
+
+## Additional Installations
+
+Since this workflow uses some additional libraries, you'll need to install `infernet-ml[tgi_inference]`. Alternatively,
+you can install those packages directly. The optional dependencies `"[tgi_inference]"` are provided for your
+convenience.
+
+=== "uv"
+    ``` bash
+    uv pip install "infernet-ml[tgi_inference]"
+    ```
+
+=== "pip"
+    ``` bash
+    pip install "infernet-ml[tgi_inference]"
+    ```
+
+## Example Usage
+
+In the example below we use an API key from Hugging Face to access the `Mixtral-8x7B-Instruct-v0.1` model.
+You can obtain an API key by signing up on the [Hugging Face website](https://huggingface.co/).
+
+```python
+import os
+from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
+    TGIClientInferenceWorkflow,
+    TgiInferenceRequest,
+)
+
+
+def main():
+    server_url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+    workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
+        server_url,
+        timeout=10,
+        headers={"Authorization": f"Bearer {os.environ['HF_TOKEN']}"},
+    )
+    workflow.setup()
+
+    res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
+    print(f"response: {res}")
+
+    collected_res = ""
+    for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
+        collected_res += r.token.text
+    print(f"streaming: {collected_res}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+response:
+
+The answer is 4.
+
+streaming:
+
+The answer is 4.
+```
+
+## More Information
+
+For more info, check out the reference docs below.
+
+"""  # noqa: E501
+
 from typing import Any, Iterator, Optional, cast
 
 from pydantic import BaseModel

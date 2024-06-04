@@ -1,0 +1,5 @@
+site_name: Infernet ML Docs
+
+nav:
+  - Quickstart: quickstart.md
+  - Architecture: architecture.md

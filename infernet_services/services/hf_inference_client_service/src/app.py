@@ -152,7 +152,7 @@ def create_app() -> Quart:
                 match inf_input:
                     case InfernetInput(requires_proof=True):
                         raise BadRequest(
-                            "Proofs are not supported for hf client inference service"
+                            "Proofs are not supported for HF Client Inference Service"
                         )
                     case InfernetInput(source=JobLocation.OFFCHAIN, data=input_data):
                         hf_inf_input = parse_hf_inference_input_from_dict(

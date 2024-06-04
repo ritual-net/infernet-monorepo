@@ -16,6 +16,10 @@ from ritual_arweave.repo_manager import RepoManager
 class ModelSource(IntEnum):
     """
     Enum for the model source
+
+    - `LOCAL`: Load the model from the local file system
+    - `ARWEAVE`: Load the model from Arweave
+    - `HUGGINGFACE_HUB`: Load the model from Hugging Face Hub
     """
 
     LOCAL = 0
@@ -65,6 +69,9 @@ class LocalLoadArgs(BaseModel):
     path: str
 
 
+"""
+LoadArgs: Union[HFLoadArgs, ArweaveLoadArgs, LocalLoadArgs]
+"""
 LoadArgs = Union[HFLoadArgs, ArweaveLoadArgs, LocalLoadArgs]
 
 

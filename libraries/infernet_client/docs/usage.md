@@ -165,6 +165,76 @@ and [JobResponse](./api#jobresponse).
     }
     ```
 
+### Request a job with proofs
+
+Create a direct compute request, along with a proof requirement.
+
+=== "Python"
+
+    ```python
+    from infernet_client import NodeClient
+    from infernet_client.types import JobRequest
+
+    client = NodeClient("http://localhost:4000")
+
+    # Format request
+    request = JobRequest(
+        containers=["classify-as-spam"],
+        data={
+            "model": "spam-classifier",
+            "params": {
+                ...etc.
+            }
+        },
+        requires_proof=True
+    )
+
+    # Send request
+    job_id = await client.request_job(request)
+
+    print(job_id)
+    ```
+    **Expected Output:**
+    ```bash
+    29dd2f8b-05c3-4b1c-a103-370c04c6850f
+    ```
+
+=== "CLI"
+
+    ```bash
+    export SERVER_URL=http://localhost:4000
+
+    infernet-client job -c classify-as-spam -i input-data.json --requires-proof
+
+    ```
+    **Expected Output:**
+    ```bash
+    29dd2f8b-05c3-4b1c-a103-370c04c6850f
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl -X POST http://localhost:4000/api/jobs \
+        -H "Content-Type: application/json" \
+        -d '{
+            "containers": ["classify-as-spam"],
+            "data": {
+                "model": "spam-classifier",
+                "params": {
+                    ...etc.
+                }
+            },
+            "requires_proof": true
+        }'
+    ```
+    **Expected Output:**
+    ```json
+    {
+        "id": "29dd2f8b-05c3-4b1c-a103-370c04c6850f"
+    }
+    ```
+
 ### Batch Request
 
 Create direct compute requests in batch.
