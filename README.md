@@ -15,6 +15,7 @@ Currently, the structure is as follows:
 ├── infernet_services
 ├── projects
 │ ├── infernet_ml
+│ ├── infernet_client
 │ └── ritual_arweave
 │ └── (etc.)
 ├── pyproject.toml
