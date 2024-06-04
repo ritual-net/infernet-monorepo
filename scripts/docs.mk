@@ -9,10 +9,13 @@ generate-docs:
 	$(PYTHON) tools/generate_docs.py $(library)
 
 generate-services-docs:
-	$(PYTHON) tools/generate_services_docs.py
+	PYTHONPATH=tools $(PYTHON) tools/generate_services_docs.py
 
 serve-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
+
+serve-services-docs:
+	cd infernet_services && mkdocs serve
 
 build-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs build
