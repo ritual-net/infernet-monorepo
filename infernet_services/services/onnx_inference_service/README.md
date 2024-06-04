@@ -167,7 +167,7 @@ on port 4000.
             "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}}
         },
     )
-    
+
     result = (await client.get_job_result_sync(job_id))["result"]
     ```
 
@@ -181,9 +181,9 @@ on port 4000.
     SERVICE_NAME - i
     input.json - -sync
     ```
-    
+
     where `input.json` looks like this:
-    
+
     ```json
       {
         "model_source": 1,
@@ -323,7 +323,7 @@ on port `4000`.
     ```python
     from infernet_client.client import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
-    
+
     sub = Subscription(
         owner="0x...",
         active_at=int(time()),
@@ -337,7 +337,7 @@ on port `4000`.
         payment_token=ZERO_ADDRESS,
         wallet=ZERO_ADDRESS,
     )
-    
+
     client = NodeClient("http://127.0.0.1:4000")
     nonce = random.randint(0, 2 ** 32 - 1)
     await client.request_delegated_subscription(

@@ -242,7 +242,7 @@ import {CallbackConsumer} from "infernet-sdk/consumer/Callback.sol";
 contract MyOnchainSubscription is CallbackConsumer {
 
     constructor(address registry) CallbackConsumer(registry) {}
-    
+
     // Function to predict housing prices
     function predictHousingPrice(bytes memory inputs) public returns (bytes32) {
         string memory containerId = "my-container";

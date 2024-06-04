@@ -154,7 +154,7 @@ locally on port `4000`.
 
 === "Python"
 
-    ```python 
+    ```python
     from infernet_client.client import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
