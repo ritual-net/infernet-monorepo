@@ -3,7 +3,7 @@ name = "infernet-monorepo"
 version = "0.1.0-1"
 description = "Add your description here"
 authors = [
-    { name = "arshan-ritual", email = "arshan@ritual.net" }
+    { name = "ritual", email = "hello@ritual.net" }
 ]
 dependencies = [
     "pre-commit>=3.7.0",

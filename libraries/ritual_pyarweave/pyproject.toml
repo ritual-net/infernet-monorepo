@@ -3,7 +3,7 @@ name = "ritual-pyarweave"
 version = "0.1.0.4"
 description = "Add your description here"
 authors = [
-    { name = "arshan-ritual", email = "arshan@ritual.net" }
+    { name = "ritual", email = "hello@ritual.net" }
 ]
 dependencies = [
     "arrow>=1.3.0,<2.0.0",
