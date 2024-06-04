@@ -78,7 +78,7 @@ def populate_global_config(network_config: NetworkConfig) -> None:
         network_config (NetworkConfig): the network config to populate the global config
             with.
     """
-    for attr_name, attr_value in network_config.model_dump().items():
+    for attr_name, attr_value in network_config.as_dict().items():
         if hasattr(global_config, attr_name):
             setattr(global_config, attr_name, attr_value)
         else:
@@ -86,33 +86,37 @@ def populate_global_config(network_config: NetworkConfig) -> None:
                 f"{attr_name} is not a valid attribute of the config model."
             )
 
+    asyncio.run(global_config.initialize())
+
 
 InfernetFixtureType = Callable[[], Generator[None, None, None]]
 
 
 def handle_lifecycle(
     services: List[ServiceConfig],
+    skip_deploying: bool = False,
     skip_contract: bool = False,
+    skip_teardown: bool = False,
     contract: str = DEFAULT_CONTRACT,
     deploy_env_vars: Optional[ServiceEnvVars] = None,
     post_chain_start_hook: Callable[[], None] = lambda: None,
     post_config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
     post_node_deploy_hook: Callable[[], None] = lambda: None,
-    skip_deploying: bool = False,
-    skip_teardown: bool = False,
     node_wait_timeout: int = 10,
     service_wait_timeout: int = 10,
     network_config: NetworkConfig = default_network_config,
 ) -> Generator[None, None, None]:
     try:
         populate_global_config(network_config)
-        start_anvil_node()
+        if not skip_deploying:
+            start_anvil_node()
         post_chain_start_hook()
         log.info(f"global config: {global_config}")
         create_config_file(
             services,
             global_config.node_private_key,
             global_config.registry_address,
+            global_config.node_payment_wallet,
             global_config.infernet_rpc_url,
             post_config_gen_hook,
         )

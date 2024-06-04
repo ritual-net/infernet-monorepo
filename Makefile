@@ -27,19 +27,30 @@ pre-commit-library:
 		--files $$(git ls-files | grep -vE '^infernet_services/' | grep 'libraries/$(library)')
 
 pre-commit-services:
+ifdef changed
+	$(eval ls_flag := --modified)
+else
+	$(eval ls_flag := )
+endif
+ifdef continue
+	$(eval post := || true)
+else
+	$(eval post := )
+endif
 	@if [ -n "$(restart_env)" ]; then \
 		uv venv -p 3.11 && \
 		source .venv/bin/activate && \
 		$(MAKE) generate-uv-env-file && source uv.env && \
 		uv pip install -r infernet_services/requirements-precommit.lock; \
 	fi
-	$(MAKE) pre-commit -C infernet_services
-	pre-commit run black --files $$(git ls-files infernet_services)
-	pre-commit run ruff  --files $$(git ls-files infernet_services)
-	pre-commit run isort --files $$(git ls-files infernet_services)
-	pre-commit run end-of-file-fixer --files $$(git ls-files infernet_services)
-	pre-commit run check-added-large-files --files $$(git ls-files infernet_services)
-	pre-commit run trailing-whitespace --files $$(git ls-files infernet_services)
+	$(MAKE) pre-commit -C infernet_services ls_flag=$(ls_flag) $(post)
+	files=$$(git ls-files $(ls_flag) infernet_services) && \
+	pre-commit run black --files $$files $(post) && \
+	pre-commit run ruff  --files $$files $(post) && \
+	pre-commit run isort --files $$files $(post) && \
+	pre-commit run end-of-file-fixer --files $$files $(post) && \
+	pre-commit run check-added-large-files --files $$files $(post) && \
+	pre-commit run trailing-whitespace --files $$files $(post)
 
 test-library:
 ifdef test_name

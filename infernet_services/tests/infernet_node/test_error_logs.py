@@ -1,14 +1,12 @@
-import json
 import logging
 from enum import IntEnum
 
 import pytest
-from test_library.constants import ANVIL_NODE, NODE_LOG_CMD
-from test_library.log_collector import LogCollector
+from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.constants import ANVIL_NODE
+from test_library.test_config import global_config
 from test_library.web3_utils import get_consumer_contract
 from web3 import AsyncHTTPProvider, AsyncWeb3
-
-SERVICE_NAME = "echo"
 
 log = logging.getLogger(__name__)
 
@@ -122,15 +120,8 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 async def test_infernet_error_logs(error_id: ErrorId, expected_log: str) -> None:
     consumer = await get_consumer_contract(f"{contract_name}.sol", contract_name)
 
-    collector = await LogCollector().start(NODE_LOG_CMD)
-
-    await consumer.functions.echoThis(error_id.value).transact()
-
-    found, logs = await collector.wait_for_line(expected_log, timeout=10)
-
-    assert found, (
-        f"Expected {expected_log} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
+    await global_config.tx_submitter.submit(
+        consumer.functions.echoThis(f"{error_id.value}")
     )
 
-    await collector.stop()
+    await assert_regex_in_node_logs(expected_log)

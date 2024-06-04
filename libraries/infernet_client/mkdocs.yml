@@ -38,6 +38,12 @@ nav:
     - client: reference/infernet_client/client.md
     - types: reference/infernet_client/types.md
     - chain_utils: reference/infernet_client/chain_utils.md
+    - chain:
+      - token: reference/infernet_client/chain/token.md
+      - wallet_factory: reference/infernet_client/chain/wallet_factory.md
+      - rpc: reference/infernet_client/chain/rpc.md
+      - abis: reference/infernet_client/chain/abis.md
+      - wallet: reference/infernet_client/chain/wallet.md
     - cli:
       - options: reference/infernet_client/cli/options.md
       - sample_inputs: []

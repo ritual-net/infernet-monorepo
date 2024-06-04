@@ -15,7 +15,13 @@ from test_library.constants import (
 
 base_config = {
     "log_path": "infernet_node.log",
-    "server": {"port": 4000},
+    "server": {
+        "port": 4000,
+        "rate_limit": {
+            "num_requests": 1000,
+            "period": 1000,
+        },
+    },
     "chain": {
         "enabled": True,
         "trail_head_blocks": 0,
@@ -52,9 +58,10 @@ class ServiceConfig(BaseModel):
 
     name: str
     image_id: str
+    port: int
     env_vars: ServiceEnvVars = {}
     accepted_payments: Dict[ChecksumAddress, int]
-    port: int
+    generates_proofs: bool = False
 
     @classmethod
     def build(
@@ -64,6 +71,7 @@ class ServiceConfig(BaseModel):
         port: int = 3000,
         env_vars: Optional[ServiceEnvVars] = None,
         accepted_payments: Optional[Dict[ChecksumAddress, int]] = None,
+        generates_proofs: bool = False,
     ) -> "ServiceConfig":
         """
         Build a service configuration object.
@@ -74,6 +82,7 @@ class ServiceConfig(BaseModel):
             port: The port on which the service will run
             env_vars: A dictionary of environment variables
             accepted_payments: A dictionary of accepted payments
+            generates_proofs: Whether the service generates proofs, defaults to False
 
         Returns:
             A ServiceConfig object
@@ -81,9 +90,10 @@ class ServiceConfig(BaseModel):
         return cls(
             name=name,
             image_id=image_id or f"ritualnetwork/{name}:latest",
-            env_vars=env_vars if env_vars else {},
             port=port,
+            env_vars=env_vars if env_vars else {},
             accepted_payments=accepted_payments or {ZERO_ADDRESS: 0},
+            generates_proofs=generates_proofs,
         )
 
     @property
@@ -99,6 +109,7 @@ class ServiceConfig(BaseModel):
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "external": True,
             "accepted_payments": self.accepted_payments,
+            "generates_proofs": self.generates_proofs,
         }
 
 
@@ -106,6 +117,7 @@ def create_config_file(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_NODE_PRIVATE_KEY,
     registry_address: str = DEFAULT_REGISTRY_ADDRESS,
+    payment_address: Optional[str] = DEFAULT_NODE_PAYMENT_WALLET,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
     config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
 ) -> None:
@@ -114,6 +126,7 @@ def create_config_file(
         services,
         private_key=private_key,
         registry_address=registry_address,
+        payment_address=payment_address,
         rpc_url=rpc_url,
     )
 
@@ -145,7 +158,7 @@ def get_config(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_NODE_PRIVATE_KEY,
     registry_address: str = DEFAULT_REGISTRY_ADDRESS,
-    payment_address: str = DEFAULT_NODE_PAYMENT_WALLET,
+    payment_address: Optional[str] = DEFAULT_NODE_PAYMENT_WALLET,
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
 ) -> Dict[str, Any]:
     """

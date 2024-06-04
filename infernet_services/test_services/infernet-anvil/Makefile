@@ -18,7 +18,7 @@ deploy-infernet:
 start-anvil:
 	rm anvil.pid anvil.log || true
 	# get the PID & save it to a file
-	anvil --dump-state $(state_file)  2>&1 > anvil.log & \
+	anvil --dump-state $(state_file) 2>&1 > anvil.log & \
 	echo $$! > anvil.pid
 
 watch-logs:
@@ -26,6 +26,10 @@ watch-logs:
 
 stop-anvil:
 	kill -2 `cat anvil.pid`
+
+leave-running:
+	$(MAKE) start-anvil
+	$(MAKE) deploy-infernet
 
 generate-state-file:
 	rm $(state_file) || true

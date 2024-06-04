@@ -7,3 +7,4 @@
   - [ ] git modules
   - [ ] foundry libraries
   - [ ] `remapping.txt` files
+- [ ] nuke all libraries build version
