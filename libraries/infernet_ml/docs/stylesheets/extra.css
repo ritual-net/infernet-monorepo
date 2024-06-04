@@ -160,6 +160,11 @@ details.quote code {
   background-color: unset !important;
 }
 
+/* Add border-radius to <pre> */
+pre code {
+    border-radius: 7px !important;
+}
+
 /* Change header colors */
 .doc.doc-heading code,
 .doc.doc-heading span {
