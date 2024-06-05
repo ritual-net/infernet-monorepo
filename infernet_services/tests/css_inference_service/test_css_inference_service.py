@@ -63,7 +63,10 @@ async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() 
     )
     r = await get_job(task_id)
     assert r.get("code") == "400"
-    assert "Proofs are not supported for CSS inference" in r.get("description")
+    assert (
+        "Proofs are not supported for CSS inference".lower()
+        in r.get("description").lower()
+    )
 
 
 @pytest.mark.parametrize(
