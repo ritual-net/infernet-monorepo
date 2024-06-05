@@ -1,10 +1,12 @@
 # Infernet Client
 
-Welcome to the Infernet Client, a lightweight Python library and CLI tool that streamlines interaction with the [REST server](https://docs.ritual.net/infernet/node/api) of the [Infernet Node](https://docs.ritual.net/infernet/node/introduction). The Infernet Node provides robust computational capabilities through a well-defined API. This client aims to provide developers with a simple, efficient way to integrate and automate tasks using the Infernet Node.
+Welcome to the Infernet Client, a lightweight Python library and CLI tool that streamlines interaction with the [Infernet Node](https://github.com/ritual-net/infernet-node) and the [Infernet Router](https://github.com/ritual-net/infernet-router). The Infernet Node provides robust computational capabilities through a well-defined API, while the Router allows for discovering nodes and containers running remotely, across the Infernet network.
+
+This client aims to provide developers with a simple, efficient way to integrate and automate tasks using the Infernet [Node](#node) and [Router](#router).
 
 ## Features
 
-- **Simple**: Streamlined methods for interacting with the Infernet Node API.
+- **Simple**: Streamlined methods for interacting with the Infernet Node and Router APIs.
 - **Asynchronous**: Built-in async capabilities for improved performance.
 - **Typed**: Complete type annotations for better editor support and reduced bugs.
 
@@ -33,14 +35,19 @@ infernet-client --help
 #   --help  Show this message and exit.
 
 # Commands:
-#   health   Health check
-#   ids      Get job IDs for this client.
-#   info     Get node information.
-#   job      Request a job.
-#   results  Fetch job results.
-#   stream   Request a streamed job.
-#   sub      Request a delegated subscription.
+#   containers     List containers running in the network
+#   create-wallet  Create an Infernet Wallet.
+#   find           Find nodes running the given containers
+#   health         Health check
+#   ids            Get job IDs for this client.
+#   info           Get node information.
+#   job            Request a job.
+#   results        Fetch job results.
+#   stream         Request a streamed job.
+#   sub            Request a delegated subscription.
 ```
+
+### Node
 
 #### Node URL
 
@@ -348,4 +355,84 @@ where `params.json`:
         }
     }
 }
+```
+
+### Router
+
+#### Router URL
+
+By default, the official Ritual router is used. You can instead pass your own router url with every command using `--url`, or you can set it once as an ENV variable:
+```bash
+export SERVER_URL=http://localhost:4000
+```
+
+#### Containers
+To browse all containers currently running across the network, use `containers`:
+```
+Usage: infernet-client containers [OPTIONS]
+
+  List containers running in the network
+
+Options:
+  --url TEXT  URL of the router. Can also set ROUTER_URL environment variable.
+```
+
+**Example:**
+```bash
+infernet-client containers
+# [
+#   {
+#     "id": "hello-world",
+#     "count": 100,
+#     "description": "Hello World container"
+#   },
+#   {
+#     "id": "ritual-tgi-inference",
+#     "count": 3,
+#     "description": "Serving meta-llama/Llama-2-7b-chat-hf via TGI"
+#   },
+# ]
+```
+
+#### Find Nodes
+To discover nodes running one or more specific containers, use `find`:
+```
+Usage: infernet-client find [OPTIONS]
+
+  Find nodes running the given containers
+
+Options:
+  -c TEXT         Specify a container ID [repeatable].  [required]
+  -n INTEGER      The number of nodes to return.
+  --skip INTEGER  The offset to start at, for pagination.
+  --url TEXT      URL of the router. Can also set ROUTER_URL environment
+                  variable.
+```
+
+**Examples:**
+```bash
+infernet-client find -c hello-world
+# [
+#   "167.86.78.186:4000",
+#   "84.54.13.11:4000",
+#   "37.27.106.57:4000"
+# ]
+
+infernet-client find -c hello-world -n 5 --skip 2
+# [
+#   "37.27.106.57:4000",
+#   "161.97.157.96:4000",
+#   "176.98.41.25:4000",
+#   "84.46.244.212:4000",
+#   "173.212.203.3:4000"
+# ]
+
+infernet-client find -c hello-world -c ritual-tgi-inference
+# [
+#   "37.27.106.57:4000",
+#   "161.97.157.96:4000",
+# ]
+
+infernet-client find -c goodbye-world
+# []
 ```

@@ -18,6 +18,18 @@ def url_option(f: GenericCallable) -> GenericCallable:
     )(f)
 
 
+def router_url_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add a router URL option to a command."""
+    return click.option(
+        "--url",
+        envvar="ROUTER_URL",
+        required=False,
+        default="http://infernet-router.ritual.net",
+        type=str,
+        help="URL of the router. Can also set ROUTER_URL environment variable.",
+    )(f)
+
+
 def output_option(f: GenericCallable) -> GenericCallable:
     """Decorator to add an output option to a command."""
     return click.option(

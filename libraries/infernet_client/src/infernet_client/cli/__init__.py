@@ -14,10 +14,12 @@ from infernet_client.cli.options import (
     output_option,
     output_result,
     private_key_option,
+    router_url_option,
     rpc_url_option,
     url_option,
 )
-from infernet_client.client import NodeClient
+from infernet_client.node import NodeClient
+from infernet_client.router import RouterClient
 from infernet_client.types import ContainerError, ContainerOutput, JobRequest
 
 
@@ -334,7 +336,9 @@ def create_infernet_wallet(
     private_key: str,
     owner: Optional[str],
 ) -> None:
-    """Uses `WalletFactory` to create an Infernet wallet.
+    """Create an Infernet Wallet.
+
+    Uses `WalletFactory` to create an Infernet wallet.
 
     Example:
         infernet-client create-wallet --rpc-url http://localhost:8545 \
@@ -361,3 +365,32 @@ def create_infernet_wallet(
     click.echo(
         f"Success: wallet created.\n\tAddress: {wallet.address}\n\tOwner: {owner}"
     )
+
+
+@router_url_option
+@cli.command(
+    name="containers",
+)
+def get_containers(url: str) -> None:
+    """List containers running in the network"""
+    client = RouterClient(url)
+    containers = asyncio.run(client.get_containers())
+    click.echo(json.dumps(containers, indent=2))
+
+
+@router_url_option
+@click.option(
+    "--skip", required=False, default=0, help="The offset to start at, for pagination."
+)
+@click.option("-n", required=False, default=3, help="The number of nodes to return.")
+@click.option(
+    "-c", multiple=True, required=True, help="Specify a container ID [repeatable]."
+)
+@cli.command(
+    name="find",
+)
+def find_nodes(c: list[str], n: int, skip: int, url: str) -> None:
+    """Find nodes running the given containers"""
+    client = RouterClient(url)
+    nodes = asyncio.run(client.get_nodes_by_container_ids(c, n, skip))
+    click.echo(json.dumps(nodes, indent=2))
