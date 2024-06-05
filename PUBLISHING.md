@@ -7,4 +7,5 @@
   - [ ] git modules
   - [ ] foundry libraries
   - [ ] `remapping.txt` files
-- [ ] nuke all libraries build version
+- [ ] nuke all libraries build version `1.0.0.3` -> `1.0.0`
+- [ ] set author

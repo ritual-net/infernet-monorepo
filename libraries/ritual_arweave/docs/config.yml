@@ -1,0 +1,5 @@
+site_name: Ritual Arweave Docs
+
+nav:
+- Quickstart: quickstart.md
+

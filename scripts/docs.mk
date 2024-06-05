@@ -5,23 +5,50 @@
 SHELL := /bin/bash
 PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 
-generate-docs:
+generate-library-docs:
 	$(PYTHON) tools/generate_docs.py $(library)
 
-serve-docs:
+generate-services-docs:
+	PYTHONPATH=tools $(PYTHON) tools/generate_services_docs.py
+
+serve-library-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
 
-build-docs:
+serve-services-docs:
+	cd infernet_services && mkdocs serve
+
+build-library-docs:
 	cd libraries/$(library) && PYTHONPATH=src mkdocs build
 
-clean-docs:
+build-services-docs:
+	cd infernet_services && PYTHONPATH=src mkdocs build
+
+clean-library-docs:
 	rm -rf libraries/$(library)/site
 	rm -rf libraries/$(library)/docs/reference
 
-deploy-docs: clean-docs
-	rm -rf .vercel || true
-	$(MAKE) generate-docs build-docs
-	$(PYTHON) tools/deploy_docs.py $(library)
+clean-services-docs:
+	rm -rf infernet_services/site
+	rm -rf infernet_services/docs/reference
 
-build-docs-index:
-	$(PYTHON) tools/build_docs_index.py
+prod :=
+
+deploy-library-docs: clean-library-docs
+	rm -rf .vercel || true
+	$(MAKE) generate-library-docs build-library-docs
+	$(PYTHON) tools/deploy_docs.py $(library) $(prod)
+
+deploy-services-docs: clean-services-docs
+	rm -rf .vercel || true
+	$(MAKE) generate-services-docs build-services-docs
+	$(PYTHON) tools/deploy_docs.py infernet_services $(prod)
+
+sync-readme:
+	rsync infernet_services/services/$(service)/README.md \
+		infernet_services/docs/reference/$(service).md
+
+watch:
+	fswatch -0 "infernet_services/services/$(service)/README.md" | while read -d "" event ; \
+	do \
+	    $(MAKE) sync-readme; \
+	done

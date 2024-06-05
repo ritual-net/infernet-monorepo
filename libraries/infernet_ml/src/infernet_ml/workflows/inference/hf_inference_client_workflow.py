@@ -1,8 +1,188 @@
 """
-Module for the generic HuggingFace Inference Workflow object.
-The goal of this module is to provide a generic interface to run inference on any
- Hugging Face models for any of the supported tasks across the domains.
-"""
+# Huggingface Inference Client Workflow
+This workflow uses Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
+to run all models that are hosted on Huggingface Hub.
+
+## Supported Tasks
+- `"text_generation"`
+- `"text_classification"`
+- `"token_classification"`
+- `"summarization"`
+
+
+## Example Classification Inference
+
+```python
+from infernet_ml.utils.hf_types import HFClassificationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
+
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    output_data = workflow.inference(
+        HFClassificationInferenceInput(
+            text="Decentralizing AI using crypto is awesome!",
+        )
+    )
+
+    print(output_data)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{'output': [TextClassificationOutputElement(label='POSITIVE', score=0.9997395873069763), TextClassificationOutputElement(label='NEGATIVE', score=0.00026040704688057303)]}
+```
+
+## Example Token Classification Inference
+
+```python
+from infernet_ml.utils.hf_types import HFTextGenerationInferenceInput
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
+
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    output_data = workflow.inference(
+        HFTextGenerationInferenceInput(
+            prompt="Decentralizing AI using crypto is awesome!",
+        )
+    )
+
+    print(output_data)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{'output': '\n\nDecentralized AI is the future of AI. It will enable the creation of more'}
+```
+
+## Example Text Generation Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import (
+    HFInferenceClientWorkflow,
+)
+from infernet_ml.utils.hf_types import (
+    HFSummarizationInferenceInput,
+    HFSummarizationConfig,
+)
+
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    min_length_tokens = 28
+    max_length_tokens = 56
+    summarization_config = HFSummarizationConfig(
+        min_length=min_length_tokens,
+        max_length=max_length_tokens,
+    )
+    input_text = "Artificial Intelligence has the capacity to positively "
+    "impact humanity but the infrastructure in which it is being"
+    "developed is not yet ready for the future. Decentralizing AI using "
+    "crypto is awesome!"
+
+    input_data = HFSummarizationInferenceInput(
+        text=input_text,
+        parameters=summarization_config,
+    )
+    output_data = workflow.inference(input_data)
+
+    print(output_data)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{'output': SummarizationOutput(summary_text=' Artificial Intelligence has the capacity to positively impact artificial intelligence, says AI expert . Artificial Intelligence can be positively beneficial to society, he says .')}
+```
+
+## Example Summarization Inference
+
+```python
+from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInferenceClientWorkflow
+from infernet_ml.utils.hf_types import HFSummarizationInferenceInput, HFTaskId
+
+def main():
+    # Initialize the workflow
+    workflow = HFInferenceClientWorkflow().setup()
+
+    # Run the inference
+
+    min_length_tokens = 28
+    max_length_tokens = 56
+    summarization_config = HFSummarizationConfig(
+        min_length=min_length_tokens,
+        max_length=max_length_tokens,
+    )
+    input_text = "Artificial Intelligence has the capacity to positively "
+    "impact humanity but the infrastructure in which it is being"
+    "developed is not yet ready for the future. Decentralizing AI using "
+    "crypto is awesome!"
+
+    input_data = HFSummarizationInferenceInput(
+        text=input_text,
+        parameters=summarization_config,
+    )
+    output_data = workflow.inference(input_data)
+
+    print(output_data)
+
+if name == "__main__":
+    main()
+```
+
+Outputs:
+
+```bash
+{
+    "output": [
+        {
+            "summary_text": "Decentralizing AI using crypto is awesome!"
+        }
+    ]
+}
+```
+
+# Input Formats
+The input format is the `HFInferenceClientInput` pydantic model. This is one of four
+input formats:
+
+1. [`HFClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFClassificationInferenceInput)
+2. [`HFTokenClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFTokenClassificationInferenceInput)
+3. [`HFTextGenerationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFTextGenerationInferenceInput)
+4. [`HFSummarizationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFSummarizationInferenceInput)
+
+"""  # noqa: E501
 
 import logging
 from typing import Any, Iterator, Optional, cast

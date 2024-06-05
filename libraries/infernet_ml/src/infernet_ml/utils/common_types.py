@@ -1,5 +1,6 @@
 from typing import Any, Generator, List, Optional, Tuple, Type, Union
 
+import torch
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from infernet_ml.workflows.exceptions import RetryableException
@@ -36,6 +37,15 @@ DEFAULT_RETRY_PARAMS = RetryParams(
 
 
 class TensorInput(BaseModel):
+    """
+    Represents a tensor input to an ONNX model.
+
+    Args:
+        dtype: str: Data type of the tensor
+        shape: Tuple[int, ...]: Shape of the tensor
+        values: Any: Values of the tensor
+    """
+
     dtype: str
     shape: Tuple[int, ...]
     values: Any  # Flexible enough to initially accept any data structure.
@@ -80,3 +90,19 @@ class TensorInput(BaseModel):
 
         check_shape(v, values.data["shape"])
         return v
+
+
+DTYPES = {
+    "float": torch.float,
+    "double": torch.double,
+    "cfloat": torch.cfloat,
+    "cdouble": torch.cdouble,
+    "half": torch.half,
+    "bfloat16": torch.bfloat16,
+    "uint8": torch.uint8,
+    "int8": torch.int8,
+    "short": torch.short,
+    "int": torch.int,
+    "long": torch.long,
+    "bool": torch.bool,
+}
