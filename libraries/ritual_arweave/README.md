@@ -8,6 +8,9 @@ and from the Arweave network. Users can:
    directory containing multiple files (artifacts). These are commonly used in
    `infernet-ml` to store and retrieve models.
 
+For more information, refer to the [Ritual Arweave documentation]
+(https://ritual-arweave.docs.ritual.net/).
+
 ## Installation
 
 **Via pip:**

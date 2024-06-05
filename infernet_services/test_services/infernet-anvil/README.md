@@ -1,6 +1,6 @@
 ## Infernet Anvil
 
-This is a simple anvil node docker image that has all of the infernet-sdk contracts
+This is a simple anvil node docker image that has all of the `infernet-sdk` contracts
 pre-deployed. This is useful for testing and development purposes.
 
 ### Contracts
