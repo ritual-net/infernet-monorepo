@@ -66,7 +66,7 @@ def dump_all_logs(services: List[ServiceConfig]) -> None:
     log.info("dumping all logs below")
     for service in services:
         dump_logs(service.name)
-    dump_logs("anvil-node")
+    dump_logs("infernet-anvil")
     dump_logs("infernet-node")
 
 
