@@ -1,6 +1,6 @@
 [project]
 name = "ritual-pyarweave"
-version = "0.1.0.4"
+version = "0.1.0"
 description = "Add your description here"
 authors = [
     { name = "ritual", email = "hello@ritual.net" }
