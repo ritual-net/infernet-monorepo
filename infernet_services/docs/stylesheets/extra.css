@@ -69,13 +69,18 @@ body {
 }
 
 :root {
-  --md-code-bg-color: #202022;
+  --md-code-bg-color: #111111;
   /* Solarized dark background */
   --md-code-fg-color: #839496;
   /* Solarized dark foreground */
   --md-code-hl-color: #586e75;
   /* Solarized dark highlight */
   --md-default-bg-color: #1e2129;
+}
+
+/* Add border-radius to <pre> */
+pre code {
+  border-radius: 7px !important;
 }
 
 /* Additional styling for navbar if needed */
@@ -156,13 +161,9 @@ details.quote code {
   font-weight: 500;
 }
 
+/* Change header color on sidebar */
 .md-nav__title[for="__drawer"] {
-  background-color: unset !important;
-}
-
-/* Add border-radius to <pre> */
-pre code {
-    border-radius: 7px !important;
+  background-color: #343437 !important;
 }
 
 /* Change header colors */
@@ -196,4 +197,41 @@ pre code {
 /* Change font weight */
 .md-header__topic {
   font-weight: 600 !important;
+}
+
+.tabbed-labels {
+  margin-bottom: 12px;
+}
+
+/* Update table background color */
+table {
+  background-color: #202022 !important;
+}
+
+/* Update quote background color */
+details.quote {
+  background-color: #202022 !important;
+}
+
+/* Update sidebar background color */
+.md-nav--primary .md-nav__title ~ .md-nav__list {
+  background-color: #202022 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Recolor search results */
+.md-search__inner input {
+  background-color: #202022;
+}
+
+.md-search-result__meta {
+  background-color: #202022;
+}
+
+.md-search-result__item {
+  background-color: #202022;
+}
+
+.md-search-result__item code {
+    background-color: #343437;
 }
