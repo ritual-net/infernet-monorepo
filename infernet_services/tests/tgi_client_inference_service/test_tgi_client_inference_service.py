@@ -48,7 +48,7 @@ async def test_completion_web3_doesnt_provide_proof() -> None:
             ["whats 2 + 2?"],
         ),
         # a non-zero address means this requires proof
-        prover=global_config.coordinator_address,
+        verifier=global_config.coordinator_address,
     )
 
     await assert_regex_in_node_logs(

@@ -36,10 +36,10 @@ contract GenericSubscriptionConsumer is SubscriptionConsumer {
         address paymentToken,
         uint256 paymentAmount,
         address wallet,
-        address prover
+        address verifier
     ) public virtual returns (uint32) {
         uint32 subId = _createComputeSubscription(
-            containerId, frequency, period, redundancy, lazy, paymentToken, paymentAmount, wallet, prover
+            containerId, frequency, period, redundancy, lazy, paymentToken, paymentAmount, wallet, verifier
         );
         containerInput[subId] = input;
         return subId;

@@ -265,7 +265,7 @@ async def request_web3_compute(
     payment_token: ChecksumAddress = ZERO_ADDRESS,
     payment_amount: int = 0,
     wallet: ChecksumAddress = ZERO_ADDRESS,
-    prover: ChecksumAddress = ZERO_ADDRESS,
+    verifier: ChecksumAddress = ZERO_ADDRESS,
 ) -> int:
     """
     Requests compute from the consumer contract.
@@ -278,7 +278,7 @@ async def request_web3_compute(
             ZERO_ADDRESS.
         payment_amount (int, optional): The payment amount. Defaults to 0.
         wallet (ChecksumAddress, optional): The wallet. Defaults to ZERO_ADDRESS.
-        prover (ChecksumAddress, optional): The prover. Defaults to ZERO_ADDRESS.
+        verifier (ChecksumAddress, optional): The verifier. Defaults to ZERO_ADDRESS.
 
     Returns:
         int: Subscription ID.
@@ -293,7 +293,7 @@ async def request_web3_compute(
         payment_token,
         payment_amount,
         wallet,
-        prover,
+        verifier,
     )
     tx = await global_config.tx_submitter.submit(fn)
 

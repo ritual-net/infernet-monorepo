@@ -44,7 +44,7 @@ DEFAULT_TESTING_RPC_URL = "http://127.0.0.1:8545"
 
 ZERO_ADDRESS = cast(ChecksumAddress, "0x0000000000000000000000000000000000000000")
 
-PROTOCOL_FEE = 0.05
+PROTOCOL_FEE = 0.00
 
 ANVIL_NODE = "http://127.0.0.1:8545"
 DEFAULT_NODE_URL = "http://127.0.0.1:4000"
@@ -68,3 +68,8 @@ skip_deploying = False
 skip_contract = False
 skip_teardown = False
 suppress_logs = False
+
+skip_deploying = True
+skip_contract = True
+skip_teardown = True
+suppress_logs = True

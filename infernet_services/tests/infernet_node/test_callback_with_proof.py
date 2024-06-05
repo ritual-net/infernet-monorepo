@@ -39,7 +39,7 @@ async def test_proof_payment_service_does_not_provide_proof() -> None:
         payment_amount=funding,
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
-        prover=get_deployed_contract_address("GenericAtomicVerifier"),
+        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
     )
     await assert_regex_in_node_logs(
         f"Ignored subscription creation.*{sub_id}.*container does not generate proof.*"
@@ -66,9 +66,9 @@ async def test_proof_payment_unsupported_token_by_verifier() -> None:
         payment_amount=funding,
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
-        prover=get_deployed_contract_address("GenericAtomicVerifier"),
+        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
     )
-    await assert_regex_in_node_logs(".*Unsupported prover token.*")
+    await assert_regex_in_node_logs(".*Unsupported verifier token.*")
 
 
 async def _get_balances(
@@ -160,7 +160,7 @@ async def test_eager_proof_payment_valid_proof() -> None:
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
-        prover=get_deployed_contract_address("GenericAtomicVerifier"),
+        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
     )
 
     await assert_output(sub_id, _in)
@@ -220,7 +220,7 @@ async def test_eager_proof_payment_invalid_proof() -> None:
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
-        prover=get_deployed_contract_address("GenericAtomicVerifier"),
+        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
     )
 
     await assert_output(sub_id, _in)
@@ -278,7 +278,7 @@ async def _lazy_proof_setup(
         payment_amount=int(funding / 2),
         payment_token=ZERO_ADDRESS,
         wallet=wallet.address,
-        prover=get_deployed_contract_address(LAZY_VERIFIER_CONTRACT),
+        verifier=get_deployed_contract_address(LAZY_VERIFIER_CONTRACT),
     )
 
     await assert_output(sub_id, _in)

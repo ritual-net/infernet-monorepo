@@ -83,7 +83,7 @@ def get_subscription_params() -> (
             redundancy=2,
             containers=["some-llm"],
             lazy=True,
-            prover=ZERO_ADDRESS,
+            verifier=ZERO_ADDRESS,
             payment_amount=100,
             payment_token=ZERO_ADDRESS,
             wallet=ZERO_ADDRESS,

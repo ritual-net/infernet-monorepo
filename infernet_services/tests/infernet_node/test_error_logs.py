@@ -15,14 +15,14 @@ class ErrorId(IntEnum):
     InvalidWallet = 1
     IntervalMismatch = 2
     IntervalCompleted = 3
-    UnauthorizedProver = 4
+    UnauthorizedVerifier = 4
     NodeRespondedAlready = 5
     SubscriptionNotFound = 6
     ProofRequestNotFound = 7
     NotSubscriptionOwner = 8
     SubscriptionCompleted = 9
     SubscriptionNotActive = 10
-    UnsupportedProverToken = 11
+    UnsupportedVerifierToken = 11
     SignerMismatch = 12
     SignatureExpired = 13
     TransferFailed = 14
@@ -55,8 +55,8 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
             "current interval",
         ),
         (
-            ErrorId.UnauthorizedProver,
-            "Prover is not authorized.",
+            ErrorId.UnauthorizedVerifier,
+            "Verifier is not authorized.",
         ),
         (
             ErrorId.NodeRespondedAlready,
@@ -84,8 +84,8 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
             "Subscription is not active",
         ),
         (
-            ErrorId.UnsupportedProverToken,
-            "Unsupported prover token. Attempting to pay a `IProver`-contract in "
+            ErrorId.UnsupportedVerifierToken,
+            "Unsupported verifier token. Attempting to pay a `IVerifier`-contract in "
             "a token it does not support receiving payments in",
         ),
         (

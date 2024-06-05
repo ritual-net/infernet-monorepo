@@ -107,7 +107,7 @@ class JobRequest(TypedDict):
 
     containers: list[str]
     data: dict[str, Any]
-    requires_proof: NotRequired[bool]
+    requires_proof: NotRequired[Optional[bool]]
 
 
 JobID = str

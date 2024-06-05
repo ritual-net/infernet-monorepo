@@ -44,7 +44,7 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator, Allowlist {
             address(0), // paymentToken
             0, // paymentAmount
             address(0), // wallet
-            address(0) // prover
+            address(0) // verifier
         );
     }
 
@@ -84,8 +84,8 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator, Allowlist {
         }
 
         if (strCmp(errorIndex, "4")) {
-            // 0x8ebcfe1e
-            revert UnauthorizedProver();
+            // 0xb9857aa1
+            revert UnauthorizedVerifier();
         }
 
         if (strCmp(errorIndex, "5")) {
@@ -119,8 +119,8 @@ contract InfernetErrors is CallbackConsumer, EIP712Coordinator, Allowlist {
         }
 
         if (strCmp(errorIndex, "11")) {
-            // 0xa1e29b31
-            revert UnsupportedProverToken();
+            // 0xe2372799
+            revert UnsupportedVerifierToken();
         }
 
         // EIP712Coordinator errors

@@ -119,4 +119,4 @@ websockets==12.0
 werkzeug==3.0.3
 wsproto==1.2.0
 yarl==1.9.4
-infernet-client==1.0.0.9
+infernet-client==1.0.0.11
