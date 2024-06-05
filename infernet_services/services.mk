@@ -5,6 +5,9 @@ deploy_dir ?= $(toplevel_dir)/deploy
 build-service: get_index_url
 	$(MAKE) build -C $(service_dir)/$(service) index_url=$(index_url)
 
+publish-service: get_index_url
+	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
+
 run:
 	$(MAKE) run -C $(service_dir)/$(service)
 
