@@ -16,13 +16,12 @@ build-docs:
 
 clean-docs:
 	rm -rf libraries/$(library)/site
+	rm -rf libraries/$(library)/docs/reference
+
+deploy-docs: clean-docs
+	rm -rf .vercel || true
+	$(MAKE) generate-docs build-docs
+	$(PYTHON) tools/deploy_docs.py $(library)
 
 build-docs-index:
 	$(PYTHON) tools/build_docs_index.py
-
-build-docs-index:
-	$(PYTHON) tools/build_docs_index.py
-
-deploy-docs:
-	vercel --prod
-  

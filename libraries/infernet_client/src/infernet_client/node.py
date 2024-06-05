@@ -1,4 +1,4 @@
-"""Module containing the NodeClient class, which is used to interact with the Infernet
+"""Module containing the NodeClient class, which is a client for the Infernet
 Node's REST API.
 
 ### Example Usage

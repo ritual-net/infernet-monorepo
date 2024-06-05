@@ -5,8 +5,8 @@ and from the Arweave network. Users can:
 
 1. Upload/Download individual files from & to the Arweave network.
 2. Upload/Download repositories to & from the Arweave network. Each repository is a
-   directory containing multiple files (artifacts). These are commonly used in the
-. `infernet-ml` to store and retrieve models.
+   directory containing multiple files (artifacts). These are commonly used in
+   `infernet-ml` to store and retrieve models.
 
 ## Installation
 

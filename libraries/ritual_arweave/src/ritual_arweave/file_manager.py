@@ -22,16 +22,31 @@ from tqdm import tqdm
 
 
 class FileNotReadyException(Exception):
+    """Exception raised when a file is not ready for download from Arweave."""
+
     pass
 
 
 class FileManager:
+    """
+    A class to manage file operations with Arweave, including downloading,
+    uploading, and checking file existence.
+    """
+
     def __init__(
         self,
         api_url: str = DEFAULT_API_URL,
         wallet_path: str = "./wallet.json",
         logger: Callable[[str], None] = default_logger.info,
     ):
+        """
+        Initialize the FileManager with the given API URL, wallet path, and logger.
+
+        Args:
+            api_url (str): The URL of the Arweave API.
+            wallet_path (str): The path to the wallet file.
+            logger (Callable[[str], None]): A logging function.
+        """
         self.api_url = api_url
         self.peer = Peer(self.api_url)
         self.wallet_path = wallet_path
@@ -39,20 +54,29 @@ class FileManager:
 
     @property
     def wallet(self) -> Wallet:
+        """
+        Load and return the wallet from the wallet path.
+
+        Returns:
+            Wallet: The loaded wallet.
+        """
         return load_wallet(self.wallet_path, api_url=self.api_url)
 
     def download(self, pathname: str, txid: str) -> str:
-        """function to dowload an arweave data tx to a given path
+        """
+        Download an Arweave data transaction to a given path.
 
         Args:
-            pathname (str): path to download to
-            txid (str): txid of the data transaction
+            pathname (str): The path to download to.
+            txid (str): The transaction ID of the data transaction.
 
         Returns:
-            str: absolute path of the downloaded file
-        """
+            str: The absolute path of the downloaded file.
 
-        # check if the file is pending
+        Raises:
+            FileNotReadyException: If the file is pending and not ready for download.
+        """
+        # Check if the file is pending
         r = requests.get(f"{self.api_url}/tx/{txid}")
         if r.status_code == 202:
             self.logger(f"file with txid {txid} is pending")
@@ -64,11 +88,11 @@ class FileManager:
 
         with open(pathname, "wb") as binary_file:
             try:
-                # try downloading the transaction data directly
-                # from the default data endpoint
+                # Try downloading the transaction data directly from the default data
+                # endpoint
                 data = self.peer.data(txid)
 
-                # write downloaded file to disk
+                # Write downloaded file to disk
                 binary_file.write(data)
 
                 return os.path.abspath(pathname)
@@ -96,24 +120,24 @@ class FileManager:
             startOffset: int = chunk_offset["offset"] - size + 1
 
             if size < MAX_NODE_BYTES:
-                # if the size is less than the maximum node download size
+                # If the size is less than the maximum node download size
                 # just download the file to disk via the tx_data endpoint
-                # which purportedly downloads files regardness of how it
+                # which purportedly downloads files regardless of how it
                 # was uploaded (but has this size limitation)
                 data = self.peer.tx_data(txid)
                 binary_file.write(data)
             else:
                 with tqdm(total=size) as pbar:
                     while loaded_bytes < size:
-                        # download this chunk
+                        # Download this chunk
                         chunkData = self.peer.chunk(startOffset + loaded_bytes)["chunk"]
-                        # arweave files use b64 encoding. We decode the chunk here
+                        # Arweave files use b64 encoding. We decode the chunk here
                         chunkDataDec = b64dec(chunkData)
-                        # write the part of the file to disk
+                        # Write the part of the file to disk
                         binary_file.write(chunkDataDec)
-                        # update offset to subtract from file size
+                        # Update offset to subtract from file size
                         loaded_bytes += len(chunkDataDec)
-                        # update progress bar
+                        # Update progress bar
                         pbar.update(len(chunkDataDec))
 
             return os.path.abspath(pathname)
@@ -121,6 +145,14 @@ class FileManager:
     def upload(self, file_path: Path, tags_dict: dict[str, str]) -> Transaction:
         """
         Upload a file to Arweave with the given tags.
+
+        Args:
+            file_path (Path): The path to the file to be uploaded.
+            tags_dict (dict[str, str]): A dictionary of tags to be added to the
+            transaction.
+
+        Returns:
+            Transaction: The created and signed transaction.
         """
         with open(file_path, "rb", buffering=0) as file_handler:
             tx = Transaction(
@@ -135,25 +167,32 @@ class FileManager:
 
             tx.sign()
 
-            # uploader required to upload in chunks
+            # Uploader required to upload in chunks
             uploader = get_uploader(tx, file_handler)
-            # manually update tqdm progress bar to total chunks
+            # Manually update tqdm progress bar to total chunks
             with tqdm(total=uploader.total_chunks) as pbar:
                 while not uploader.is_complete:
-                    # upload a chunk
+                    # Upload a chunk
                     uploader.upload_chunk()
-                    # increment progress bar by 1 chunk
+                    # Increment progress bar by 1 chunk
                     pbar.update(1)
 
         return tx
 
     def file_exists(self, file_path: str, txid: str) -> bool:
         """
-        Given a local file path and a transaction id, check if the file exists on
+        Given a local file path and a transaction ID, check if the file exists on
         Arweave. Checks for the following:
-        - local file exists
-        - local file's size matches transaction data size
-        - local file's sha256 digest matches transaction digest
+        - Local file exists
+        - Local file's size matches transaction data size
+        - Local file's sha256 digest matches transaction digest
+
+        Args:
+            file_path (str): The path to the local file.
+            txid (str): The transaction ID to check against.
+
+        Returns:
+            bool: True if the file exists and matches the transaction, False otherwise.
         """
         query_str = (
             """
@@ -191,6 +230,7 @@ class FileManager:
         )
 
         def _log() -> None:
+            """Log the current status of file existence checks."""
             self.logger(
                 f"file_path={file_path} local_file_exists={local_file_exists} "
                 f"size_matches={size_matches} digest_matches={digest_matches}",
