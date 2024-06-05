@@ -117,4 +117,5 @@ def node_lifecycle() -> Generator[None, None, None]:
         skip_contract=True,
         skip_teardown=skip_teardown,
         network_config=config,
+        service_wait_timeout=int(os.environ.get("SERVICE_WAIT_TIMEOUT", 60)),
     )

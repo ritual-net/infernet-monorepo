@@ -35,6 +35,7 @@ def node_lifecycle() -> Generator[None, None, None]:
                 generates_proofs=True,
             ),
         ],
+        service_wait_timeout=int(os.environ.get("SERVICE_WAIT_TIMEOUT", 60)),
         skip_deploying=skip_deploying,
         skip_contract=skip_contract,
         skip_teardown=skip_teardown,

@@ -51,19 +51,19 @@ async def test_basic_web2_inference_doesnt_provide_proof() -> None:
         assert "container does not generate proof" in str(e).lower()
 
 
-# @pytest.mark.asyncio
-# async def test_onnx_service_doesnt_generate_proofs() -> None:
-#     task_id = await request_job(
-#         ONNX_WITH_PROOFS,
-#         {
-#             "model_source": ar_model_source,
-#             "load_args": ar_load_args,
-#             "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
-#         },
-#         requires_proof=True,
-#     )
-#     r = await get_job(task_id)
-#     assert r.get("code") == "400"
+@pytest.mark.asyncio
+async def test_onnx_service_doesnt_generate_proofs() -> None:
+    task_id = await request_job(
+        ONNX_WITH_PROOFS,
+        {
+            "model_source": ar_model_source,
+            "load_args": ar_load_args,
+            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}},
+        },
+        requires_proof=True,
+    )
+    r = await get_job(task_id)
+    assert r.get("code") == "400"
 
 
 @pytest.mark.asyncio

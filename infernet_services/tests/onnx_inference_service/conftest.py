@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Generator
 
 import pytest
@@ -58,14 +59,14 @@ def onnx_setup() -> Generator[None, None, None]:
                 image_id=ONNX_SERVICE_DOCKER_IMG,
                 port=3002,
             ),
-            # ServiceConfig.build(
-            #     ONNX_WITH_PROOFS,
-            #     image_id=ONNX_SERVICE_DOCKER_IMG,
-            #     port=3003,
-            #     generates_proofs=True,
-            # ),
+            ServiceConfig.build(
+                ONNX_WITH_PROOFS,
+                image_id=ONNX_SERVICE_DOCKER_IMG,
+                port=3003,
+                generates_proofs=True,
+            ),
         ],
-        service_wait_timeout=30,
+        service_wait_timeout=int(os.environ.get("SERVICE_WAIT_TIMEOUT", 60)),
         skip_deploying=skip_deploying,
         skip_contract=skip_contract,
         skip_teardown=skip_teardown,
