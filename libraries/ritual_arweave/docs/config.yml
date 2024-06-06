@@ -1,0 +1,5 @@
+site_name: Ritual Arweave
+site_description: Documentation for the Ritual Arweave library.
+
+nav:
+- Quickstart: quickstart.md

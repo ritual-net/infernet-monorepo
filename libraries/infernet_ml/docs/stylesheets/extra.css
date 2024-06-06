@@ -1,0 +1,199 @@
+/* extra.css */
+
+@import url("https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+/* Add brand fonts */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+div,
+label,
+span,
+input {
+  font-family: "Barlow", sans-serif !important;
+}
+
+/* Increase table font size */
+td {
+  font-size: 14px;
+}
+
+/* Change monospace font */
+code,
+code span,
+pre,
+pre span {
+  font-family: "JetBrains Mono", monospace !important;
+}
+
+/* Increase font weight of headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600 !important;
+}
+
+/* Change body background */
+body {
+  background-color: #0e0e0e;
+  padding-bottom: 3rem;
+}
+
+/* Set color variables */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #66ff99;
+  --md-accent-fg-color: #66ff99;
+  /* Ritual green for other primary elements */
+  --md-primary-bg-color: #66ff99;
+  /* Darker green for background */
+  --md-typeset-a-color: #66ff99;
+  --md-primary-border-color: #66ff99;
+  /* Ritual green */
+  --md-primary-light-color: #66ff99;
+  /* Lighter green for hover, etc. */
+  /* Customize the navbar specifically */
+  --md-header-fg-color: #ffffff;
+  /* Navbar text color */
+  --md-header-bg-color: #0e0e0e;
+  /* Navbar background color */
+  --md-code-bg-color: #202022;
+  --md-accent-fg-color--transparent: #66ff9915;
+}
+
+:root {
+  --md-code-bg-color: #202022;
+  /* Solarized dark background */
+  --md-code-fg-color: #839496;
+  /* Solarized dark foreground */
+  --md-code-hl-color: #586e75;
+  /* Solarized dark highlight */
+  --md-default-bg-color: #1e2129;
+}
+
+/* Additional styling for navbar if needed */
+.md-header {
+  background-color: var(--md-header-bg-color);
+  color: var(--md-header-fg-color);
+}
+
+/* Adjust header color */
+.md-header__title,
+.md-header__nav,
+.md-header__button {
+  color: var(--md-header-fg-color);
+}
+
+.md-header__title:focus,
+.md-header__title:hover,
+.md-header__nav a:focus,
+.md-header__nav a:hover,
+.md-header__button:focus,
+.md-header__button:hover {
+  color: var(--md-primary-light-color) !important;
+}
+
+.md-nav--primary .md-nav__title[for="__drawer"] {
+  background-color: #1e2129;
+}
+
+.md-nav__link[for]:focus,
+.md-nav__link[for]:hover,
+.md-nav__link[href]:focus,
+.md-nav__link[href]:hover {
+  color: var(--md-primary-fg-color) !important;
+}
+
+.md-search-result mark {
+  color: var(--md-primary-fg-color) !important;
+}
+
+/* Remove drop shadow from header */
+header.md-header {
+  box-shadow: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Change border for quotes */
+details.quote {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Change logo size */
+.md-logo > img {
+  height: 38px !important;
+}
+
+/* Remove box shadow from navigation */
+.md-sidebar__inner .md-nav__title {
+  background-color: #0e0e0e;
+  box-shadow: none !important;
+}
+
+.md-nav__title {
+  color: white !important;
+}
+
+/* Remove mkDocs footer */
+.md-footer {
+  display: none;
+}
+
+/* Bump font size in quotes */
+details.quote summary {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+details.quote code {
+  font-weight: 500;
+}
+
+.md-nav__title[for="__drawer"] {
+  background-color: unset !important;
+}
+
+/* Add border-radius to <pre> */
+pre code {
+    border-radius: 7px !important;
+}
+
+/* Change header colors */
+.doc.doc-heading code,
+.doc.doc-heading span {
+  color: white;
+}
+
+.md-content__inner.md-typeset code {
+  color: white;
+}
+
+.md-header__title {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 24px;
+}
+
+/* Restyle search dropdown */
+@media only screen and (min-width: 960px) {
+  .md-search__output {
+    border-radius: 7px !important;
+    margin-top: 8px !important;
+  }
+
+  .md-search form {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px !important;
+  }
+}
+
+/* Change font weight */
+.md-header__topic {
+  font-weight: 600 !important;
+}

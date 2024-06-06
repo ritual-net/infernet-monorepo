@@ -1,0 +1,120 @@
+[project]
+name = "infernet-ml"
+version = "1.0.0"
+description = "Lightweight library to build web3 machine learning workflows"
+authors = [
+    { name = "ritual-all", email = "ritual-all@ritual.net" }
+]
+
+dependencies = [
+    "python-dotenv>=1.0.0,<2.0.0",
+    "pydantic>=2.5.3,<3.0.0",
+    "huggingface-hub>=0.17.3,<1.0.0",
+    "click>=8.1.7,<9.0.0",
+    "ritual-arweave>=0.1.0,<1.0.0",
+]
+
+readme = "README.md"
+requires-python = ">= 3.10"
+
+[project.optional-dependencies]
+
+# development dependencies
+development = [
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "mypy>=1.9.0,<2.0.0",
+    "isort>=5.13.2,<6.0.0",
+    "torch>=2.1.2,<3.0.0",
+    "sk2torch>=1.2.0,<2.0.0",
+    "types-requests>=2.31.0.20240406,<3.0",
+    "types-retry>=0.9.9.4,<1.0",
+    "types-tqdm>=4.66.0.20240106,<5.0",
+    "types-mock>=5.1.0.20240425,<6.0",
+    "web3>=6.16.0,<7.0.0",
+    "ruff>=0.3.5,<1.0.0",
+    "pytest-mock>=3.14.0,<4.0.0"
+]
+
+# torch inference dependencies
+torch_inference = [
+    "torch>=2.0.0,<3.0.0",
+    "sk2torch>=1.2.0,<2.0.0",
+    "numpy>=1.25.2,<2.0.0",
+]
+
+# bark inference service
+bark_inference = [
+    "torch>=2.1.2,<3.0.0",
+    "transformers>=4.37.2,<5.0.0",
+    "scipy>=1.11.4,<2.0.0",
+]
+
+# onnx inference dependencies
+onnx_inference = [
+    "torch>=2.0.0,<3.0.0",
+    "onnx>=1.15.0,<2.0.0",
+    "onnxruntime>=1.16.3,<2.0.0",
+    "numpy>=1.25.2,<2.0.0",
+]
+
+# llm inference dependencies
+tgi_inference = [
+    "text-generation>=0.6.1,<1.0.0",
+    "retry2>=0.9.5,<1.0.0",
+]
+
+css_inference = [
+    "retry2>=0.9.5,<1.0.0",
+]
+
+# huggingface_hub inference service
+hf_inference = [
+    "huggingface-hub>=0.20.3,<1.0.0",
+    "transformers>=4.38,<5.0.0",
+]
+
+# Diffusion model inference service
+diffusion_inference = [
+    "diffusers>=0.26.3,<0.27.0",
+    "accelerate>=0.27.2,<0.28.0",
+    "Pillow>=10.2.0,<11.0.0",
+    "pydantic>=2.5.3,<3.0.0",
+    "transformers>=4.0.0,<5.0.0",
+    "xformers>=0.0.20,<0.1.0",
+    "torch>=2.1.2,<2.2.0",
+]
+
+# HF Diffusion model inference service
+hf_diffusion_inference = [
+    "diffusers>=0.26,<0.27.0",
+    "Pillow>=10.2.0,<11.0.0",
+    "huggingface-hub>=0.20.3,<1.0.0",
+    "transformers>=4.38,<5.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/infernet_ml"]
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[tool.mypy]
+exclude = ['**/venv', '**/.venv']
+
+[tool.isort]
+profile = "black"

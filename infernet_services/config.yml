@@ -1,0 +1,8 @@
+site_name: Infernet Services
+site_description: Infernet Services Documentation
+nav:
+- CSS Inference Service: reference/css_inference_service.md
+- ONNX Inference Service: reference/onnx_inference_service.md
+- TGI Client Inference Service: reference/tgi_client_inference_service.md
+- Torch Inference Service: reference/torch_inference_service.md
+- HF Inference Client Service: reference/hf_inference_client_service.md
