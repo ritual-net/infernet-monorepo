@@ -38,7 +38,7 @@ generate-state-file:
 	$(MAKE) stop-anvil
 
 tag := 1.0.2
-img_name := ritualnetwork/infernet-anvil-internal:$(tag)
+img_name := ritualnetwork/infernet-anvil:$(tag)
 
 build: generate-state-file
 	docker build -t $(img_name) .

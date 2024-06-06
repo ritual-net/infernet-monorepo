@@ -1,1 +1,1 @@
-infernet-sdk/=lib/infernet-sdk-internal/
+infernet-sdk/=lib/infernet-sdk/
