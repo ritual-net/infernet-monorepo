@@ -4,6 +4,8 @@ A simple class to interact with ERC20 tokens.
 ## Public Methods
 
 - `balance_of(address: ChecksumAddress) -> Wei`: Get the balance of an address.
+- `transfer(to: ChecksumAddress, amount: Wei) -> TxReceipt`: Transfer tokens to an
+address.
 
 ## Example
 
@@ -18,6 +20,8 @@ async def main():
     token = Token("0x123456789012345678901234567890123, rpc)
     balance = await token.balance_of("0x123456789012345678901234567890123")
 
+    token.transfer("0x123456789012345678901234567890123", Wei(100))
+
     print(balance)
 ```
 """
@@ -27,10 +31,12 @@ from __future__ import annotations
 from typing import cast
 
 from eth_typing import ChecksumAddress
-from web3.types import Wei
+from web3.types import TxReceipt, Wei
 
 from infernet_client.chain.abis import ERC20_ABI
 from infernet_client.chain.rpc import RPC
+
+ZERO_ADDRESS = cast(ChecksumAddress, "0x0000000000000000000000000000000000000000")
 
 
 class Token:
@@ -61,3 +67,18 @@ class Token:
         """
 
         return cast(Wei, await self._contract.functions.balanceOf(address).call())
+
+    async def transfer(self, to: ChecksumAddress, amount: Wei) -> TxReceipt:
+        """
+        Transfer tokens to an address.
+
+        Args:
+            to: The address to transfer tokens to.
+            amount: The amount of tokens to transfer.
+
+        Returns:
+            The transaction receipt.
+        """
+
+        tx = await self._contract.functions.transfer(to, amount).transact()
+        return await self._rpc.get_tx_receipt(tx)

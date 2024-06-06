@@ -756,6 +756,9 @@ See [/api/status](./api#put-apistatus).
 
 ## Infernet Wallet
 
+
+### Create Wallet
+
 To make use of Infernet's payment features, you'll need to have an Infernet wallet. This
 is a wallet that is created via Infernet's `WalletFactory` contract.
 
@@ -809,6 +812,113 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 	    Address: 0xFC88d25810C68a7686178b534e0c5e22787DF22d
 	    Owner: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
     ```
+
+### Approve an Address to Spend
+
+=== "Python"
+
+    ```python
+    from web3 import Web3
+
+    from infernet_client.chain.rpc import RPC
+    from infernet_client.chain.wallet_factory import WalletFactory
+
+    # set these values to your own
+    your_key = "0x"
+    wallet = "0x"
+    spender = "0x"
+    token = "0x"
+    amount_int = 1000
+
+
+    async def main():
+        rpc = RPC("http://localhost:8545")
+        await rpc.initialize_with_private_key(your_key)
+
+        infernet_wallet = InfernetWallet(
+            Web3.to_checksum_address(wallet),
+            rpc,
+        )
+        await infernet_wallet.approve(
+            Web3.to_checksum_address(spender),
+            Web3.to_checksum_address(token),
+            amount_int,
+        )
+
+    if __name__ == "__main__":
+        import asyncio
+
+        asyncio.run(create_wallet())
+
+    ```
+
+=== "CLI"
+
+    ``` bash
+    infernet-client approve --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --spender 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e \
+            --amount '1 ether'
+    ```
+
+    **Expected Output:**
+
+    ```json
+    Success: approved spender: 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e for
+        amount: 10 ether
+        token: 0x0000000000000000000000000000000000000000
+        tx: 0x7c0b7b68abf9787ff971e7bd3510faccbf6f5f705186cf6e806b5dae8eeaaa30
+    ```
+    for more information on the `fund` command, run `infernet-client fund --help`
+
+### Fund your Wallet
+
+=== "Python"
+
+    ```python
+    from web3 import Web3
+
+    from infernet_client.chain.rpc import RPC
+    from infernet_client.chain.wallet_factory import WalletFactory
+
+    async def main():
+        rpc = RPC("http://localhost:8545")
+        await rpc.initialize_with_private_key(your_key)
+
+        token_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+        token = Token(Web3.to_checksum_address(token), rpc)
+
+        await token.transfer(your_wallet, 1000)
+
+
+    if __name__ == "__main__":
+        import asyncio
+
+        asyncio.run(create_wallet())
+
+    ```
+
+=== "CLI"
+
+    ``` bash
+    infernet-client fund --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --amount '1 ether'
+    ```
+
+    **Expected Output:**
+
+    ```json
+    Success: sent
+        amount: 10 ether
+        token: 0x0000000000000000000000000000000000000000
+        to wallet: 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6
+        tx: 0xac45dd0d6b1c7ba77df5c0672b19a2cc314ed6b8790a68b5f986df3a34d9da12
+    ```
+    for more information on the `fund` command, run `infernet-client fund --help`
+
 
 ### More Info
 To learn more about the library, consult the [`Wallet`](../reference/infernet_client/chain/wallet/) &

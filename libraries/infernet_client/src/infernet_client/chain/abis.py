@@ -65,4 +65,14 @@ ERC20_ABI: ABI = [
         "outputs": [{"name": "result", "type": "uint256"}],
         "stateMutability": "view",
     },
+    {
+        "type": "function",
+        "name": "transfer",
+        "inputs": [
+            {"name": "to", "type": "address"},
+            {"name": "amount", "type": "uint256"},
+        ],
+        "outputs": [{"name": "", "type": "bool"}],
+        "stateMutability": "nonpayable",
+    },
 ]

@@ -3,6 +3,8 @@ from typing import IO, Any, Callable
 
 import click
 
+from infernet_client.chain.token import ZERO_ADDRESS
+
 # Generic callable type for function decorators
 GenericCallable = Callable[..., Any]
 
@@ -15,6 +17,43 @@ def url_option(f: GenericCallable) -> GenericCallable:
         required=True,
         type=str,
         help="URL of the server. Can also set SERVER_URL environment variable.",
+    )(f)
+
+
+def wallet_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add a wallet address option to a command."""
+    return click.option(
+        "-w",
+        "--wallet",
+        required=True,
+        type=str,
+        help="Address of the Infernet wallet, the owner of whom is approving the "
+        "spender.",
+    )(f)
+
+
+def token_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add a token address option to a command."""
+    return click.option(
+        "-t",
+        "--token",
+        required=False,
+        type=str,
+        default=ZERO_ADDRESS,
+        help="Address of the token to approve for spending, defaults to zero address "
+        "(native token).",
+    )(f)
+
+
+def amount_option(f: GenericCallable) -> GenericCallable:
+    """Decorator to add a amount option to a command."""
+    return click.option(
+        "-a",
+        "--amount",
+        required=True,
+        type=str,
+        help="Amount to approve for spending. Either provide a number i.e. 100 or a "
+        "number and a denomination: i.e. '1 ether', '100 gwei', etc.",
     )(f)
 
 

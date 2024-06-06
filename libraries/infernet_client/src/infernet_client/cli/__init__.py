@@ -4,19 +4,24 @@ from typing import IO, Optional, cast
 
 import click
 from web3 import Web3
+from web3.types import TxReceipt
 
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.subscription import Subscription
+from infernet_client.chain.token import ZERO_ADDRESS, Token
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_client.chain.wallet_factory import WalletFactory
 from infernet_client.cli.options import (
+    amount_option,
     input_option,
     output_option,
     output_result,
     private_key_option,
     router_url_option,
     rpc_url_option,
+    token_option,
     url_option,
+    wallet_option,
 )
 from infernet_client.node import NodeClient
 from infernet_client.router import RouterClient
@@ -343,11 +348,11 @@ def create_infernet_wallet(
     Example:
         infernet-client create-wallet --rpc-url http://localhost:8545 \
             --factory 0xF6168876932289D073567f347121A267095f3DD6 \
-            --private-key 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
             --owner 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
         or
 
-        export PRIVATE_KEY=0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6 && \
+        export PRIVATE_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a && \
             infernet-client create-wallet --rpc-url http://localhost:8545 \
             --factory 0xF6168876932289D073567f347121A267095f3DD6
     """  # noqa
@@ -364,6 +369,122 @@ def create_infernet_wallet(
     owner = asyncio.run(wallet.owner())
     click.echo(
         f"Success: wallet created.\n\tAddress: {wallet.address}\n\tOwner: {owner}"
+    )
+
+
+@token_option
+@wallet_option
+@amount_option
+@click.option(
+    "-s",
+    "--spender",
+    required=True,
+    type=str,
+    help="Address of spender to approve for spending.",
+)
+@rpc_url_option
+@private_key_option
+@cli.command(
+    name="approve",
+)
+def approve_spender(
+    rpc_url: str,
+    private_key: str,
+    wallet: str,
+    spender: str,
+    token: str,
+    amount: str,
+) -> None:
+    """
+    Approve a spender to spend a given amount of tokens.
+
+    Example:
+        infernet-client approve --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --spender 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e \
+            --amount '1 ether'
+
+
+    """  # noqa: E501
+
+    async def _approve() -> TxReceipt:
+        rpc = RPC(rpc_url)
+        await rpc.initialize_with_private_key(private_key)
+        infernet_wallet = InfernetWallet(
+            Web3.to_checksum_address(wallet),
+            rpc,
+        )
+        _split = amount.split(" ")
+        # if no denomination provided, use token decimals
+        n, u = _split if len(_split) == 2 else (amount, "wei")
+        amount_int = Web3.to_wei(n, u)
+        return await infernet_wallet.approve(
+            Web3.to_checksum_address(spender),
+            Web3.to_checksum_address(token),
+            amount_int,
+        )
+
+    receipt = asyncio.run(_approve())
+    click.echo(
+        f"Success: approved spender: {spender} for\n\tamount: {amount}\n\ttoken: {token}"
+        f"\n\ttx: {receipt['transactionHash'].hex()}"
+    )
+
+
+@token_option
+@wallet_option
+@amount_option
+@rpc_url_option
+@private_key_option
+@cli.command(
+    name="fund",
+)
+def fund_wallet(
+    rpc_url: str,
+    private_key: str,
+    wallet: str,
+    token: str,
+    amount: str,
+) -> None:
+    """
+    Approve a spender to spend a given amount of tokens.
+
+    Example:
+        infernet-client fund --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --amount '1 ether'
+
+    """  # noqa: E501
+
+    async def _fund() -> TxReceipt:
+        rpc = RPC(rpc_url)
+        await rpc.initialize_with_private_key(private_key)
+        _split = amount.split(" ")
+        # if no denomination provided, use token decimals
+        n, u = _split if len(_split) == 2 else (amount, "wei")
+        amount_int = Web3.to_wei(n, u)
+
+        if token == ZERO_ADDRESS:
+            tx = await rpc.send_transaction(
+                {
+                    "to": Web3.to_checksum_address(wallet),
+                    "value": amount_int,
+                },
+            )
+            return await rpc.get_tx_receipt(tx)
+
+        token_contract = Token(Web3.to_checksum_address(token), rpc)
+        return await token_contract.transfer(
+            Web3.to_checksum_address(wallet),
+            amount_int,
+        )
+
+    receipt = asyncio.run(_fund())
+    click.echo(
+        f"Success: sent\n\tamount: {amount}\n\ttoken: {token}\n\tto wallet: {wallet}"
+        f"\n\ttx: {receipt['transactionHash'].hex()}"
     )
 
 
