@@ -2,7 +2,7 @@ version: '3'
 
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:1.0.0.10
+    image: ritualnetwork/infernet-node-internal:1.0.0
     ports:
       - "0.0.0.0:4000:4000"
     volumes:
