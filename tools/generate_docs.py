@@ -11,6 +11,7 @@ common_config = """
 extra_css:
 - stylesheets/extra.css
 theme:
+  favicon: assets/favicon.webp
   logo: assets/logo.svg
   name: material
   palette:
