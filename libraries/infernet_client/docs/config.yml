@@ -1,3 +1,5 @@
 site_name: Infernet Client Docs
+site_description: Infernet Client Documentation
+
 nav:
 - Usage: usage.md

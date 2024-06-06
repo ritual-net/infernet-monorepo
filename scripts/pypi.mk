@@ -62,6 +62,13 @@ publish-library:
 		--verbose \
 	 	dist/$$(ls dist | grep "$(library).*.tar.gz")
 
+publish-pypi:
+	rye publish \
+		--token $(token) \
+		--yes \
+		--verbose \
+	 	dist/$$(ls dist | grep "$(library).*.tar.gz")
+
 # show the pypi registry settings (useful for modifying the ~/.pypirc file)
 show-artifact-settings:
 	gcloud artifacts print-settings python \

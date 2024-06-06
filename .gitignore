@@ -85,3 +85,5 @@ vercel.json
 **/pytest_logs.txt
 
 infernet_services/deploy/config.json
+
+**/test_lib_0/**

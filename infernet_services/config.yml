@@ -1,4 +1,5 @@
-site_name: Inference Services
+site_name: Infernet Services
+site_description: Infernet Services Documentation
 nav:
 - CSS Inference Service: reference/css_inference_service.md
 - ONNX Inference Service: reference/onnx_inference_service.md
