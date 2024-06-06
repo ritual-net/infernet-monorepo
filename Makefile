@@ -15,7 +15,6 @@ clean:
 setup-library-env:
 	uv venv -p 3.11 && \
 	source .venv/bin/activate && \
-	$(MAKE) generate-uv-env-file && source uv.env && \
 	uv pip install -r libraries/$(library)/requirements.lock
 
 pre-commit-library:

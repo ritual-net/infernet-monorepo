@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 
 ## [1.0.0] - 2024-06-06
 
+### Added
+- Added tooling for encoding/decoding of vectors to solidity bytes
+- Added streaming support to `BaseInferenceWorkflow` with two new methods
+  - `stream()`
+  - `do_stream()`
+
 ### Changed
 - Added typed input/output interfaces for
   - `CSSInferenceWorkflow`
@@ -15,10 +21,6 @@ All notable changes to this project will be documented in this file.
   - `ONNXInferenceWorkflow`
   - `HFInferenceClientWorkflow`
   - `model_loader`
-- Added tooling for encoding/decoding of vectors to solidity bytes
-- Added streaming support to `BaseInferenceWorkflow` with two new methods
-  - `stream()`
-  - `do_stream()`
 
 ### Fixed
 

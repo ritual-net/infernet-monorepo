@@ -6,6 +6,7 @@ authors = [
     { name = "ritual", email = "hello@ritual.net" }
 ]
 dependencies = [
+    "twine>=5.1.0,<6.0.0",
     "pre-commit>=3.7.0",
     "mkdocs-material>=9.5.19,<10.0.0",
     "mkdocstrings>=0.24.3,<0.25.0",

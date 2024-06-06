@@ -1,4 +1,5 @@
-site_name: Infernet ML Docs
+site_name: Infernet ML
+site_description: Infernet ML Documentation
 
 nav:
   - Quickstart: quickstart.md

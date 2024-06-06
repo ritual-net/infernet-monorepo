@@ -14,6 +14,7 @@ theme:
   favicon: assets/favicon.webp
   logo: assets/logo.svg
   name: material
+  custom_dir: docs/overrides
   palette:
   - scheme: slate
     primary: custom
@@ -32,6 +33,7 @@ plugins:
           show_source: true
           
 markdown_extensions:
+- meta
 - pymdownx.highlight:
     anchor_linenums: true
     line_spans: __span
