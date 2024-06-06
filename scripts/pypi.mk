@@ -1,8 +1,11 @@
 # Make commands for building python packages & publishing them to GCP's Artifact Registry
 SHELL := /bin/bash
 
+# Gets GCP's index URL for the artifact repository if a gcp.env file is present
 ifneq ("$(wildcard gcp.env)","")
 include gcp.env
+$(eval token := $(shell gcloud auth print-access-token))
+$(eval index_url := "https://_token:$(token)@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple")
 endif
 
 # Conditional assignment based on the operating system
@@ -25,25 +28,21 @@ repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(a
 # twine oauth2 username
 username := _token
 
-# Gets the service account's credentials & sets them
-get_index_url:
-	$(eval token := $(shell gcloud auth print-access-token))
-	$(eval index_url := "https://_token:$(token)@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple")
 
-show-token: get_index_url
+show-token:
 	@echo $(token)
 
-show-index-url: get_index_url
+show-index-url:
 	@echo $(index_url)
 
 # explicit install command to test uv installation
-uv-install: get_index_url
+uv-install:
 	uv venv; \
 	source .venv/bin/activate; \
 	uv pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(library)
 
 # explicit install command to test pip installation
-pip-install: get_index_url
+pip-install:
 	pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(library)
 
 # utility to create, install & activate an environment
@@ -54,7 +53,7 @@ setup-env:
 update-lockfile:
 	make -C libraries/$(library) update-lockfile
 
-publish-library: get_index_url
+publish-library:
 	rye publish --repository ritual-pypi \
 		--repository-url $(repository_url) \
 		--username $(username) \
@@ -78,7 +77,7 @@ gcp-setup: activate-service-account get_index_url
 
 export_prefix ?= "export "
 
-generate-uv-env-file: get_index_url
+generate-uv-env-file:
 	@echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
