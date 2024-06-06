@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity ^0.8.13;
 
-import {IProver} from "infernet-sdk/payments/IProver.sol";
+import {IVerifier} from "infernet-sdk/payments/IVerifier.sol";
 import {Registry} from "infernet-sdk/Registry.sol";
 import {EIP712Coordinator} from "infernet-sdk/EIP712Coordinator.sol";
 import {WalletFactory} from "infernet-sdk/payments/WalletFactory.sol";
 import {EIP712Coordinator} from "infernet-sdk-internal/src/EIP712Coordinator.sol";
 
-contract GenericAtomicVerifier is IProver {
+contract GenericAtomicVerifier is IVerifier {
     string private ACCEPTED_PROOF = "just trust me bro";
     address private wallet;
     mapping(address => bool) public acceptedPayments;
@@ -44,13 +44,13 @@ contract GenericAtomicVerifier is IProver {
         string memory content = abi.decode(proof, (string));
         EIP712Coordinator coordinator = EIP712Coordinator(registry.COORDINATOR());
         if (keccak256(abi.encodePacked(content)) == keccak256(abi.encodePacked(ACCEPTED_PROOF))) {
-            coordinator.finalizeProofValidation(subscriptionId, interval, node, true);
+            coordinator.finalizeProofVerification(subscriptionId, interval, node, true);
         } else {
-            coordinator.finalizeProofValidation(subscriptionId, interval, node, false);
+            coordinator.finalizeProofVerification(subscriptionId, interval, node, false);
         }
     }
 
-    function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
+    function requestProofVerification(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
         external
         virtual
         override
@@ -66,7 +66,7 @@ contract GenericLazyVerifier is GenericAtomicVerifier {
 
     mapping(uint32 => mapping(uint32 => mapping(address => bytes))) public storedProofs;
 
-    function requestProofValidation(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
+    function requestProofVerification(uint32 subscriptionId, uint32 interval, address node, bytes calldata proof)
         external
         override
     {

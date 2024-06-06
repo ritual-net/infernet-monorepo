@@ -142,7 +142,7 @@ on port 4000.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
     job_id = await client.request_job(
@@ -218,7 +218,7 @@ contract MyOnchainSubscription is CallbackConsumer {
         address paymentToken = address(0);
         uint256 paymentAmount = 0;
         address wallet = address(0);
-        address prover = address(0);
+        address verifier = address(0);
 
         _requestCompute(
             containerId,
@@ -227,7 +227,7 @@ contract MyOnchainSubscription is CallbackConsumer {
             paymentToken,
             paymentAmount,
             wallet,
-            prover
+            verifier
         );
 
         console.log("Requested compute");
@@ -266,7 +266,7 @@ on port `4000`.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
 
     sub = Subscription(
@@ -277,7 +277,7 @@ on port `4000`.
         redundancy=1,
         containers=["SERVICE_NAME"],
         lazy=False,
-        prover=ZERO_ADDRESS,
+        verifier=ZERO_ADDRESS,
         payment_amount=0,
         payment_token=ZERO_ADDRESS,
         wallet=ZERO_ADDRESS,
@@ -315,7 +315,7 @@ on port `4000`.
         "redundancy": 2, // 2 nodes respond each time
         "containers": ["SERVICE_NAME"], // comma-separated list of containers
         "lazy": false,
-        "prover": "0x0000000000000000000000000000000000000000",
+        "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,
         "payment_token": "0x0000000000000000000000000000000000000000",
         "wallet": "0x0000000000000000000000000000000000000000",

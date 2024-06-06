@@ -34,8 +34,9 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
     )
     r = await get_job(task_id)
     assert r.get("code") == "400"
-    assert "Proofs are not supported for TGI Client Inference Service" in r.get(
-        "description"
+    assert (
+        "Proofs are not supported for TGI Client Inference Service".lower()
+        in r.get("description").lower()
     )
 
 
@@ -48,7 +49,7 @@ async def test_completion_web3_doesnt_provide_proof() -> None:
             ["whats 2 + 2?"],
         ),
         # a non-zero address means this requires proof
-        prover=global_config.coordinator_address,
+        verifier=global_config.coordinator_address,
     )
 
     await assert_regex_in_node_logs(

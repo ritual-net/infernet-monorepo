@@ -36,4 +36,5 @@ def lifecycle() -> Generator[None, None, None]:
         skip_deploying=skip_deploying,
         skip_contract=skip_contract,
         skip_teardown=skip_teardown,
+        service_wait_timeout=int(os.environ.get("SERVICE_WAIT_TIMEOUT", 60)),
     )

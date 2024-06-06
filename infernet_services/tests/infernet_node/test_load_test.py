@@ -1,5 +1,10 @@
+"""
+Due to a bug in pytest-asyncio, the tests in this file are not run in CI, rather they
+are run manually.
+"""
 import asyncio
 import logging
+import os
 import random
 from uuid import uuid4
 
@@ -18,13 +23,14 @@ from test_library.web3_utils import echo_input, echo_output, request_web3_comput
 
 log = logging.getLogger(__name__)
 
-NUM_SUBSCRIPTIONS = 20
+NUM_SUBSCRIPTIONS = 150
+TIMEOUT = 120
 
 
 async def _fire_callback() -> None:
     i = f"{uuid4()}"
     sub_id = await request_web3_compute(ECHO_SERVICE, echo_input(i))
-    await assert_output(sub_id, i, timeout=40)
+    await assert_output(sub_id, i, timeout=TIMEOUT)
 
 
 async def _fire_delegated() -> None:
@@ -34,43 +40,40 @@ async def _fire_delegated() -> None:
         sub_id,
         echo_output(i),
         contract_name=DELEGATE_SUB_CONSUMER_CONTRACT,
-        timeout=10,
+        timeout=TIMEOUT,
     )
 
 
 async def _fire_subscription() -> None:
     (sub_id, i) = await create_sub_with_random_input(1, 5)
-    await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=20)
+    await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=TIMEOUT)
 
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=2, reruns_delay=2)
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 async def test_infernet_bulk_callback_consumers() -> None:
-    num_subscriptions = NUM_SUBSCRIPTIONS
-
-    await asyncio.gather(*[_fire_callback() for _ in range(num_subscriptions)])
+    await asyncio.gather(*[_fire_callback() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=2, reruns_delay=2)
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 async def test_infernet_bulk_delegated_subscription() -> None:
-    num_subscriptions = NUM_SUBSCRIPTIONS
-    await asyncio.gather(*[_fire_delegated() for _ in range(num_subscriptions)])
+    await asyncio.gather(*[_fire_delegated() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip()
-async def test_infernet_100_subscriptions() -> None:
-    num_subscriptions = NUM_SUBSCRIPTIONS
-    await asyncio.gather(*[_fire_subscription() for _ in range(num_subscriptions)])
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
+async def test_infernet_bulk_subscriptions() -> None:
+    await asyncio.gather(*[_fire_subscription() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip()
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 async def test_infernet_interwoven_subscriptions() -> None:
-    num_subscriptions = NUM_SUBSCRIPTIONS
     tasks = []
-    for _ in range(num_subscriptions):
+    for _ in range(NUM_SUBSCRIPTIONS):
         tasks.append(
             random.choice([_fire_callback, _fire_delegated, _fire_subscription])()
         )

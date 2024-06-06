@@ -147,7 +147,7 @@ on port 4000.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
     iris_input_vector_params = {
@@ -267,7 +267,7 @@ contract MyOnchainSubscription {
         address paymentToken = address(0);
         uint256 paymentAmount = 0;
         address wallet = address(0);
-        address prover = address(0);
+        address verifier = address(0);
 
         bytes32 generatedTaskId = keccak256(abi.encodePacked(inputs, block.timestamp));
         console.log("Generated task ID, now requesting compute");
@@ -280,7 +280,7 @@ contract MyOnchainSubscription {
             paymentToken,
             paymentAmount,
             wallet,
-            prover
+            verifier
         );
 
         console.log("Requested compute");
@@ -321,7 +321,7 @@ on port `4000`.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
 
     sub = Subscription(
@@ -332,7 +332,7 @@ on port `4000`.
         redundancy=1,
         containers=["SERVICE_NAME"],
         lazy=False,
-        prover=ZERO_ADDRESS,
+        verifier=ZERO_ADDRESS,
         payment_amount=0,
         payment_token=ZERO_ADDRESS,
         wallet=ZERO_ADDRESS,
@@ -387,7 +387,7 @@ where `params.json` looks like this:
     ],
     // comma-separated list of containers
     "lazy": false,
-    "prover": "0x0000000000000000000000000000000000000000",
+    "verifier": "0x0000000000000000000000000000000000000000",
     "payment_amount": 0,
     "payment_token": "0x0000000000000000000000000000000000000000",
     "wallet": "0x0000000000000000000000000000000000000000"

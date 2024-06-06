@@ -72,7 +72,7 @@ async def create_delegated_subscription(
         redundancy=redundancy,
         containers=[container],
         lazy=False,
-        prover=ZERO_ADDRESS,
+        verifier=ZERO_ADDRESS,
         payment_amount=payment_amount,
         payment_token=payment_token,
         wallet=wallet,

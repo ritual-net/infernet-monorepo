@@ -75,7 +75,7 @@ async def create_sub_with_random_input(
     payment_token: str = ZERO_ADDRESS,
     payment_amount: int = 0,
     wallet: str = ZERO_ADDRESS,
-    prover: str = ZERO_ADDRESS,
+    verifier: str = ZERO_ADDRESS,
     contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT,
 ) -> tuple[int, str]:
     # setting the input to a random number, this is to distinguish between the outputs
@@ -95,7 +95,7 @@ async def create_sub_with_random_input(
             payment_token,
             payment_amount,
             wallet,
-            prover,
+            verifier,
         )
     )
 

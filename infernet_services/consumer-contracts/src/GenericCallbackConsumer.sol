@@ -28,9 +28,9 @@ contract GenericCallbackConsumer is CallbackConsumer, Delegator {
         address paymentToken,
         uint256 paymentAmount,
         address wallet,
-        address prover
+        address verifier
     ) public returns (uint32) {
-        uint32 id = _requestCompute(containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, prover);
+        uint32 id = _requestCompute(containerId, inputs, redundancy, paymentToken, paymentAmount, wallet, verifier);
         console2.log("Made subscription request", id);
         return id;
     }

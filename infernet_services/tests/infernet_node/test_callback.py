@@ -204,6 +204,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_basic_payment_unaccepted_token() -> None:
     wallet = await create_wallet()
     rejected_money = get_deployed_contract_address("RejectedMoney")

@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional, cast
 from aiohttp import ServerDisconnectedError
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.subscription import Subscription
-from infernet_client.client import NodeClient
+from infernet_client.node import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.utils.codec.vector import DataType
 from infernet_ml.utils.model_loader import LoadArgs, ModelSource
@@ -86,7 +86,7 @@ async def request_delegated_subscription(
             redundancy=1,
             containers=[service_name],
             lazy=False,
-            prover=ZERO_ADDRESS,
+            verifier=ZERO_ADDRESS,
             payment_amount=0,
             payment_token=ZERO_ADDRESS,
             wallet=ZERO_ADDRESS,

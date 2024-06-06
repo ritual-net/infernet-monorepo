@@ -31,6 +31,7 @@ async contract instance
 - `get_nonce(address: ChecksumAddress) -> Nonce`: Collects nonce for an address
 - `get_chain_id() -> int`: Collects connected RPC's chain ID
 - `get_tx_receipt(tx_hash: HexBytes)`: Returns transaction receipt
+- `send_transaction(tx: TxParams) -> HexBytes`: Sends a transaction
 """
 
 from __future__ import annotations
@@ -43,7 +44,7 @@ from hexbytes import HexBytes
 from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.middleware.signing import async_construct_sign_and_send_raw_middleware
-from web3.types import ABI, Nonce, TxReceipt
+from web3.types import ABI, Nonce, TxParams, TxReceipt
 
 
 class RPC:
@@ -151,3 +152,14 @@ class RPC:
             tx_hash (HexBytes): Transaction hash
         """
         return await self._web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    async def send_transaction(self, tx: TxParams) -> HexBytes:
+        """Sends a transaction
+
+        Args:
+            tx (dict): Transaction dictionary
+
+        Returns:
+            HexBytes: Transaction hash
+        """
+        return await self._web3.eth.send_transaction(tx)

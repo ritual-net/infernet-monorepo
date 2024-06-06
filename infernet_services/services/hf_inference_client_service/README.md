@@ -111,7 +111,7 @@ on port 4000.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
 
     client = NodeClient("http://127.0.0.1:4000")
     job_id = await client.request_job(
@@ -190,7 +190,7 @@ contract MyContract is CallbackConsumer {
             address(0), // paymentToken
             0, // paymentAmount
             address(0), // wallet
-            address(0) // prover
+            address(0) // verifier
         );
         return generatedTaskId;
     }
@@ -221,13 +221,13 @@ contract MyContract {
     function doMath() public returns (bytes32) {
         container.requestCompute(
             "my-container-id",
-            abi.encode(0, "", "What's 2+2?"), // same encoded input as above. 
+            abi.encode(0, "", "What's 2+2?"), // same encoded input as above.
             // Here, 0 corresponds to the task id: TEXT_GENERATION
             1,
             address(0), // paymentToken
             0, // paymentAmount
             address(0), // wallet
-            address(0) // prover
+            address(0) // verifier
         );
     }
 }
@@ -241,7 +241,7 @@ on port 4000.
 === "Python"
 
     ```python
-    from infernet_client.client import NodeClient
+    from infernet_client.node import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
 
     sub = Subscription(
@@ -252,7 +252,7 @@ on port 4000.
         redundancy=1,
         containers=["SERVICE_NAME"],
         lazy=False,
-        prover=ZERO_ADDRESS,
+        verifier=ZERO_ADDRESS,
         payment_amount=0,
         payment_token=ZERO_ADDRESS,
         wallet=ZERO_ADDRESS,
@@ -291,7 +291,7 @@ on port 4000.
         "redundancy": 2, // 2 nodes respond each time
         "containers": ["SERVICE_NAME"], // comma-separated list of containers
         "lazy": false,
-        "prover": "0x0000000000000000000000000000000000000000",
+        "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,
         "payment_token": "0x0000000000000000000000000000000000000000",
         "wallet": "0x0000000000000000000000000000000000000000",

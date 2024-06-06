@@ -29,7 +29,7 @@ class Subscription:
         _containers_hash (str): Hash of container IDs, this is keccack256 hash of
             comma-separated container IDs
         _lazy (bool): Lazy flag
-        _prover (str): Prover address
+        _verifier (str): Verifier address
         _payment_amount (int): Payment amount
         _payment_token (str): Payment token address
         _wallet (str): Wallet address of the subscription owner, where payments are
@@ -45,7 +45,7 @@ class Subscription:
         redundancy: int,
         containers: List[str],
         lazy: bool,
-        prover: str,
+        verifier: str,
         payment_amount: int,
         payment_token: str,
         wallet: str,
@@ -60,7 +60,7 @@ class Subscription:
             redundancy (int): Number of unique nodes that can fulfill each interval
             containers (List[str]): List of container IDs
             lazy (bool): Lazy flag
-            prover (str): Prover address
+            verifier (str): Verifier address
             payment_amount (int): Payment amount
             payment_token (str): Payment token address
             wallet (str): Wallet address of the subscription owner
@@ -75,7 +75,7 @@ class Subscription:
             encode(["string"], [",".join(containers)])
         ).hex()
         self._lazy = lazy
-        self._prover = prover
+        self._verifier = verifier
         self._payment_amount = payment_amount
         self._payment_token = payment_token
         self._wallet = wallet
@@ -95,7 +95,7 @@ class Subscription:
             "redundancy": self._redundancy,
             "containers": self._containers_hash,
             "lazy": self._lazy,
-            "prover": self._prover,
+            "verifier": self._verifier,
             "payment_amount": self._payment_amount,
             "payment_token": self._payment_token,
             "wallet": self._wallet,
@@ -141,7 +141,7 @@ class Subscription:
                         {"name": "redundancy", "type": "uint16"},
                         {"name": "containerId", "type": "bytes32"},
                         {"name": "lazy", "type": "bool"},
-                        {"name": "prover", "type": "address"},
+                        {"name": "verifier", "type": "address"},
                         {"name": "paymentAmount", "type": "uint256"},
                         {"name": "paymentToken", "type": "address"},
                         {"name": "wallet", "type": "address"},
@@ -165,7 +165,7 @@ class Subscription:
                         "redundancy": self._redundancy,
                         "containerId": HexBytes(self._containers_hash),
                         "lazy": self._lazy,
-                        "prover": self._prover,
+                        "verifier": self._verifier,
                         "paymentAmount": self._payment_amount,
                         "paymentToken": self._payment_token,
                         "wallet": self._wallet,
