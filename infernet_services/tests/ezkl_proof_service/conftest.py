@@ -1,5 +1,6 @@
 import os
 from typing import Generator
+
 import pytest
 from dotenv import load_dotenv
 from test_library.config_creator import ServiceConfig
@@ -14,8 +15,8 @@ SERVICE_NAME = "ezkl_proof_service"
 @pytest.fixture(scope="session", autouse=True)
 def lifecycle() -> Generator[None, None, None]:
     env_vars = {
-            "EZKL_PROOF_MODEL_SOURCE": 1,
-            "EZKL_PROOF_REPO_ID": "iIhX_ZOiLj29o9m-51J7oJZYHgpFLuWjA6QP_kXQ_Gw/testrepo"
+        "EZKL_PROOF_MODEL_SOURCE": 1,
+        "EZKL_PROOF_REPO_ID": "iIhX_ZOiLj29o9m-51J7oJZYHgpFLuWjA6QP_kXQ_Gw/testrepo",
     }
 
     yield from handle_lifecycle(
