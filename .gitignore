@@ -97,3 +97,4 @@ infernet_services/tests/ezkl_proof_service/evm_verifier.abi
 infernet_services/tests/ezkl_proof_service/evm_verifier.sol
 addr_da.txt
 addr_verif.txt
+infernet_services/tests/ezkl_proof_service/witness.json
