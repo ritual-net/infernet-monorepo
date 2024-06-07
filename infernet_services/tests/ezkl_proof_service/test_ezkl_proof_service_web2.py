@@ -69,6 +69,7 @@ async def test_ezkl_proof_service_completion() -> None:
             vk_path= pathlib.Path(__file__).parent / "verifying.key", 
             srs_path= pathlib.Path(__file__).parent / "kzg.srs"
         )
+        
         assert verify_success, "was not able to verify"
 
 
