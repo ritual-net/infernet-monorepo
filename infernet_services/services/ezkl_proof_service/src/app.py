@@ -235,7 +235,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             try:
                 infernet_input = InfernetInput(**data)
                 if infernet_input.source != JobLocation.OFFCHAIN:
-                    # has
                     has_attest, has_input, has_output  = decode(["bool", "bool", "bool"],bytes.fromhex(infernet_input.data))
                     attest_offset = input_offset = output_offset = -1
 
@@ -246,27 +245,31 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     if has_input:
                         input_offset = attest_offset + 1
                         data_types.append("bytes")
-                       
+
                     if has_output:
                         output_offset = input_offset + 1
                         data_types.append("bytes")
 
+
                     decoded = decode(data_types, bytes.fromhex(infernet_input.data))
 
+                    decoded_vals = decoded[3:]
                     proof_request = ProofRequest()
                     if has_attest:
-                        proof_request.vk_address = decoded[2 + attest_offset]
+                        proof_request.vk_address = decoded_vals[attest_offset]
+                        logger.info(f"decoded vk address {proof_request.vk_address}")
                     if has_input:
-                        input_d, input_s, input_val = decode_vector(decoded[2 + input_offset])
-                        proof_request.witness_data.input_shape = input_s
-                        proof_request.witness_data.input_data = input_val.numpy().tolist()                      
+                        input_d, input_s, input_val = decode_vector(decoded_vals[input_offset])
+                        logger.info(f"decoded input: {input_d} {input_s} {input_val}")
+                        proof_request.witness_data.input_shape = list(input_s)
+                        proof_request.witness_data.input_data = [input_val.numpy().flatten().tolist()]                      
                         proof_request.witness_data.input_dtype = input_d 
                     
                     if has_output:
-                        output_d, output_s, output_val = decode_vector(decoded[2 + output_offset])
-
-                        proof_request.witness_data.output_shape = output_s
-                        proof_request.witness_data.output_data = output_val.numpy().tolist()                        
+                        output_d, output_s, output_val = decode_vector(decoded_vals[output_offset])
+                        logger.info(f"decoded ouput: {output_d} {output_s} {output_val}")
+                        proof_request.witness_data.output_shape = list(output_s)
+                        proof_request.witness_data.output_data = [output_val.numpy().flatten().tolist()]                        
                         proof_request.witness_data.output_dtype = output_d 
 
                 else:
@@ -280,12 +283,12 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             except ValidationError as e:
                 abort(400, f"error validating input: {e}")
 
-            with tempfile.NamedTemporaryFile("w+", suffix=".json") as tf:
+            with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as tf:
                 # get data_path from file
                 json.dump(witness_data.model_dump(), tf)
-
                 tf.flush()
                 data_path = tf.name
+                logger.debug(f"witness data: {witness_data}")
 
                 with open(settings_path, "r") as sp:
                     settings = json.load(sp)
@@ -310,7 +313,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     )
 
                     with tempfile.NamedTemporaryFile("w+",
-                                                     suffix=".json") as wf:
+                                                     suffix=".json", delete=False) as wf:
                         wf_path = wf.name
                         witness = await ezkl.gen_witness(
                             data=data_path, 
@@ -318,11 +321,12 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                             output=wf_path, 
                             vk_path=vk_path, 
                             srs_path=srs_path)
-                        logger.info(f"witness = {witness}")
+                        
+                        logger.debug(f"witness = {witness}")
                         
                         with open(wf_path, "r", encoding="utf-8") as wp:
                             res = json.load(wp)
-                            logging.info("witness circuit results: %s", res)
+                            logging.debug("witness circuit results: %s", res)
                             ip = op = None
                             if input_v.lower() == "hashed":
                                 ip = res["processed_inputs"]["poseidon_hash"]
@@ -338,7 +342,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                             
                             
                         with tempfile.NamedTemporaryFile("w+",
-                                                         suffix=".pf") as pf:
+                                                         suffix=".pf", delete=False) as pf:
                             
                             proof_generated = ezkl.prove(  # type: ignore
                                 witness=wf_path,
@@ -367,14 +371,14 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                     ["int256[]"], [[int(ezkl.felt_to_big_endian(x), 0) for x in ip]]).hex()
                                                     if ip else None)
                                 
-                                logger.info("processed input: %s, encoded: %s", ip,
+                                logger.debug("processed input: %s, encoded: %s", ip,
                                             processed_input)
 
                                 processed_output = (encode(
                                     ["int256[]"], [[int(ezkl.felt_to_big_endian(x), 0) for x in op]]).hex()
                                                     if op else None)
 
-                                logger.info(
+                                logger.debug(
                                     "processed output: %s, encoded: %s",
                                     op,
                                     processed_output,
@@ -389,7 +393,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                         witness_data.input_shape, 
                                         nparr_in).hex()
 
-                                logger.info(
+                                logger.debug(
                                     "raw input: %s, encoded: %s",
                                     witness_data.input_data,
                                     raw_input,
@@ -405,20 +409,19 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                         nparr_out).hex()
 
 
-                                logger.info(
+                                logger.debug(
                                     "raw ouput: %s, encoded: %s",
                                     witness_data.output_data,
                                     raw_output,
                                 )
+                                
+
 
                                 with tempfile.NamedTemporaryFile("w+",
-                                    suffix=".cd") as calldata_file:
+                                    suffix=".cd",delete=False) as calldata_file:
                                     calldata:list[int] = ezkl.encode_evm_calldata(proof=pf.name, calldata=calldata_file.name, addr_vk=proof_request.vk_address)
                                     calldata_hex = bytearray(calldata).hex()
-                                    logger.info(
-                                        "generating proof calldata for proof: %s",
-                                        calldata_hex,
-                                    )
+                                    logger.info(f"addr_vk:{proof_request.vk_address} verifcalldata: {calldata_hex}")
 
                                     return {
                                         "processed_output": processed_output,
