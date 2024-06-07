@@ -1,6 +1,6 @@
 # EZKL Proof Service
 
-A container that handles generating proofs based on the EZKL library. 
+A container that handles generating proofs based on the EZKL library.
 
 # Endpoint
 
