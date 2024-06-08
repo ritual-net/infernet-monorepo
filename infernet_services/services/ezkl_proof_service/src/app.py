@@ -250,6 +250,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         srs_path,
     )
 
+    DEBUG = app.debug
+
     @app.route("/")
     async def index() -> dict[str, str]:
         """Default index page
@@ -329,7 +331,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             except ValidationError as e:
                 abort(400, f"error validating input: {e}")
 
-            with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as tf:
+            with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=DEBUG) as tf:
                 # get data_path from file
                 json.dump(witness_data.model_dump(), tf)
                 tf.flush()
@@ -365,7 +367,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     )
 
                     with tempfile.NamedTemporaryFile(
-                        "w+", suffix=".json", delete=False
+                        "w+", suffix=".json", delete=DEBUG
                     ) as wf:
                         wf_path = wf.name
                         witness = await ezkl.gen_witness(
@@ -394,7 +396,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                 op = res["processed_outputs"]["ciphertexts"]
 
                         with tempfile.NamedTemporaryFile(
-                            "w+", suffix=".pf", delete=False
+                            "w+", suffix=".pf", delete=DEBUG
                         ) as pf:
                             proof_generated = ezkl.prove(
                                 witness=wf_path,
@@ -495,7 +497,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                 )
 
                                 with tempfile.NamedTemporaryFile(
-                                    "w+", suffix=".cd", delete=False
+                                    "w+", suffix=".cd", delete=DEBUG
                                 ) as calldata_file:
                                     calldata: list[int] = ezkl.encode_evm_calldata(
                                         proof=pf.name,
@@ -503,17 +505,20 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                         addr_vk=proof_request.vk_address,
                                     )
                                     calldata_hex = bytearray(calldata).hex()
-                                    logger.info(
-                                        f"addr_vk:{proof_request.vk_address} verifcalldata: {calldata_hex}"  # noqa: E501
-                                    )
 
-                                    return {
+                                    payload = {
                                         "processed_output": processed_output,
                                         "processed_input": processed_input,
                                         "raw_output": raw_output,
                                         "raw_input": raw_input,
                                         "proof": calldata_hex,
                                     }
+
+                                    logger.debug(
+                                        f"addr_vk:{proof_request.vk_address} paylaod: {payload}"  # noqa: E501
+                                    )
+
+                                    return payload
 
         abort(400)
 
