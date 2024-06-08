@@ -380,3 +380,18 @@ async def get_rpc() -> RPC:
     return await RPC(global_config.rpc_url).initialize_with_private_key(
         global_config.tester_private_key
     )
+
+
+def set_solc_compiler(
+    version:str="0.8.17"
+) -> None:
+    """
+    sets and downloads the solc compiler. Uses the makefile script under
+    the hood.
+    """
+    cmd = (
+        f"make set-solc solc_version={version} "
+    )
+
+    log.info(f"setting solc-compiler: {version}")
+    subprocess.run(shlex.split(cmd))

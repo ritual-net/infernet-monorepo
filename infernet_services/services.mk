@@ -85,3 +85,8 @@ update-lock:
 
 open-terminal:
 	osascript -e 'tell app "Terminal" to do script "$(command)"'
+
+solc_version?=0.8.17
+
+set-solc:
+	solc-select use $(solc_version) --always-install
