@@ -10,6 +10,9 @@ from typing import Any, Optional, cast
 import ezkl  # type: ignore
 from eth_abi import decode, encode  # type: ignore
 from huggingface_hub import hf_hub_download  # type: ignore
+from infernet_ml.utils.codec.vector import decode_vector, encode_vector
+from infernet_ml.utils.model_loader import ModelSource
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from models import ProofRequest
 from pydantic import ValidationError
 from quart import Quart, abort
@@ -17,10 +20,6 @@ from quart import request as req
 from ritual_arweave.repo_manager import RepoManager
 from torch import Tensor
 from werkzeug.exceptions import HTTPException
-
-from infernet_ml.utils.codec.vector import decode_vector, encode_vector
-from infernet_ml.utils.model_loader import ModelSource
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
 
 logger = logging.getLogger(__file__)
 
