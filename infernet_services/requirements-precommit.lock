@@ -64,7 +64,7 @@ nodeenv==1.8.0
 numpy==1.26.4
 onnx==1.16.0
 onnxruntime==1.17.3
-packaging==24.0
+packaging==23.2
 pandas==2.2.2
 parsimonious==0.10.0
 pillow==10.3.0
