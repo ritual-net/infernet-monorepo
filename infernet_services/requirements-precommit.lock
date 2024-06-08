@@ -120,3 +120,5 @@ werkzeug==3.0.3
 wsproto==1.2.0
 yarl==1.9.4
 infernet-client==1.0.0
+py-solc-x==2.0.3
+solc-select==1.0.4
