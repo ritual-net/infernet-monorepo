@@ -11,6 +11,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from infernet_client.chain.rpc import RPC
+from infernet_ml.utils.codec.vector import DataType, decode_vector
 from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
@@ -26,8 +27,6 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.types import ABI, LogReceipt, TxReceipt
-
-from infernet_ml.utils.codec.vector import DataType, decode_vector
 
 log = logging.getLogger(__name__)
 
