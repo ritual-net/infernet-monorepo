@@ -12,3 +12,5 @@ torch>=2.0.1,<3.0.0
 reretry>=0.11.8,<1.0.0
 infernet-client>=0.3.0,<1.0.0
 pytest-rerunfailures>=14.0,<15.0
+py-solc-x>=2.0.3,<3.0
+solc-select>=1.0.4,<2.0

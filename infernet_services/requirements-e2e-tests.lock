@@ -88,3 +88,4 @@ web3==6.18.0
 websockets==12.0
 yarl==1.9.4
 py-solc-x==2.0.3
+solc-select==1.0.4
