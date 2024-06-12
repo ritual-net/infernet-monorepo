@@ -131,7 +131,7 @@ make deploy-node service=ezkl_proof_service env='{\"EZKL_PROOF_MODEL_SOURCE\": 0
 # to stop the deployment
 make stop-node service=ezkl_proof_service
 ```
-You can use curl to send an example request to the node
+You can use curl to send an request to the node:
 
 ```bash
 curl -X POST http://localhost:4000/api/jobs \
