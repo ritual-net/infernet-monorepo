@@ -13,7 +13,7 @@ from huggingface_hub import hf_hub_download  # type: ignore
 from infernet_ml.utils.codec.vector import decode_vector, encode_vector
 from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
-from models import ProofRequest
+from models import ProofRequest, ProvingArtifactsConfig
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
@@ -27,25 +27,8 @@ DUMMY_ADDR = "0x0000000000000000000000000000000000000000"
 SERVICE_PREFIX = "EZKL_PROOF"
 
 
-def load_proving_artifacts(config: dict[str, str]) -> tuple[str, str, str, str, str]:
+def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, str]:
     """function to load the proving artifacts depending on the config.
-
-    There are 5 prefixes, each corresponding to an artifact:
-    COMPILED_MODEL - the ezkl compiled circuit of the model
-    SETTINGS - the proof settings for the model
-    PK - the proving key for the model, necessary to generate the proof
-    (needed by prover)
-    VK - the verifying key for the model, necessary to verify the proof
-    (needed by verifier)
-    SRS - the structured reference string necessary to generate proofs
-
-    The MODEL_SOURCE field determines where the artifacts will be loaded from.
-
-    each artifact has a 3 fields that configure how they are loaded :
-    FILE_NAME suffix - determines the file name / path to load
-    VERSION suffix - determines the version of the artifact to load
-    FORCE_DOWNLOAD suffix - if True, will force the download of the artifact even
-    if it already exists locally.
 
     If we are loading the artifacts from non local sources (i.e. HuggingFace
         or Arweave): the REPO_ID field is used to determine the right file. Each
@@ -62,85 +45,61 @@ def load_proving_artifacts(config: dict[str, str]) -> tuple[str, str, str, str, 
         tuple[str, str, str, str, str]: (compiled_model_path,
             settings_path, pk_path, vk_path, and srs_path)
     """
-    source = ModelSource(config["MODEL_SOURCE"])
-    repo_id = config.get("REPO_ID", None)
 
-    compiled_model_file_name = config.get(
-        "COMPILED_MODEL_FILE_NAME", "network.compiled"
-    )
-    compiled_model_version = config.get("COMPILED_MODEL_VERSION", None)
-    compiled_model_force_download = config.get("COMPILED_MODEL_FORCE_DOWNLOAD", False)
-
-    settings_file_name = config.get("SETTINGS_FILE_NAME", "settings.json")
-    settings_version = config.get("SETTINGS_VERSION", None)
-    settings_force_download = config.get("SETTINGS_FORCE_DOWNLOAD", False)
-
-    pk_file_name = config.get("PK_FILE_NAME", "proving.key")
-    pk_version = config.get("PK_VERSION", None)
-    pk_force_download = config.get("PK_FORCE_DOWNLOAD", False)
-
-    vk_file_name = config.get("VK_FILE_NAME", "verifying.key")
-    vk_version = config.get("VK_VERSION", None)
-    vk_force_download = config.get("VK_FORCE_DOWNLOAD", False)
-
-    srs_file_name = config.get("SRS_FILE_NAME", "kzg.srs")
-    srs_version = config.get("SRS_VERSION", None)
-    srs_force_download = config.get("SRS_FORCE_DOWNLOAD", False)
-
-    match source:
+    pac = ProvingArtifactsConfig(**cast(dict[str, Any], config))
+    match pac.MODEL_SOURCE:
         case ModelSource.ARWEAVE:
             manager = RepoManager()
             logger.info("loading artifacts from Arweave")
             tempdir = tempfile.gettempdir()
 
             compiled_model_path = manager.download_artifact_file(
-                repo_id,
-                compiled_model_file_name,
-                version=compiled_model_version,
-                force_download=compiled_model_force_download,
+                pac.REPO_ID,
+                pac.COMPILED_MODEL_FILE_NAME,
+                version=pac.COMPILED_MODEL_VERSION,
+                force_download=pac.COMPILED_MODEL_FORCE_DOWNLOAD,
                 base_path=tempdir,
             )
 
             logger.info("downloaded compiled model")
 
             settings_path = manager.download_artifact_file(
-                repo_id,
-                settings_file_name,
-                version=settings_version,
-                force_download=settings_force_download,
+                pac.REPO_ID,
+                pac.SETTINGS_FILE_NAME,
+                version=pac.SETTINGS_VERSION,
+                force_download=pac.SETTINGS_FORCE_DOWNLOAD,
                 base_path=tempdir,
             )
 
             logger.info("downloaded settings")
 
             pk_path = manager.download_artifact_file(
-                repo_id,
-                pk_file_name,
-                version=pk_version,
-                force_download=pk_force_download,
+                pac.REPO_ID,
+                pac.PK_FILE_NAME,
+                version=pac.PK_VERSION,
+                force_download=pac.PK_FORCE_DOWNLOAD,
                 base_path=tempdir,
             )
 
             logger.info("downloaded pk")
 
             vk_path = manager.download_artifact_file(
-                repo_id,
-                vk_file_name,
-                version=vk_version,
-                force_download=vk_force_download,
+                pac.REPO_ID,
+                pac.VK_FILE_NAME,
+                version=pac.VK_VERSION,
+                force_download=pac.VK_FORCE_DOWNLOAD,
                 base_path=tempdir,
             )
 
             logger.info("downloaded vk")
 
             srs_path = manager.download_artifact_file(
-                repo_id,
-                srs_file_name,
-                version=srs_version,
-                force_download=srs_force_download,
+                pac.REPO_ID,
+                pac.SRS_FILE_NAME,
+                version=pac.SRS_VERSION,
+                force_download=pac.SRS_FORCE_DOWNLOAD,
                 base_path=tempdir,
             )
-
             logger.info("downloaded srs")
 
         case ModelSource.HUGGINGFACE_HUB:
@@ -148,59 +107,59 @@ def load_proving_artifacts(config: dict[str, str]) -> tuple[str, str, str, str, 
             logger.info("loading artifacts from Huggingface Hub")
 
             compiled_model_path = hf_hub_download(
-                repo_id,
-                compiled_model_file_name,
-                revision=compiled_model_version,
-                force_download=compiled_model_force_download,
+                pac.REPO_ID,
+                pac.COMPILED_MODEL_FILE_NAME,
+                revision=pac.COMPILED_MODEL_VERSION,
+                force_download=pac.COMPILED_MODEL_FORCE_DOWNLOAD,
             )
 
             settings_path = hf_hub_download(
-                repo_id,
-                settings_file_name,
-                revision=settings_version,
-                force_download=settings_force_download,
+                pac.REPO_ID,
+                pac.SETTINGS_FILE_NAME,
+                revision=pac.SETTINGS_VERSION,
+                force_download=pac.SETTINGS_FORCE_DOWNLOAD,
             )
 
             pk_path = hf_hub_download(
-                repo_id,
-                pk_file_name,
-                revision=pk_version,
-                force_download=pk_force_download,
+                pac.REPO_ID,
+                pac.PK_FILE_NAME,
+                revision=pac.PK_VERSION,
+                force_download=pac.PK_FORCE_DOWNLOAD,
             )
 
             vk_path = hf_hub_download(
-                repo_id,
-                vk_file_name,
-                revision=vk_version,
-                force_download=vk_force_download,
+                pac.REPO_ID,
+                pac.VK_FILE_NAME,
+                revision=pac.VK_VERSION,
+                force_download=pac.VK_FORCE_DOWNLOAD,
             )
 
             srs_path = hf_hub_download(
-                repo_id,
-                srs_file_name,
-                revision=srs_version,
-                force_download=srs_force_download,
+                pac.REPO_ID,
+                pac.SRS_FILE_NAME,
+                revision=pac.SRS_VERSION,
+                force_download=pac.SRS_FORCE_DOWNLOAD,
             )
 
         case ModelSource.LOCAL:
             logger.info("loading artifacts from local")
-            compiled_model_path = compiled_model_file_name
+            compiled_model_path = pac.COMPILED_MODEL_FILE_NAME
             assert path.exists(
                 compiled_model_path
             ), f"Error loading local proving artifact: could not find {compiled_model_path}"  # noqa: E501
-            settings_path = settings_file_name
+            settings_path = pac.SETTINGS_FILE_NAME
             assert path.exists(
                 settings_path
             ), f"Error loading local proving artifact: could not find {settings_path}"
-            pk_path = pk_file_name
+            pk_path = pac.PK_FILE_NAME
             assert path.exists(
                 pk_path
             ), f"Error loading local proving artifact: could not find {pk_path}"
-            vk_path = vk_file_name
+            vk_path = pac.VK_FILE_NAME
             assert path.exists(
                 vk_path
             ), f"Error loading local proving artifact: could not find {vk_path}"
-            srs_path = srs_file_name
+            srs_path = pac.SRS_FILE_NAME
             assert path.exists(
                 srs_path
             ), f"Error loading local proving artifact: could not find {srs_path}"
