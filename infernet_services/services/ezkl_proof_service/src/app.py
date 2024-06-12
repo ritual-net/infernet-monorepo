@@ -48,10 +48,9 @@ def load_proving_artifacts(config: dict[str, str]) -> tuple[str, str, str, str, 
     if it already exists locally.
 
     If we are loading the artifacts from non local sources (i.e. HuggingFace
-     or Arweave):
-    the REPO_ID field is used to determine the right file. Each artifact can
-    be configured
-    to load a specific version, and the loading can be forced.
+        or Arweave): the REPO_ID field is used to determine the right file. Each
+        artifact can  be configured to load a specific version, and the loading can
+        be forced.
 
     Args:
         config (dict[str, Any]): config dictionary for this App.
