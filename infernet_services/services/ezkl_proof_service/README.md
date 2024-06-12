@@ -123,8 +123,8 @@ The service is configured via environment variables. See .env.example for more d
 # Launching a Deployment
 
 With an image built, you can deploy the service along with an Infernet node by running (from the root directory):
-(this expects artifacts to be from local disk)
 ```bash
+# source = 0 means artifact is expected to be on local disk
 make deploy-node service=ezkl_proof_service env='{\"EZKL_PROOF_MODEL_SOURCE\": 0}'
 
 
