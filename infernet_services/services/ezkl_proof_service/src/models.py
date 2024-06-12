@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 class WitnessInputData(BaseModel):
     """
-    corresponds to witness json expected by EZKL.
+    Witness input json expected by EZKL.
     for witness data, EZKL expects a single list containing a flattened data list.
     for example, an input tensor of [[1,2],[1,2]] should be flattened to [1,2,1,2],
     and the input_data field would be [[1,2,1,2]]
