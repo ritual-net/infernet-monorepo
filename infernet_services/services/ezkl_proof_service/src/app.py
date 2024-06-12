@@ -27,7 +27,7 @@ DUMMY_ADDR = "0x0000000000000000000000000000000000000000"
 SERVICE_PREFIX = "EZKL_PROOF"
 
 
-def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, str]:
+def load_proving_artifacts(config: dict[str, str]) -> tuple[str, str, str, str, str]:
     """function to load the proving artifacts depending on the config.
 
     There are 5 prefixes, each corresponding to an artifact:
@@ -60,8 +60,8 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
         ValueError: raised if an unsupoorted ModelSource provided
 
     Returns:
-        tuple[str, str, str, str, str]: the compiled_model_path,
-        settings_path, pk_path, vk_path, and srs_path
+        tuple[str, str, str, str, str]: (compiled_model_path,
+            settings_path, pk_path, vk_path, and srs_path)
     """
     source = ModelSource(config["MODEL_SOURCE"])
     repo_id = config.get("REPO_ID", None)
@@ -91,7 +91,7 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
     match source:
         case ModelSource.ARWEAVE:
             manager = RepoManager()
-            logger.info("using Arweave")
+            logger.info("loading artifacts from Arweave")
             tempdir = tempfile.gettempdir()
 
             compiled_model_path = manager.download_artifact_file(
@@ -146,6 +146,8 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
 
         case ModelSource.HUGGINGFACE_HUB:
             # Use HuggingFace
+            logger.info("loading artifacts from Huggingface Hub")
+
             compiled_model_path = hf_hub_download(
                 repo_id,
                 compiled_model_file_name,
@@ -182,6 +184,7 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
             )
 
         case ModelSource.LOCAL:
+            logger.info("loading artifacts from local")
             compiled_model_path = compiled_model_file_name
             assert path.exists(
                 compiled_model_path
@@ -263,39 +266,76 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     async def service_output() -> dict[str, Optional[str]]:
         logger.info("received request")
         # input should look like {"input_data": [...], "output_data": [...]}
-        if req.method == "POST" and (data := await req.get_json()):
-            logger.info("recieved data: %s", data)
-            try:
-                infernet_input = InfernetInput(**data)
-                if infernet_input.source != JobLocation.OFFCHAIN:
-                    has_attest, has_input, has_output = decode(
+        data = await req.get_json()
+        logger.debug("recieved data: %s", data)
+        try:
+
+            ########################################################
+            #          BEGIN handle Infernet Input Source 
+            ########################################################
+
+            infernet_input = InfernetInput(**data)
+            match infernet_input.source:
+                case JobLocation.ONCHAIN:
+                    """
+                    We decode onchain input here. Because the shape
+                    of the data of depends on the proving set up, we
+                    need to read the first three flags to determine
+                    what the remainder of the payload is.
+                    """
+
+                    # decode the flags first
+                    has_vk_addr, has_input, has_output = decode(
                         ["bool", "bool", "bool"],
                         bytes.fromhex(cast(str, infernet_input.data)),
                     )
-                    attest_offset = input_offset = output_offset = -1
+
+                    """
+                    we keep track of where each field is 
+                    relative to the decoded payload. initialize
+                    them to -1
+                    """
+                    vk_addr_offset = -1
+                    input_offset = -1 
+                    output_offset = -1
 
                     data_types = ["bool", "bool", "bool"]
-                    if has_attest:
+                                    
+                    if has_vk_addr:
+                        # if vk_addr is specified, it is always first field
+                        vk_addr_offset = 0
+                        # vk_addr is an address
                         data_types.append("address")
-                        attest_offset = 0
                     if has_input:
-                        input_offset = attest_offset + 1
+                        # if input is specified, it is always the field after attestation
+                        input_offset = vk_addr_offset + 1
+                        # input is raw bytes we further decode to a vector
                         data_types.append("bytes")
 
                     if has_output:
+                        # if output is specified, it is always the field after input
                         output_offset = input_offset + 1
+                        # output is raw bytes we further decode to a vector
                         data_types.append("bytes")
 
+
+                    # now we know the shape of the data, decode payload
                     decoded = decode(
                         data_types, bytes.fromhex(cast(str, infernet_input.data))
                     )
 
+                    # we dont care about first 3 fields since they are flags
                     decoded_vals = decoded[3:]
+
+
+                    # now lets populate a ProofRequest object with our decoded values
                     proof_request = ProofRequest()
-                    if has_attest:
-                        proof_request.vk_address = decoded_vals[attest_offset]
+
+                    if has_vk_addr:
+                        proof_request.vk_address = decoded_vals[vk_addr_offset]
                         logger.info(f"decoded vk address {proof_request.vk_address}")
                     if has_input:
+                        # we further decode the input into a vector bere
                         input_d, input_s, input_val = decode_vector(
                             decoded_vals[input_offset]
                         )
@@ -307,6 +347,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         proof_request.witness_data.input_dtype = input_d
 
                     if has_output:
+                        # we further decode the output into a vector here
                         output_d, output_s, output_val = decode_vector(
                             decoded_vals[output_offset]
                         )
@@ -319,205 +360,238 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         ]
                         proof_request.witness_data.output_dtype = output_d
 
-                else:
+                case JobLocation.ONCHAIN:
                     proof_request = ProofRequest(
                         **cast(dict[str, Any], infernet_input.data)
                     )
+                case _:
+                    abort(400, f"Source must either be {JobLocation.ONCHAIN} or {JobLocation.OFFCHAIN}.")
 
-                # parse witness data
-                witness_data = proof_request.witness_data
+            ########################################################
+            #          END handle Infernet Input Source 
+            ########################################################
 
-            except ValidationError as e:
-                abort(400, f"error validating input: {e}")
 
-            with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=DEBUG) as tf:
-                # get data_path from file
-                json.dump(witness_data.model_dump(), tf)
-                tf.flush()
-                data_path = tf.name
-                logger.debug(f"witness data: {witness_data}")
+            # parse witness data
+            witness_data = proof_request.witness_data
 
-                with open(settings_path, "r") as sp:
-                    settings = json.load(sp)
+        except ValidationError as e:
+            abort(400, f"error validating input: {e}")
 
-                    input_v = (
-                        "Hashed"
-                        if "Hashed" in settings["run_args"]["input_visibility"]
-                        else settings["run_args"]["input_visibility"]
+        with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=DEBUG) as tf:
+            # get data_path from file
+            json.dump(witness_data.model_dump(), tf)
+            tf.flush()
+            data_path = tf.name
+            logger.debug(f"witness data: {witness_data}")
+
+            with open(settings_path, "r") as sp:
+                settings = json.load(sp)
+
+                input_v = (
+                    "Hashed"
+                    if "Hashed" in settings["run_args"]["input_visibility"]
+                    else settings["run_args"]["input_visibility"]
+                )
+
+                output_v = (
+                    "Hashed"
+                    if "Hashed" in settings["run_args"]["output_visibility"]
+                    else settings["run_args"]["output_visibility"]
+                )
+
+                param_v = (
+                    "Hashed"
+                    if "Hashed" in settings["run_args"]["param_visibility"]
+                    else settings["run_args"]["param_visibility"]
+                )
+
+                logging.info(
+                    "input_visibility: %s output_visibility: %s param_visibility: %s",  # noqa: E501
+                    input_v,
+                    output_v,
+                    param_v,
+                )
+
+                with tempfile.NamedTemporaryFile(
+                    "w+", suffix=".json", delete=DEBUG
+                ) as wf:
+                    wf_path = wf.name
+                    witness = await ezkl.gen_witness(
+                        data=data_path,
+                        model=compiled_model_path,
+                        output=wf_path,
+                        vk_path=vk_path,
+                        srs_path=srs_path,
                     )
 
-                    output_v = (
-                        "Hashed"
-                        if "Hashed" in settings["run_args"]["output_visibility"]
-                        else settings["run_args"]["output_visibility"]
-                    )
+                    logger.debug(f"witness = {witness}")
 
-                    param_v = (
-                        "Hashed"
-                        if "Hashed" in settings["run_args"]["param_visibility"]
-                        else settings["run_args"]["param_visibility"]
-                    )
+                    with open(wf_path, "r", encoding="utf-8") as wp:
+                        res = json.load(wp)
+                        logging.debug("witness circuit results: %s", res)
+                        ip = op = None
+                        if input_v.lower() == "hashed":
+                            ip = res["processed_inputs"]["poseidon_hash"]
 
-                    logging.info(
-                        "input_visibility: %s output_visibility: %s param_visibility: %s",  # noqa: E501
-                        input_v,
-                        output_v,
-                        param_v,
-                    )
+                        elif input_v.lower() == "encrypted":
+                            ip = res["processed_inputs"]["ciphertexts"]
+
+                        if output_v.lower() == "hashed":
+                            op = res["processed_outputs"]["poseidon_hash"]
+                        elif output_v.lower() == "encrypted":
+                            op = res["processed_outputs"]["ciphertexts"]
 
                     with tempfile.NamedTemporaryFile(
-                        "w+", suffix=".json", delete=DEBUG
-                    ) as wf:
-                        wf_path = wf.name
-                        witness = await ezkl.gen_witness(
-                            data=data_path,
+                        "w+", suffix=".pf", delete=DEBUG
+                    ) as pf:
+                        proof_generated = ezkl.prove(
+                            witness=wf_path,
                             model=compiled_model_path,
-                            output=wf_path,
+                            pk_path=pk_path,
+                            proof_path=pf.name,
+                            srs_path=srs_path,
+                            proof_type="single",
+                        )
+
+                        assert proof_generated, "unable to generate proof"
+
+                        verify_success = ezkl.verify(
+                            proof_path=pf.name,
+                            settings_path=settings_path,
                             vk_path=vk_path,
                             srs_path=srs_path,
                         )
 
-                        logger.debug(f"witness = {witness}")
+                        assert verify_success, "unable to verify generated proof"
 
-                        with open(wf_path, "r", encoding="utf-8") as wp:
-                            res = json.load(wp)
-                            logging.debug("witness circuit results: %s", res)
-                            ip = op = None
-                            if input_v.lower() == "hashed":
-                                ip = res["processed_inputs"]["poseidon_hash"]
-
-                            elif input_v.lower() == "encrypted":
-                                ip = res["processed_inputs"]["ciphertexts"]
-
-                            if output_v.lower() == "hashed":
-                                op = res["processed_outputs"]["poseidon_hash"]
-                            elif output_v.lower() == "encrypted":
-                                op = res["processed_outputs"]["ciphertexts"]
-
-                        with tempfile.NamedTemporaryFile(
-                            "w+", suffix=".pf", delete=DEBUG
-                        ) as pf:
-                            proof_generated = ezkl.prove(
-                                witness=wf_path,
-                                model=compiled_model_path,
-                                pk_path=pk_path,
-                                proof_path=pf.name,
-                                srs_path=srs_path,
-                                proof_type="single",
+                        if infernet_input.destination == JobLocation.OFFCHAIN:
+                            return cast(
+                                dict[str, str | None], json.load(open(pf.name))
                             )
 
-                            assert proof_generated, "unable to generate proof"
+                        elif infernet_input.destination == JobLocation.ONCHAIN:
+                            """
+                            For onchain outputs, infernet expects a 5 element
+                            dict of the following shape:
 
-                            verify_success = ezkl.verify(
-                                proof_path=pf.name,
-                                settings_path=settings_path,
-                                vk_path=vk_path,
-                                srs_path=srs_path,
+                            {
+                                "raw_input": input vector
+                                "raw_output": output vector 
+                                "processed_input": hashed / encryped input vector if applicable
+                                "processed_output": hashed / encryped output vector if applicable
+                                "proof": encoded_proof_related_payload
+                            }
+
+                            For onchain destination payloads, we assume the 
+                            existence of an onchain verification contract. 
+                            Therefore, we return the calldata required for 
+                            calling the actual contract instead of just the 
+                            proof json object.
+                            """
+                            
+
+                            processed_input = (
+                                encode(
+                                    ["int256[]"],
+                                    [
+                                        [
+                                            # convert field elements to int
+                                            int(ezkl.felt_to_big_endian(x), 0)
+                                            for x in ip
+                                        ]
+                                    ],
+                                ).hex()
+                                if ip
+                                else None
                             )
 
-                            assert verify_success, "unable to verify generated proof"
+                            logger.debug(
+                                "processed input: %s, encoded: %s",
+                                ip,
+                                processed_input,
+                            )
 
-                            if infernet_input.destination == JobLocation.OFFCHAIN:
-                                return cast(
-                                    dict[str, str | None], json.load(open(pf.name))
-                                )
-
-                            elif infernet_input.destination == JobLocation.ONCHAIN:
-                                processed_input = (
-                                    encode(
-                                        ["int256[]"],
+                            processed_output = (
+                                encode(
+                                    ["int256[]"],
+                                    [
                                         [
-                                            [
-                                                int(ezkl.felt_to_big_endian(x), 0)
-                                                for x in ip
-                                            ]
-                                        ],
-                                    ).hex()
-                                    if ip
-                                    else None
+                                            # convert field elements to int
+                                            int(ezkl.felt_to_big_endian(x), 0)
+                                            for x in op
+                                        ]
+                                    ],
+                                ).hex()
+                                if op
+                                else None
+                            )
+
+                            logger.debug(
+                                "processed output: %s, encoded: %s",
+                                op,
+                                processed_output,
+                            )
+
+                            raw_input = None
+                            if isinstance(witness_data.input_data, list):
+                                nparr_in = Tensor(witness_data.input_data)
+                                # encode to vector
+                                raw_input = encode_vector(
+                                    witness_data.input_dtype,
+                                    cast(tuple[int, ...], witness_data.input_shape),
+                                    nparr_in,
+                                ).hex()
+
+                            logger.debug(
+                                "raw input: %s, encoded: %s",
+                                witness_data.input_data,
+                                raw_input,
+                            )
+
+                            raw_output = None
+                            if isinstance(witness_data.output_data, list):
+                                nparr_out = Tensor(witness_data.output_data)
+                                # encode to vector
+                                raw_output = encode_vector(
+                                    witness_data.output_dtype,
+                                    cast(
+                                        tuple[int, ...], witness_data.output_shape
+                                    ),
+                                    nparr_out,
+                                ).hex()
+
+                            logger.debug(
+                                "raw ouput: %s, encoded: %s",
+                                witness_data.output_data,
+                                raw_output,
+                            )
+
+                            with tempfile.NamedTemporaryFile(
+                                "w+", suffix=".cd", delete=DEBUG
+                            ) as calldata_file:
+                                
+                                # here we get the call data for the onchain contract
+                                calldata: list[int] = ezkl.encode_evm_calldata(
+                                    proof=pf.name,
+                                    calldata=calldata_file.name,
+                                    addr_vk=proof_request.vk_address,
                                 )
+                                calldata_hex = bytearray(calldata).hex()
+
+                                payload = {
+                                    "processed_output": processed_output,
+                                    "processed_input": processed_input,
+                                    "raw_output": raw_output,
+                                    "raw_input": raw_input,
+                                    "proof": calldata_hex,
+                                }
 
                                 logger.debug(
-                                    "processed input: %s, encoded: %s",
-                                    ip,
-                                    processed_input,
+                                    f"addr_vk:{proof_request.vk_address} paylaod: {payload}"  # noqa: E501
                                 )
 
-                                processed_output = (
-                                    encode(
-                                        ["int256[]"],
-                                        [
-                                            [
-                                                int(ezkl.felt_to_big_endian(x), 0)
-                                                for x in op
-                                            ]
-                                        ],
-                                    ).hex()
-                                    if op
-                                    else None
-                                )
-
-                                logger.debug(
-                                    "processed output: %s, encoded: %s",
-                                    op,
-                                    processed_output,
-                                )
-
-                                raw_input = None
-                                if isinstance(witness_data.input_data, list):
-                                    nparr_in = Tensor(witness_data.input_data)
-                                    raw_input = encode_vector(
-                                        witness_data.input_dtype,
-                                        cast(tuple[int, ...], witness_data.input_shape),
-                                        nparr_in,
-                                    ).hex()
-
-                                logger.debug(
-                                    "raw input: %s, encoded: %s",
-                                    witness_data.input_data,
-                                    raw_input,
-                                )
-
-                                raw_output = None
-                                if isinstance(witness_data.output_data, list):
-                                    nparr_out = Tensor(witness_data.output_data)
-                                    raw_output = encode_vector(
-                                        witness_data.output_dtype,
-                                        cast(
-                                            tuple[int, ...], witness_data.output_shape
-                                        ),
-                                        nparr_out,
-                                    ).hex()
-
-                                logger.debug(
-                                    "raw ouput: %s, encoded: %s",
-                                    witness_data.output_data,
-                                    raw_output,
-                                )
-
-                                with tempfile.NamedTemporaryFile(
-                                    "w+", suffix=".cd", delete=DEBUG
-                                ) as calldata_file:
-                                    calldata: list[int] = ezkl.encode_evm_calldata(
-                                        proof=pf.name,
-                                        calldata=calldata_file.name,
-                                        addr_vk=proof_request.vk_address,
-                                    )
-                                    calldata_hex = bytearray(calldata).hex()
-
-                                    payload = {
-                                        "processed_output": processed_output,
-                                        "processed_input": processed_input,
-                                        "raw_output": raw_output,
-                                        "raw_input": raw_input,
-                                        "proof": calldata_hex,
-                                    }
-
-                                    logger.debug(
-                                        f"addr_vk:{proof_request.vk_address} paylaod: {payload}"  # noqa: E501
-                                    )
-
-                                    return payload
+                                return payload
 
         abort(400)
 
@@ -526,10 +600,9 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         """Return JSON instead of HTML for HTTP errors."""
 
         # start with the correct headers and status code from the error
-
         response = e.get_response()
-        # replace the body with JSON
 
+        # replace the body with JSON
         response.data = json.dumps(
             {
                 "code": str(e.code),
