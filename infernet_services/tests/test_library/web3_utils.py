@@ -65,7 +65,7 @@ def deploy_smart_contract(
         cmd += f" {k}={v}"
 
     log.info(f"deploying contract: {cmd}")
-    subprocess.run(shlex.split(cmd))
+    subprocess.check_call(shlex.split(cmd))
 
 
 def run_forge_script(

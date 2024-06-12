@@ -24,9 +24,7 @@ async def await_services(
             running.
     """
     for service in services:
-        log.info(
-            f"waiting up to {service_wait_timeout}s for {service.name} to be ready"
-        )
+        log.info(f"waiting up to {service_wait_timeout}s for {service.name} to be ready")
         await await_service(get_service_port(service.name), service_wait_timeout)
         log.info(f"✅ {service.name} is ready")
 
@@ -91,11 +89,7 @@ def start_anvil_node() -> None:
     cmd = "make start-infernet-anvil"
     log.info(f"Running command: {cmd}")
 
-    result = subprocess.run(shlex.split(cmd))
-    if result.returncode != 0:
-        msg = f"Error starting the anvil node: {result}"
-        log.error(msg)
-        raise Exception(msg)
+    subprocess.check_call(shlex.split(cmd))
 
 
 def deploy_node(
@@ -114,8 +108,4 @@ def deploy_node(
             cmd += f" {k}={v}"
     log.info(f"Running command: {cmd}")
 
-    result = subprocess.run(shlex.split(cmd))
-    if result.returncode != 0:
-        msg = f"Error deploying the node: {result}"
-        log.error(msg)
-        raise Exception(msg)
+    subprocess.check_call(shlex.split(cmd))
