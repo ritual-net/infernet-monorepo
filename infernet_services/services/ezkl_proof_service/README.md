@@ -11,7 +11,7 @@ The fixed proving artifacts for the model are downloaded on startup. For more in
 
 For offchain job targets, the proof json is returned as a payload, allowing for offchain verification.
 
-For onchain job targets, a 5 element dictionary containing the raw input / processed input / raw output / processed output / proof calldata is returned. This allows onchain applications to optionally provide data attestation as part of the proof verification should the appropriate contract be deployed - see the (example notebook here)[https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest.ipynb] for more details on how to generate an on chain attestation contract.
+For onchain job targets, a 5 element dictionary containing the raw input / processed input / raw output / processed output / proof calldata is returned. This allows onchain applications to optionally provide data attestation as part of the proof verification should the appropriate contract be deployed - see the [example notebook here](https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest.ipynb) for more details on how to generate an on chain attestation contract.
 
 # Endpoint
 
