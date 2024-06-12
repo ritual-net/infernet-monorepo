@@ -1,5 +1,5 @@
 """
-This service serves proof for the ezkl based infernet_ml proof service.
+This service serves proofs via the EZKL proving library.
 """
 import json
 import logging
@@ -57,7 +57,7 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
         config (dict[str, Any]): config dictionary for this App.
 
     Raises:
-        ValueError: raised if an unspoorted ModelSource provided
+        ValueError: raised if an unsupoorted ModelSource provided
 
     Returns:
         tuple[str, str, str, str, str]: the compiled_model_path,
