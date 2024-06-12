@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   node:
     image: ritualnetwork/infernet-node:1.0.0
