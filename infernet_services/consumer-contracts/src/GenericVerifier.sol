@@ -5,7 +5,6 @@ import {IVerifier} from "infernet-sdk/payments/IVerifier.sol";
 import {Registry} from "infernet-sdk/Registry.sol";
 import {EIP712Coordinator} from "infernet-sdk/EIP712Coordinator.sol";
 import {WalletFactory} from "infernet-sdk/payments/WalletFactory.sol";
-import {EIP712Coordinator} from "infernet-sdk/src/EIP712Coordinator.sol";
 
 contract GenericAtomicVerifier is IVerifier {
     string private ACCEPTED_PROOF = "just trust me bro";
