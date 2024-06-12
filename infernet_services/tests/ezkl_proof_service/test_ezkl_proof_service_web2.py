@@ -94,5 +94,3 @@ async def test_ezkl_proof_service_completion() -> None:
         )
 
         assert verify_success, "was not able to verify"
-
-    # Open the file for writing.
