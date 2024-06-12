@@ -1,6 +1,6 @@
 # EZKL Proof Service
 
-A container that handles generating zero knowledge proofs of inference for a given model based on the [EZKL library](https://ezkl.xyz/).
+A service that generates zero knowledge proofs of inference for a given model based on the [EZKL library](https://ezkl.xyz/).
 
 Generating proofs is a step lifecycle:
 * setup - prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
