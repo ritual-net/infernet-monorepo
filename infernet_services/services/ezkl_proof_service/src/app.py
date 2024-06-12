@@ -269,9 +269,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         data = await req.get_json()
         logger.debug("recieved data: %s", data)
         try:
-
             ########################################################
-            #          BEGIN handle Infernet Input Source 
+            #          BEGIN handle Infernet Input Source
             ########################################################
 
             infernet_input = InfernetInput(**data)
@@ -291,16 +290,16 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     )
 
                     """
-                    we keep track of where each field is 
+                    we keep track of where each field is
                     relative to the decoded payload. initialize
                     them to -1
                     """
                     vk_addr_offset = -1
-                    input_offset = -1 
+                    input_offset = -1
                     output_offset = -1
 
                     data_types = ["bool", "bool", "bool"]
-                                    
+
                     if has_vk_addr:
                         # if vk_addr is specified, it is always first field
                         vk_addr_offset = 0
@@ -318,7 +317,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         # output is raw bytes we further decode to a vector
                         data_types.append("bytes")
 
-
                     # now we know the shape of the data, decode payload
                     decoded = decode(
                         data_types, bytes.fromhex(cast(str, infernet_input.data))
@@ -326,7 +324,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
                     # we dont care about first 3 fields since they are flags
                     decoded_vals = decoded[3:]
-
 
                     # now lets populate a ProofRequest object with our decoded values
                     proof_request = ProofRequest()
@@ -365,12 +362,14 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         **cast(dict[str, Any], infernet_input.data)
                     )
                 case _:
-                    abort(400, f"Source must either be {JobLocation.ONCHAIN} or {JobLocation.OFFCHAIN}.")
+                    abort(
+                        400,
+                        f"Source must either be {JobLocation.ONCHAIN} or {JobLocation.OFFCHAIN}.",  # noqa: E501
+                    )
 
             ########################################################
-            #          END handle Infernet Input Source 
+            #          END handle Infernet Input Source
             ########################################################
-
 
             # parse witness data
             witness_data = proof_request.witness_data
@@ -466,9 +465,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         assert verify_success, "unable to verify generated proof"
 
                         if infernet_input.destination == JobLocation.OFFCHAIN:
-                            return cast(
-                                dict[str, str | None], json.load(open(pf.name))
-                            )
+                            return cast(dict[str, str | None], json.load(open(pf.name)))
 
                         elif infernet_input.destination == JobLocation.ONCHAIN:
                             """
@@ -477,19 +474,18 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
                             {
                                 "raw_input": input vector
-                                "raw_output": output vector 
+                                "raw_output": output vector
                                 "processed_input": hashed / encryped input vector if applicable
                                 "processed_output": hashed / encryped output vector if applicable
                                 "proof": encoded_proof_related_payload
                             }
 
-                            For onchain destination payloads, we assume the 
-                            existence of an onchain verification contract. 
-                            Therefore, we return the calldata required for 
-                            calling the actual contract instead of just the 
+                            For onchain destination payloads, we assume the
+                            existence of an onchain verification contract.
+                            Therefore, we return the calldata required for
+                            calling the actual contract instead of just the
                             proof json object.
-                            """
-                            
+                            """  # noqa: E501
 
                             processed_input = (
                                 encode(
@@ -555,9 +551,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                                 # encode to vector
                                 raw_output = encode_vector(
                                     witness_data.output_dtype,
-                                    cast(
-                                        tuple[int, ...], witness_data.output_shape
-                                    ),
+                                    cast(tuple[int, ...], witness_data.output_shape),
                                     nparr_out,
                                 ).hex()
 
@@ -570,7 +564,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                             with tempfile.NamedTemporaryFile(
                                 "w+", suffix=".cd", delete=DEBUG
                             ) as calldata_file:
-                                
                                 # here we get the call data for the onchain contract
                                 calldata: list[int] = ezkl.encode_evm_calldata(
                                     proof=pf.name,
