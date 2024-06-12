@@ -11,7 +11,7 @@ from pydantic import BaseModel
 class WitnessInputData(BaseModel):
     """
     corresponds to witness json expected by EZKL.
-    for offchain witness data, EZKL expects single list containing flattened data list.
+    for witness data, EZKL expects single list containing flattened data list.
     for example, an input tensor of [[1,2],[1,2]] should be flattened to [1,2,1,2],
     and the input_data field would be [[1,2,1,2]]
     """
@@ -26,4 +26,6 @@ class WitnessInputData(BaseModel):
 
 class ProofRequest(BaseModel):
     witness_data: WitnessInputData = WitnessInputData()
+    # vk_address refers to a seperate verifying key contract.
+    # See (EZKL documentation)[https://github.com/zkonduit/ezkl/blob/main/src/python.rs#L1493] for more info. # noqa: E501
     vk_address: Optional[HexStr] = None
