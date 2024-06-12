@@ -16,7 +16,7 @@ how to generate an on chain attestation contract.
 
 # Endpoint
 
-Infernet services are expected to implement an end point at `/service_output` that takes a json payload that conforms to the InfernetInput model. For more information on Infernet-compatible containers, refer to [our docs](https://docs.ritual.net/infernet/node/containers).
+Infernet services are expected to implement a `/service_output` endpoint that accepts a json payload and conforms to the `InfernetInput` model. For more information on Infernet-compatible containers, refer to [our docs](https://docs.ritual.net/infernet/node/containers).
 
 
 ## Input
