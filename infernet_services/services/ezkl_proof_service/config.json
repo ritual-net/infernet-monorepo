@@ -1,28 +1,38 @@
 {
   "log_path": "infernet_node.log",
+  "manage_containers": true,
   "server": {
-    "port": 4000
+    "port": 4000,
+    "rate_limit": {
+      "num_requests": 100,
+      "period": 100
+    }
   },
   "chain": {
     "enabled": true,
-    "trail_head_blocks": 0,
+    "trail_head_blocks": 5,
     "rpc_url": "http://host.docker.internal:8545",
-    "coordinator_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "registry_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     "wallet": {
-      "max_gas_limit": 4000000,
-      "private_key": "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+      "max_gas_limit": 5000000,
+      "private_key": "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+      "allowed_sim_errors": ["not enough balance"]
+    },
+    "snapshot_sync": {
+      "sleep": 1.5,
+      "batch_size": 200
     }
   },
-  "startup_wait": 1.0,
   "docker": {
-    "username": "your-username",
-    "password": ""
+    "username": "username",
+    "password": "password"
   },
   "redis": {
     "host": "redis",
     "port": 6379
   },
   "forward_stats": true,
+  "startup_wait": 1.0,
   "containers": [
     {
       "id": "ezkl_proof_service",
@@ -33,7 +43,13 @@
       "allowed_addresses": [],
       "allowed_ips": [],
       "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {}
+      "env": {},
+      "volumes": [],
+      "accepted_payments": {
+        "0x0000000000000000000000000000000000000000": 1000000000000000000,
+        "0x59F2f1fCfE2474fD5F0b9BA1E73ca90b143Eb8d0": 1000000000000000000
+      },
+      "generates_proofs": false
     }
   ]
 }
