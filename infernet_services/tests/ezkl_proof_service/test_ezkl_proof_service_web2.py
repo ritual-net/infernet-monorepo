@@ -19,6 +19,14 @@ load_dotenv()
 
 @pytest.mark.asyncio
 async def test_ezkl_proof_service_completion() -> None:
+    """
+    Test that we are able to generate a valid
+    proof from a offchain source and offchain destination.
+    This test relies on EZKL proving artifacts
+    generated from this EZKL example notebook:
+    https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest_hashed.ipynb
+    """
+
     log.info("testing ezkl proof service completion")
     task = await request_job(
         SERVICE_NAME,

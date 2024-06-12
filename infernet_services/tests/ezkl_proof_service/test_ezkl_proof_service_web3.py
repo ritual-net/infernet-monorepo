@@ -184,6 +184,19 @@ async def ezkl_deploy() -> tuple[AsyncContract, AsyncContract]:
 
 @pytest.mark.asyncio
 async def test_completion() -> None:
+    """
+    Test that we are able to generate a valid
+    proof from a onchain source and onchain destination.
+    The test also tests data attestation functionality
+    provided as part of the EZKL library.
+
+    This test relies on EZKL proving artifacts
+    generated from this EZKL example notebook:
+    https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest_hashed.ipynb
+
+
+
+    """
     install_solc("0.8.17", show_progress=True)
 
     input_list = [
