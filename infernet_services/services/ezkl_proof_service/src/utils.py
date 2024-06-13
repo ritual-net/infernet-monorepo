@@ -1,10 +1,10 @@
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
-from infernet_ml.utils.codec.vector import decode_vector
-from models import ProofRequest
-from typing import cast, Any
-from eth_abi import decode
 import logging
+from typing import Any, cast
 
+from eth_abi import decode
+from infernet_ml.utils.codec.vector import decode_vector
+from infernet_ml.utils.service_models import InfernetInput, JobLocation
+from models import ProofRequest
 from quart import abort
 
 logger = logging.getLogger(__file__)
