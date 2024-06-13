@@ -39,7 +39,7 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
         config (dict[str, Any]): config dictionary for this App.
 
     Raises:
-        ValueError: raised if an unsupoorted ModelSource provided
+        ValueError: raised if an unsupported ModelSource provided
 
     Returns:
         tuple[str, str, str, str, str]: (compiled_model_path,
