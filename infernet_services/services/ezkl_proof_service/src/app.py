@@ -229,9 +229,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         data = await req.get_json()
         logger.debug("recieved data: %s", data)
         try:
-
             infernet_input = InfernetInput(**data)
-            proof_request:ProofRequest = extractProofRequest(infernet_input)
+            proof_request: ProofRequest = extractProofRequest(infernet_input)
             # parse witness data
             witness_data = proof_request.witness_data
 
