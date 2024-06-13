@@ -1,9 +1,16 @@
 import os
 from typing import Generator
+
 import pytest
 from dotenv import load_dotenv
+from infernet_ml.utils.model_loader import ModelSource
 from test_library.config_creator import ServiceConfig
-from test_library.constants import skip_contract, skip_deploying, skip_teardown
+from test_library.constants import (
+    arweave_model_id,
+    skip_contract,
+    skip_deploying,
+    skip_teardown,
+)
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.web3_utils import set_solc_compiler
 
@@ -16,8 +23,8 @@ SERVICE_NAME = "ezkl_proof_service"
 def lifecycle() -> Generator[None, None, None]:
     set_solc_compiler()
     env_vars = {
-            "EZKL_PROOF_MODEL_SOURCE": 1,
-            "EZKL_PROOF_REPO_ID": os.environ["MODEL_OWNER"]
+        "EZKL_PROOF_MODEL_SOURCE": ModelSource.ARWEAVE.value,
+        "EZKL_PROOF_REPO_ID": arweave_model_id("testrepo"),
     }
 
     yield from handle_lifecycle(
