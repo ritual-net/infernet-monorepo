@@ -3,7 +3,7 @@ SERVICE_NAME := ezkl_proof_service
 TAG := $(DOCKER_ORG)/$(SERVICE_NAME):latest
 
 build: # force AMD because ezkl only supports musllinux for AARCH64, which doesnt support Torch.
-	@docker build -t $(TAG) --platform linux/amd64 --ssh default --build-arg index_url=$(index_url) .
+	@docker build -t $(TAG) --platform linux/amd64 --build-arg index_url=$(index_url) .
 
 run:
 	docker run --rm --env-file .env --name $(SERVICE_NAME) -p 3000:3000 $(TAG)

@@ -15,13 +15,6 @@ RUN apt-get install -y git curl
 
 # install uv
 RUN curl -LsSf https://astral.sh/uv/0.2.1/install.sh | sh
-
-# Add github.com to known hosts. This is necessary to install private packages from
-# github. Refer to the following links for more information:
-# https://medium.com/@tonistiigi/build-secrets-and-ssh-forwarding-in-docker-18-09-ae8161d066
-# https://stackoverflow.com/questions/43418188/ssh-agent-forwarding-during-docker-build/53548076#53548076
-RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 COPY requirements.txt .
 
 # Using docker's ssh-forwarding to install private packages from github. Refer to the
