@@ -390,4 +390,4 @@ def set_solc_compiler(version: str = "0.8.17") -> None:
     cmd = f"make set-solc solc_version={version} "
 
     log.info(f"setting solc-compiler: {version}")
-    subprocess.run(shlex.split(cmd))
+    subprocess.check_call(shlex.split(cmd))
