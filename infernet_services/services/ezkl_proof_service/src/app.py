@@ -4,9 +4,10 @@ This service serves proofs via the EZKL proving library.
 import json
 import logging
 import tempfile
+from functools import lru_cache
 from os import path
 from typing import Any, Optional, cast
-from functools import lru_cache
+
 import ezkl  # type: ignore
 from eth_abi import encode  # type: ignore
 from huggingface_hub import hf_hub_download  # type: ignore
@@ -14,12 +15,12 @@ from infernet_ml.utils.codec.vector import encode_vector
 from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from models import ProofRequest, ProvingArtifactsConfig
-from utils import extractProofRequest
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
 from ritual_arweave.repo_manager import RepoManager
 from torch import Tensor
+from utils import extractProofRequest
 from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__file__)
