@@ -10,9 +10,9 @@ from quart import abort
 logger = logging.getLogger(__file__)
 
 
-def extractProofRequest(infernet_input:InfernetInput)-> ProofRequest:
+def extractProofRequest(infernet_input: InfernetInput) -> ProofRequest:
     """
-    Helper function to extract a ProofRequest from an EZKL Service 
+    Helper function to extract a ProofRequest from an EZKL Service
     InfernetInput payload.
     """
     match infernet_input.source:
@@ -59,9 +59,7 @@ def extractProofRequest(infernet_input:InfernetInput)-> ProofRequest:
                 data_types.append("bytes")
 
             # now we know the shape of the data, decode payload
-            decoded = decode(
-                data_types, bytes.fromhex(cast(str, infernet_input.data))
-            )
+            decoded = decode(data_types, bytes.fromhex(cast(str, infernet_input.data)))
 
             # we dont care about first 3 fields since they are flags
             decoded_vals = decoded[3:]
@@ -74,9 +72,7 @@ def extractProofRequest(infernet_input:InfernetInput)-> ProofRequest:
                 logger.info(f"decoded vk address {proof_request.vk_address}")
             if has_input:
                 # we further decode the input into a vector bere
-                input_d, input_s, input_val = decode_vector(
-                    decoded_vals[input_offset]
-                )
+                input_d, input_s, input_val = decode_vector(decoded_vals[input_offset])
                 logger.info(f"decoded input: {input_d} {input_s} {input_val}")
                 proof_request.witness_data.input_shape = list(input_s)
                 proof_request.witness_data.input_data = [
@@ -89,9 +85,7 @@ def extractProofRequest(infernet_input:InfernetInput)-> ProofRequest:
                 output_d, output_s, output_val = decode_vector(
                     decoded_vals[output_offset]
                 )
-                logger.info(
-                    f"decoded ouput: {output_d} {output_s} {output_val}"
-                )
+                logger.info(f"decoded ouput: {output_d} {output_s} {output_val}")
                 proof_request.witness_data.output_shape = list(output_s)
                 proof_request.witness_data.output_data = [
                     output_val.numpy().flatten().tolist()
@@ -99,9 +93,7 @@ def extractProofRequest(infernet_input:InfernetInput)-> ProofRequest:
                 proof_request.witness_data.output_dtype = output_d
 
         case JobLocation.ONCHAIN:
-            proof_request = ProofRequest(
-                **cast(dict[str, Any], infernet_input.data)
-            )
+            proof_request = ProofRequest(**cast(dict[str, Any], infernet_input.data))
         case _:
             abort(
                 400,
