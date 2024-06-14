@@ -105,18 +105,19 @@ class EZKLProvingArtifactsConfig(BaseModel):
     COMPILED_MODEL_FILE_NAME: str = "network.compiled"
     COMPILED_MODEL_VERSION: Optional[str] = None
     COMPILED_MODEL_FORCE_DOWNLOAD: bool = False
-    SETTINGS_FILE_NAME: Optional[str] = "settings.json"
+    SETTINGS_FILE_NAME: str = "settings.json"
     SETTINGS_VERSION: Optional[str] = None
     SETTINGS_FORCE_DOWNLOAD: bool = False
-    PK_FILE_NAME: Optional[str] = "proving.key"
+    PK_FILE_NAME: str = "proving.key"
     PK_VERSION: Optional[str] = None
     PK_FORCE_DOWNLOAD: bool = False
-    VK_FILE_NAME: Optional[str] = "verifying.key"
+    VK_FILE_NAME: str = "verifying.key"
     VK_VERSION: Optional[str] = None
     VK_FORCE_DOWNLOAD: bool = False
-    SRS_FILE_NAME: Optional[str] = "kzg.srs"
+    SRS_FILE_NAME: str = "kzg.srs"
     SRS_VERSION: Optional[str] = None
     SRS_FORCE_DOWNLOAD: bool = False
+
     class Config:
         # to make config hashable
         frozen = True

@@ -4,18 +4,25 @@ meant to be used in the context of solidity contracts.
 These utilities are used in the `ezkl_proof_service` service.
 """
 import logging
-from typing import Any, cast
-
-from eth_abi import decode, encode
-from infernet_ml.utils.codec.vector import decode_vector, encode_vector
-from infernet_ml.utils.service_models import InfernetInput, JobLocation, EZKLProofRequest, HexStr
-from ezkl import felt_to_big_endian, encode_evm_calldata
-from typing import Optional
 import tempfile
+from typing import Any, Optional, cast
+
+from eth_abi import decode, encode  # type: ignore
+from ezkl import encode_evm_calldata, felt_to_big_endian  # type: ignore
+from infernet_ml.utils.codec.vector import decode_vector, encode_vector
+from infernet_ml.utils.service_models import (
+    EZKLProofRequest,
+    HexStr,
+    InfernetInput,
+    JobLocation,
+)
 
 logger = logging.getLogger(__file__)
 
-def encode_processed_fields_hex(field_elements: Optional[list[int]])-> HexStr:
+
+def encode_processed_fields_hex(
+    field_elements: Optional[list[int]],
+) -> Optional[HexStr]:
     """
     Helper function to encode a processed field element array
 
@@ -23,7 +30,8 @@ def encode_processed_fields_hex(field_elements: Optional[list[int]])-> HexStr:
         field_elements (Optional[list[int]]): list of field elements
 
     Returns:
-        HexStr: field elements encoded as an int256[] hex string 
+        Optional[HexStr]: field elements encoded as an int256[] hex string
+            or None if field_elements is None
     """
     if not field_elements:
         return None
@@ -39,16 +47,17 @@ def encode_processed_fields_hex(field_elements: Optional[list[int]])-> HexStr:
         ],
     ).hex()
 
+
 def encode_proof_request(
-        vk_addr: Optional[HexStr],
-        input_vector_bytes: Optional[bytes], 
-        output_vector_bytes: Optional[bytes],
-    )-> bytes:
+    vk_addr: Optional[HexStr],
+    input_vector_bytes: Optional[bytes],
+    output_vector_bytes: Optional[bytes],
+) -> bytes:
     """
-    Helper function to encode an EZKL Proof Request. Note that vectors should 
-    be encoded using the `infernet_ml.utils.codec.vector.encode_vector` 
+    Helper function to encode an EZKL Proof Request. Note that vectors should
+    be encoded using the `infernet_ml.utils.codec.vector.encode_vector`
     function.
-    
+
     Args:
         vk_addr (Optional[HexStr]): the verifying key address
         input_vector_bytes (Optional[bytes]): the encoded input vector
@@ -58,7 +67,7 @@ def encode_proof_request(
         bytes: encoded proof request bytes
     """
     types = ["bool", "bool", "bool"]
-    data = []
+    data: list[Any] = []
 
     data.append(vk_addr is None)
     data.append(input_vector_bytes is None)
@@ -67,7 +76,7 @@ def encode_proof_request(
     if vk_addr:
         types.append("address")
         data.append(vk_addr)
-    
+
     if input_vector_bytes:
         types.append("bytes")
         data.append(input_vector_bytes)
@@ -77,6 +86,7 @@ def encode_proof_request(
         data.append(output_vector_bytes)
 
     return encode(types, data)
+
 
 def decode_proof_request(data: bytes) -> EZKLProofRequest:
     """
@@ -88,9 +98,9 @@ def decode_proof_request(data: bytes) -> EZKLProofRequest:
     Returns:
         EZKLProofRequest: decoded proof request
     """
-    
-    # Because the shape of the data of depends on the proving set up, we need 
-    # to read the first three flags to determine what the remainder of the 
+
+    # Because the shape of the data of depends on the proving set up, we need
+    # to read the first three flags to determine what the remainder of the
     # payload is.
 
     # decode the flags first
@@ -99,9 +109,9 @@ def decode_proof_request(data: bytes) -> EZKLProofRequest:
         data,
     )
 
-    # we keep track of where each field is relative to the decoded payload. 
+    # we keep track of where each field is relative to the decoded payload.
     # initialize them to -1
-    
+
     vk_addr_offset = -1
     input_offset = -1
     output_offset = -1
@@ -142,23 +152,17 @@ def decode_proof_request(data: bytes) -> EZKLProofRequest:
         input_d, input_s, input_val = decode_vector(decoded_vals[input_offset])
         logger.info(f"decoded input: {input_d} {input_s} {input_val}")
         proof_request.witness_data.input_shape = list(input_s)
-        proof_request.witness_data.input_data = [
-            input_val.numpy().flatten().tolist()
-        ]
+        proof_request.witness_data.input_data = [input_val.numpy().flatten().tolist()]
         proof_request.witness_data.input_dtype = input_d
 
     if has_output:
         # we further decode the output into a vector here
-        output_d, output_s, output_val = decode_vector(
-            decoded_vals[output_offset]
-        )
+        output_d, output_s, output_val = decode_vector(decoded_vals[output_offset])
         logger.info(f"decoded ouput: {output_d} {output_s} {output_val}")
         proof_request.witness_data.output_shape = list(output_s)
-        proof_request.witness_data.output_data = [
-            output_val.numpy().flatten().tolist()
-        ]
+        proof_request.witness_data.output_data = [output_val.numpy().flatten().tolist()]
         proof_request.witness_data.output_dtype = output_d
-    
+
     return proof_request
 
 
@@ -169,19 +173,27 @@ def extract_proof_request(infernet_input: InfernetInput) -> EZKLProofRequest:
     """
     match infernet_input.source:
         case JobLocation.ONCHAIN:
-            proof_request = decode_proof_request(bytes.fromhex(cast(str, infernet_input.data)))
+            proof_request = decode_proof_request(
+                bytes.fromhex(cast(str, infernet_input.data))
+            )
         case JobLocation.OFFCHAIN:
-            proof_request = EZKLProofRequest(**cast(dict[str, Any], infernet_input.data))
+            proof_request = EZKLProofRequest(
+                **cast(dict[str, Any], infernet_input.data)
+            )
         case _:
-            raise ValueError(f"Source must either be {JobLocation.ONCHAIN} or {JobLocation.OFFCHAIN}. Got {infernet_input.source}")  # noqa: E501
+            raise ValueError(
+                f"Source must either be {JobLocation.ONCHAIN} or {JobLocation.OFFCHAIN}. Got {infernet_input.source}"  # noqa: E501
+            )
 
     return proof_request
 
+
 def encode_onchain_payload(
-        ip: Optional[list[int]], 
-        op: Optional[list[int]],
-        proof_file: str,
-        proof_request: EZKLProofRequest) -> dict[str, str]:
+    ip: Optional[list[int]],
+    op: Optional[list[int]],
+    proof_file: str,
+    proof_request: EZKLProofRequest,
+) -> dict[str, str | None]:
     """
     Helper function to encode the onchain payload for an EZKLProof Request.
 
@@ -258,9 +270,7 @@ def encode_onchain_payload(
         raw_output,
     )
 
-    with tempfile.NamedTemporaryFile(
-        "w+", suffix=".cd"
-    ) as calldata_file:
+    with tempfile.NamedTemporaryFile("w+", suffix=".cd") as calldata_file:
         # here we get the call data for the onchain contract
         calldata: list[int] = encode_evm_calldata(
             proof=proof_file,
@@ -277,9 +287,6 @@ def encode_onchain_payload(
             "proof": calldata_hex,
         }
 
-        logger.debug(
-            f"addr_vk:{proof_request.vk_address} paylaod: {payload}"
-        )
+        logger.debug(f"addr_vk:{proof_request.vk_address} paylaod: {payload}")
 
         return payload
-
