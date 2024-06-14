@@ -5,9 +5,10 @@ Module containing data models used by the service
 from enum import IntEnum
 from typing import Annotated, Any, Optional, Union
 
+from pydantic import BaseModel, StringConstraints, model_validator
+
 from infernet_ml.utils.codec.vector import DataType
 from infernet_ml.utils.model_loader import ModelSource
-from pydantic import BaseModel, StringConstraints, model_validator
 
 HexStr = Annotated[
     str, StringConstraints(strip_whitespace=True, pattern="^[a-fA-F0-9]+$")
