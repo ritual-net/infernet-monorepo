@@ -1,6 +1,8 @@
 import json
 import logging
 import pathlib
+import tempfile
+from typing import Any
 
 import ezkl  # type: ignore
 import numpy as np
@@ -20,6 +22,21 @@ from torch import Tensor
 from web3 import Web3
 from web3.contract import AsyncContract  # type: ignore
 
+TEST_INPUT = [
+    0.052521463483572006,
+    0.04962930083274841,
+    0.0025634586345404387,
+    0.06335366517305374,
+    0.04051826521754265,
+    0.09236890822649002,
+    0.06505163758993149,
+    0.04178299382328987,
+    0.050887223333120346,
+    0.08090239018201828,
+    0.08317205309867859,
+    0.06714846938848495,
+]
+
 SERVICE_NAME = "ezkl_proof_service"
 
 log = logging.getLogger(__name__)
@@ -27,12 +44,18 @@ log = logging.getLogger(__name__)
 load_dotenv()
 
 
-async def create_testReadsContract(input_list: list[float]) -> int:
+async def create_testReadsContract(
+    input_list: list[float],
+) -> tuple[int, dict[str, Any]]:
     """
     Helper function to compile and deploy a TestReads contract
     for this test. This contract stores the inputs and outputs
     of a model under the expected visibility (public input and
     hashed output).
+
+    Returns:
+        tuple[int, dict[str,Any]]: expected processed input value, as well as
+            the on chain call data generated as a dict
     """
 
     contract_source_code = """
@@ -73,12 +96,17 @@ async def create_testReadsContract(input_list: list[float]) -> int:
     # Deploy the contract
     w3 = (await get_rpc())._web3
 
-    # Get Data
-    res = await ezkl.gen_witness(
-        pathlib.Path(__file__).parent / "input.json",
-        pathlib.Path(__file__).parent / "network.compiled",
-        pathlib.Path(__file__).parent / "witness.json",
-    )
+    with tempfile.NamedTemporaryFile(mode="w") as input:
+        # create temp input json
+        json.dump({"input_data": [TEST_INPUT]}, input)
+        input.flush()
+        with tempfile.NamedTemporaryFile(mode="w") as witness:
+            # create temp witness
+            res = await ezkl.gen_witness(
+                input.name,
+                pathlib.Path(__file__).parent / "network.compiled",
+                witness.name,
+            )
 
     processed_output = int(
         ezkl.felt_to_big_endian(res["processed_outputs"]["poseidon_hash"][0]), 0
@@ -116,13 +144,12 @@ async def create_testReadsContract(input_list: list[float]) -> int:
         output_data={"rpc": global_config.rpc_url, "calls": calls_to_account},
     )
 
-    json.dump(
-        output_dict, open(pathlib.Path(__file__).parent / "input_onchain.json", "w")
-    )
-    return processed_output
+    return processed_output, output_dict
 
 
-async def ezkl_deploy() -> tuple[AsyncContract, AsyncContract]:
+async def ezkl_deploy(
+    output_dict: dict[str, Any]
+) -> tuple[AsyncContract, AsyncContract]:
     """
     helper function to deploy and return the EZKL EVM verifier and Attester
     contracts.
@@ -132,53 +159,64 @@ async def ezkl_deploy() -> tuple[AsyncContract, AsyncContract]:
     verifying.key
     settings.json
     kzg.srs
-    input_onchain.json (generated while deploying testReads contract)
-    settings.json
 
     Returns:
         tuple[AsyncContract,AsyncContract]: The verifier and attester contract
     """
+    evm_verif_sol = tempfile.NamedTemporaryFile(mode="w")
+    evm_verif_abi = tempfile.NamedTemporaryFile(mode="w+")
+    data_attest_sol = tempfile.NamedTemporaryFile(mode="w")
+    data_attest_abi = tempfile.NamedTemporaryFile(mode="w+")
+    addr_verif = tempfile.NamedTemporaryFile(mode="w+")
+    addr_da = tempfile.NamedTemporaryFile(mode="w+")
+    input_onchain = tempfile.NamedTemporaryFile(mode="w+")
+
+    json.dump(output_dict, input_onchain)
+    input_onchain.flush()
+
     await ezkl.create_evm_verifier(
         pathlib.Path(__file__).parent / "verifying.key",
         pathlib.Path(__file__).parent / "settings.json",
-        pathlib.Path(__file__).parent / "evm_verifier.sol",
-        pathlib.Path(__file__).parent / "evm_verifier.abi",
+        evm_verif_sol.name,
+        evm_verif_abi.name,
         pathlib.Path(__file__).parent / "kzg.srs",
     )
-    addr_evm_verifier_txt = "addr_verif.txt"
     await ezkl.deploy_evm(
-        addr_evm_verifier_txt,
-        pathlib.Path(__file__).parent / "evm_verifier.sol",
+        addr_verif.name,
+        evm_verif_sol.name,
         global_config.rpc_url,
     )
-    with open(addr_evm_verifier_txt, "r") as f:
+    with open(addr_verif.name, "r") as f:
         verif_addr = Web3.to_checksum_address(f.read())
 
     await ezkl.create_evm_data_attestation(
-        pathlib.Path(__file__).parent / "input_onchain.json",
+        input_onchain.name,
         pathlib.Path(__file__).parent / "settings.json",
-        pathlib.Path(__file__).parent / "attester.json",
-        pathlib.Path(__file__).parent / "attester.abi",
+        data_attest_sol.name,
+        data_attest_abi.name,
     )
-    addr_path_da = "addr_da.txt"
     await ezkl.deploy_da_evm(
-        addr_path=addr_path_da,
-        input_data=pathlib.Path(__file__).parent / "input_onchain.json",
+        addr_path=addr_da.name,
+        input_data=input_onchain.name,
         settings_path=pathlib.Path(__file__).parent / "settings.json",
-        sol_code_path=pathlib.Path(__file__).parent / "attester.sol",
+        sol_code_path=data_attest_sol.name,
         rpc_url=global_config.rpc_url,
     )
 
-    with open(addr_path_da, "r") as f:
+    with open(addr_da.name, "r") as f:
         att_addr = Web3.to_checksum_address(f.read())
 
     rpc = await get_rpc()
-    verifier = rpc.get_contract(
-        verif_addr, json.load(open(pathlib.Path(__file__).parent / "evm_verifier.abi"))
-    )
-    attester = rpc.get_contract(
-        att_addr, json.load(open(pathlib.Path(__file__).parent / "attester.abi"))
-    )
+    verifier = rpc.get_contract(verif_addr, json.load(evm_verif_abi))
+    attester = rpc.get_contract(att_addr, json.load(data_attest_abi))
+
+    # remove temporary files for test
+    input_onchain.close()
+    evm_verif_sol.close()
+    data_attest_sol.close()
+    data_attest_abi.close()
+    addr_verif.close()
+    addr_da.close()
 
     return verifier, attester
 
@@ -200,20 +238,7 @@ async def test_completion() -> None:
     """
     install_solc("0.8.17", show_progress=True)
 
-    input_list = [
-        0.052521463483572006,
-        0.04962930083274841,
-        0.0025634586345404387,
-        0.06335366517305374,
-        0.04051826521754265,
-        0.09236890822649002,
-        0.06505163758993149,
-        0.04178299382328987,
-        0.050887223333120346,
-        0.08090239018201828,
-        0.08317205309867859,
-        0.06714846938848495,
-    ]
+    input_list = TEST_INPUT
 
     output_list = [
         0.013130365870893002,
@@ -256,8 +281,8 @@ async def test_completion() -> None:
     output_dtype = DataType.float
     output_bytes = encode_vector(output_dtype, output_shape, output_data)
 
-    processed_output_expected = await create_testReadsContract(input_list)
-    evm_verifier, attester = await ezkl_deploy()
+    processed_output_expected, output_dict = await create_testReadsContract(input_list)
+    evm_verifier, attester = await ezkl_deploy(output_dict)
 
     data = encode_proof_request(
         vk_addr=None, input_vector_bytes=input_bytes, output_vector_bytes=output_bytes

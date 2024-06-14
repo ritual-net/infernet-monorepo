@@ -15,7 +15,12 @@ from infernet_ml.utils.codec.ezkl_codec import (
     extract_proof_request,
 )
 from infernet_ml.utils.model_loader import ModelSource
-from infernet_ml.utils.service_models import InfernetInput, JobLocation, EZKLProvingArtifactsConfig, EZKLProofRequest
+from infernet_ml.utils.service_models import (
+    EZKLProofRequest,
+    EZKLProvingArtifactsConfig,
+    InfernetInput,
+    JobLocation,
+)
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
@@ -27,8 +32,11 @@ logger = logging.getLogger(__file__)
 DUMMY_ADDR = "0x0000000000000000000000000000000000000000"
 SERVICE_PREFIX = "EZKL_PROOF"
 
+
 @lru_cache
-def load_proving_artifacts(pac: EZKLProvingArtifactsConfig) -> tuple[str, str, str, str, str]:
+def load_proving_artifacts(
+    pac: EZKLProvingArtifactsConfig,
+) -> tuple[str, str, str, str, str]:
     """function to load the proving artifacts depending on the config.
 
     If we are loading the artifacts from non local sources (i.e. HuggingFace
@@ -255,7 +263,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         app.config.update(test_config)
 
     pac = EZKLProvingArtifactsConfig(**cast(dict[str, Any], app.config))
-    
+
     (
         compiled_model_path,
         settings_path,
