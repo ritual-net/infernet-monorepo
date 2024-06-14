@@ -52,6 +52,7 @@ launch.json
 
 # wallet files
 **/keyfile-arweave.json
+**/wallet.json
 
 # shared volume files
 shared
@@ -87,14 +88,3 @@ vercel.json
 infernet_services/deploy/config.json
 
 **/test_lib_0/**
-infernet_services/services/ezkl_proof_service/src/wallet.json
-infernet_services/tests/ezkl_proof_service/input_onchain.json
-infernet_services/tests/ezkl_proof_service/input.json
-infernet_services/tests/ezkl_proof_service/attester.abi
-infernet_services/tests/ezkl_proof_service/attester.json
-infernet_services/tests/ezkl_proof_service/attester.sol
-infernet_services/tests/ezkl_proof_service/evm_verifier.abi
-infernet_services/tests/ezkl_proof_service/evm_verifier.sol
-addr_da.txt
-addr_verif.txt
-infernet_services/tests/ezkl_proof_service/witness.json
