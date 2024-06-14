@@ -6,7 +6,8 @@ import ezkl  # type: ignore
 import numpy as np
 import pytest
 from dotenv import load_dotenv
-from eth_abi import decode, encode  # type: ignore
+from eth_abi import decode  # type: ignore
+from infernet_ml.utils.codec.ezkl_codec import encode_proof_request
 from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 from solcx import compile_standard, install_solc
 from test_library.test_config import global_config
@@ -249,6 +250,7 @@ async def test_completion() -> None:
     input_shape = (1, 3, 2, 2)
     input_dtype = DataType.float
     input_bytes = encode_vector(input_dtype, input_shape, input_data)
+
     output_data = Tensor(output_list)
     output_shape = (3, 3, 3)
     output_dtype = DataType.float
@@ -257,9 +259,8 @@ async def test_completion() -> None:
     processed_output_expected = await create_testReadsContract(input_list)
     evm_verifier, attester = await ezkl_deploy()
 
-    data = encode(
-        ["bool", "bool", "bool", "bytes", "bytes"],
-        [False, True, True, input_bytes, output_bytes],
+    data = encode_proof_request(
+        vk_addr=None, input_vector_bytes=input_bytes, output_vector_bytes=output_bytes
     )
 
     task_id = await request_web3_compute(

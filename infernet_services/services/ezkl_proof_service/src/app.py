@@ -9,18 +9,17 @@ from os import path
 from typing import Any, Optional, cast
 
 import ezkl  # type: ignore
-from eth_abi import encode  # type: ignore
 from huggingface_hub import hf_hub_download  # type: ignore
-from infernet_ml.utils.codec.vector import encode_vector
+from infernet_ml.utils.codec.ezkl_codec import (
+    encode_onchain_payload,
+    extract_proof_request,
+)
 from infernet_ml.utils.model_loader import ModelSource
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
-from models import ProofRequest, ProvingArtifactsConfig
+from infernet_ml.utils.service_models import InfernetInput, JobLocation, EZKLProvingArtifactsConfig, EZKLProofRequest
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
 from ritual_arweave.repo_manager import RepoManager
-from torch import Tensor
-from utils import extractProofRequest
 from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__file__)
@@ -28,9 +27,8 @@ logger = logging.getLogger(__file__)
 DUMMY_ADDR = "0x0000000000000000000000000000000000000000"
 SERVICE_PREFIX = "EZKL_PROOF"
 
-
 @lru_cache
-def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, str]:
+def load_proving_artifacts(pac: EZKLProvingArtifactsConfig) -> tuple[str, str, str, str, str]:
     """function to load the proving artifacts depending on the config.
 
     If we are loading the artifacts from non local sources (i.e. HuggingFace
@@ -39,7 +37,7 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
         be forced.
 
     Args:
-        config (dict[str, Any]): config dictionary for this App.
+        config (ProvingArtifactsConfig): Artifacts config for this App.
 
     Raises:
         ValueError: raised if an unsupported ModelSource provided
@@ -49,7 +47,6 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
             settings_path, pk_path, vk_path, and srs_path)
     """
 
-    pac = ProvingArtifactsConfig(**cast(dict[str, Any], config))
     match pac.MODEL_SOURCE:
         case ModelSource.ARWEAVE:
             manager = RepoManager()
@@ -175,6 +172,67 @@ def load_proving_artifacts(config: dict[str, Any]) -> tuple[str, str, str, str, 
     return compiled_model_path, settings_path, pk_path, vk_path, srs_path
 
 
+def extract_visibilities(settings: dict[str, Any]) -> tuple[str, str, str]:
+    """
+    Helper function to extract visibilities from a generated settings
+    file.
+
+    Args:
+        settings (dict[str, Any]): generated settings json file
+
+    Returns:
+        tuple[str, str, str]: input visibility, output visibility,
+        and param visibility
+    """
+    input_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["input_visibility"]
+        else settings["run_args"]["input_visibility"]
+    )
+
+    output_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["output_visibility"]
+        else settings["run_args"]["output_visibility"]
+    )
+
+    param_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["param_visibility"]
+        else settings["run_args"]["param_visibility"]
+    )
+    return input_v, output_v, param_v
+
+
+def extract_processed_input_output(
+    input_v: str, output_v: str, witness_dict: dict[str, Any]
+) -> tuple[Optional[list[int]], Optional[list[int]]]:
+    """
+    Helper to extract processed i/o from a witness.
+
+    Args:
+        input_v (str): visibility of input as str
+        output_v (str): visibility of output as str
+        witness_dict (dict[str, Any]): the generated witness dict
+
+    Returns:
+        tuple[Optional[list[int]], Optional[list[int]]]: processed input list,
+        processed output list
+    """
+    ip = op = None
+    if input_v.lower() == "hashed":
+        ip = witness_dict["processed_inputs"]["poseidon_hash"]
+
+    elif input_v.lower() == "encrypted":
+        ip = witness_dict["processed_inputs"]["ciphertexts"]
+
+    if output_v.lower() == "hashed":
+        op = witness_dict["processed_outputs"]["poseidon_hash"]
+    elif output_v.lower() == "encrypted":
+        op = witness_dict["processed_outputs"]["ciphertexts"]
+    return ip, op
+
+
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     """
     Factory function that creates and configures an instance
@@ -196,13 +254,15 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         # load the test config if passed in
         app.config.update(test_config)
 
+    pac = EZKLProvingArtifactsConfig(**cast(dict[str, Any], app.config))
+    
     (
         compiled_model_path,
         settings_path,
         pk_path,
         vk_path,
         srs_path,
-    ) = load_proving_artifacts(app.config)
+    ) = load_proving_artifacts(pac)
 
     logging.info(
         "resolved file paths: %s, %s, %s, %s, %s",
@@ -231,7 +291,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         logger.debug("recieved data: %s", data)
         try:
             infernet_input = InfernetInput(**data)
-            proof_request: ProofRequest = extractProofRequest(infernet_input)
+            proof_request: EZKLProofRequest = extract_proof_request(infernet_input)
             # parse witness data
             witness_data = proof_request.witness_data
 
@@ -247,24 +307,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
             with open(settings_path, "r") as sp:
                 settings = json.load(sp)
-
-                input_v = (
-                    "Hashed"
-                    if "Hashed" in settings["run_args"]["input_visibility"]
-                    else settings["run_args"]["input_visibility"]
-                )
-
-                output_v = (
-                    "Hashed"
-                    if "Hashed" in settings["run_args"]["output_visibility"]
-                    else settings["run_args"]["output_visibility"]
-                )
-
-                param_v = (
-                    "Hashed"
-                    if "Hashed" in settings["run_args"]["param_visibility"]
-                    else settings["run_args"]["param_visibility"]
-                )
+                input_v, output_v, param_v = extract_visibilities(settings)
 
                 logging.info(
                     "input_visibility: %s output_visibility: %s param_visibility: %s",  # noqa: E501
@@ -290,17 +333,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     with open(wf_path, "r", encoding="utf-8") as wp:
                         res = json.load(wp)
                         logging.debug("witness circuit results: %s", res)
-                        ip = op = None
-                        if input_v.lower() == "hashed":
-                            ip = res["processed_inputs"]["poseidon_hash"]
-
-                        elif input_v.lower() == "encrypted":
-                            ip = res["processed_inputs"]["ciphertexts"]
-
-                        if output_v.lower() == "hashed":
-                            op = res["processed_outputs"]["poseidon_hash"]
-                        elif output_v.lower() == "encrypted":
-                            op = res["processed_outputs"]["ciphertexts"]
+                        ip, op = extract_processed_input_output(input_v, output_v, res)
 
                     with tempfile.NamedTemporaryFile(
                         "w+", suffix=".pf", delete=DEBUG
@@ -329,123 +362,9 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                             return cast(dict[str, str | None], json.load(open(pf.name)))
 
                         elif infernet_input.destination == JobLocation.ONCHAIN:
-                            """
-                            For onchain outputs, infernet expects a 5 element
-                            dict of the following shape:
-
-                            {
-                                "raw_input": input vector
-                                "raw_output": output vector
-                                "processed_input": hashed / encryped input vector if applicable
-                                "processed_output": hashed / encryped output vector if applicable
-                                "proof": encoded_proof_related_payload
-                            }
-
-                            For onchain destination payloads, we assume the
-                            existence of an onchain verification contract.
-                            Therefore, we return the calldata required for
-                            calling the actual contract instead of just the
-                            proof json object.
-                            """  # noqa: E501
-
-                            processed_input = (
-                                encode(
-                                    ["int256[]"],
-                                    [
-                                        [
-                                            # convert field elements to int
-                                            int(ezkl.felt_to_big_endian(x), 0)
-                                            for x in ip
-                                        ]
-                                    ],
-                                ).hex()
-                                if ip
-                                else None
+                            return encode_onchain_payload(
+                                ip, op, pf.name, proof_request
                             )
-
-                            logger.debug(
-                                "processed input: %s, encoded: %s",
-                                ip,
-                                processed_input,
-                            )
-
-                            processed_output = (
-                                encode(
-                                    ["int256[]"],
-                                    [
-                                        [
-                                            # convert field elements to int
-                                            int(ezkl.felt_to_big_endian(x), 0)
-                                            for x in op
-                                        ]
-                                    ],
-                                ).hex()
-                                if op
-                                else None
-                            )
-
-                            logger.debug(
-                                "processed output: %s, encoded: %s",
-                                op,
-                                processed_output,
-                            )
-
-                            raw_input = None
-                            if isinstance(witness_data.input_data, list):
-                                nparr_in = Tensor(witness_data.input_data)
-                                # encode to vector
-                                raw_input = encode_vector(
-                                    witness_data.input_dtype,
-                                    cast(tuple[int, ...], witness_data.input_shape),
-                                    nparr_in,
-                                ).hex()
-
-                            logger.debug(
-                                "raw input: %s, encoded: %s",
-                                witness_data.input_data,
-                                raw_input,
-                            )
-
-                            raw_output = None
-                            if isinstance(witness_data.output_data, list):
-                                nparr_out = Tensor(witness_data.output_data)
-                                # encode to vector
-                                raw_output = encode_vector(
-                                    witness_data.output_dtype,
-                                    cast(tuple[int, ...], witness_data.output_shape),
-                                    nparr_out,
-                                ).hex()
-
-                            logger.debug(
-                                "raw ouput: %s, encoded: %s",
-                                witness_data.output_data,
-                                raw_output,
-                            )
-
-                            with tempfile.NamedTemporaryFile(
-                                "w+", suffix=".cd", delete=DEBUG
-                            ) as calldata_file:
-                                # here we get the call data for the onchain contract
-                                calldata: list[int] = ezkl.encode_evm_calldata(
-                                    proof=pf.name,
-                                    calldata=calldata_file.name,
-                                    addr_vk=proof_request.vk_address,
-                                )
-                                calldata_hex = bytearray(calldata).hex()
-
-                                payload = {
-                                    "processed_output": processed_output,
-                                    "processed_input": processed_input,
-                                    "raw_output": raw_output,
-                                    "raw_input": raw_input,
-                                    "proof": calldata_hex,
-                                }
-
-                                logger.debug(
-                                    f"addr_vk:{proof_request.vk_address} paylaod: {payload}"  # noqa: E501
-                                )
-
-                                return payload
 
         abort(400)
 

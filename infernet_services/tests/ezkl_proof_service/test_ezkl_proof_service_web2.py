@@ -79,7 +79,7 @@ async def test_ezkl_proof_service_completion() -> None:
                 "input_data": [input_data_list],
                 "input_shape": [1, 3, 2, 2],
                 "input_dtype": 0,
-                "output_data": [],
+                "output_data": [output_data_list],
                 "output_shape": [3, 3, 3],
                 "output_dtype": 0,
             }
