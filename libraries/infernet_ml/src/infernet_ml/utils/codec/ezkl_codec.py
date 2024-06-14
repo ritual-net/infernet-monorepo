@@ -9,6 +9,7 @@ from typing import Any, Optional, cast
 
 from eth_abi import decode, encode  # type: ignore
 from ezkl import encode_evm_calldata, felt_to_big_endian  # type: ignore
+
 from infernet_ml.utils.codec.vector import decode_vector, encode_vector
 from infernet_ml.utils.service_models import (
     EZKLProofRequest,
