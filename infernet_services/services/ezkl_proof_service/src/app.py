@@ -13,7 +13,6 @@ from huggingface_hub import hf_hub_download  # type: ignore
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
-from ritual_arweave.repo_manager import RepoManager
 from werkzeug.exceptions import HTTPException
 
 from infernet_ml.utils.codec.ezkl_codec import (
@@ -27,6 +26,7 @@ from infernet_ml.utils.service_models import (
     InfernetInput,
     JobLocation,
 )
+from ritual_arweave.repo_manager import RepoManager
 
 logger = logging.getLogger(__file__)
 
