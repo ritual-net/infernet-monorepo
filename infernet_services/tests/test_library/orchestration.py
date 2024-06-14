@@ -24,7 +24,9 @@ async def await_services(
             running.
     """
     for service in services:
-        log.info(f"waiting up to {service_wait_timeout}s for {service.name} to be ready")
+        log.info(
+            f"waiting up to {service_wait_timeout}s for {service.name} to be ready"
+        )
         await await_service(get_service_port(service.name), service_wait_timeout)
         log.info(f"✅ {service.name} is ready")
 
