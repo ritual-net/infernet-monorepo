@@ -13,6 +13,7 @@ cytoolz==0.12.3
 decorator==5.1.1
 ecdsa==0.19.0
 erlang-py==2.0.7
+ezkl==11.2.0
 eth-abi==5.1.0
 eth-account==0.11.2
 eth-hash==0.7.0
@@ -30,7 +31,7 @@ huggingface-hub==0.23.0
 humanfriendly==10.0
 idna==3.7
 infernet-client==1.0.0
-infernet-ml==1.0.0
+infernet-ml==1.0.1
 iniconfig==2.0.0
 jinja2==3.1.4
 joblib==1.4.2
