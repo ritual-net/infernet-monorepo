@@ -3,6 +3,7 @@ from typing import Tuple
 
 import pytest
 from eth_abi.abi import decode
+
 from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
 from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.chain.wallet import MockToken, create_wallet, fund_wallet_with_eth
@@ -20,7 +21,6 @@ from test_library.web3_utils import (
     get_rpc,
     request_web3_compute,
 )
-
 from infernet_client.chain.token import Token
 from infernet_client.chain.wallet import InfernetWallet
 

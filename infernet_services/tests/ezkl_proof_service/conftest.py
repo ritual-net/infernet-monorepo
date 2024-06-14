@@ -3,6 +3,7 @@ from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
+
 from test_library.config_creator import ServiceConfig
 from test_library.constants import (
     arweave_model_id,
@@ -12,7 +13,6 @@ from test_library.constants import (
 )
 from test_library.infernet_fixture import handle_lifecycle
 from test_library.web3_utils import set_solc_compiler
-
 from infernet_ml.utils.model_loader import ModelSource
 
 load_dotenv()
