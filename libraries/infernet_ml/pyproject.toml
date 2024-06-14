@@ -1,6 +1,6 @@
 [project]
 name = "infernet-ml"
-version = "1.0.0"
+version = "1.0.01"
 description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
@@ -92,6 +92,11 @@ hf_diffusion_inference = [
     "huggingface-hub>=0.20.3,<1.0.0",
     "transformers>=4.38,<5.0.0",
 ]
+
+# ezkl proving service
+ezkl = [
+    "ezkl>=11.2.0,<12.0.0",
+] 
 
 [build-system]
 requires = ["hatchling"]
