@@ -10,11 +10,6 @@ from typing import Any, Optional, cast
 
 import ezkl  # type: ignore
 from huggingface_hub import hf_hub_download  # type: ignore
-from pydantic import ValidationError
-from quart import Quart, abort
-from quart import request as req
-from werkzeug.exceptions import HTTPException
-
 from infernet_ml.utils.codec.ezkl_codec import (
     encode_onchain_payload,
     extract_proof_request,
@@ -26,7 +21,11 @@ from infernet_ml.utils.service_models import (
     InfernetInput,
     JobLocation,
 )
+from pydantic import ValidationError
+from quart import Quart, abort
+from quart import request as req
 from ritual_arweave.repo_manager import RepoManager
+from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__file__)
 
