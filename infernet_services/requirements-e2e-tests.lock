@@ -31,7 +31,7 @@ huggingface-hub==0.23.0
 humanfriendly==10.0
 idna==3.7
 infernet-client==1.0.0
-infernet-ml==1.0.1
+infernet-ml==1.0.1.1
 iniconfig==2.0.0
 jinja2==3.1.4
 joblib==1.4.2

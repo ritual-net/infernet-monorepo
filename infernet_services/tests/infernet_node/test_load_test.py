@@ -9,7 +9,6 @@ import random
 from uuid import uuid4
 
 import pytest
-
 from infernet_node.conftest import ECHO_SERVICE
 from infernet_node.test_callback import assert_output
 from infernet_node.test_delegate_subscription import (

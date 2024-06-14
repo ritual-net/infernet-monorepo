@@ -10,6 +10,12 @@ from typing import Any, Optional, cast
 
 import ezkl  # type: ignore
 from huggingface_hub import hf_hub_download  # type: ignore
+from pydantic import ValidationError
+from quart import Quart, abort
+from quart import request as req
+from ritual_arweave.repo_manager import RepoManager
+from werkzeug.exceptions import HTTPException
+
 from infernet_ml.utils.codec.ezkl_codec import (
     encode_onchain_payload,
     extract_proof_request,
@@ -21,11 +27,6 @@ from infernet_ml.utils.service_models import (
     InfernetInput,
     JobLocation,
 )
-from pydantic import ValidationError
-from quart import Quart, abort
-from quart import request as req
-from ritual_arweave.repo_manager import RepoManager
-from werkzeug.exceptions import HTTPException
 
 logger = logging.getLogger(__file__)
 
@@ -62,7 +63,7 @@ def load_proving_artifacts(
             tempdir = tempfile.gettempdir()
 
             compiled_model_path = manager.download_artifact_file(
-                pac.REPO_ID,
+                cast(str, pac.REPO_ID),
                 pac.COMPILED_MODEL_FILE_NAME,
                 version=pac.COMPILED_MODEL_VERSION,
                 force_download=pac.COMPILED_MODEL_FORCE_DOWNLOAD,
@@ -72,7 +73,7 @@ def load_proving_artifacts(
             logger.info("downloaded compiled model")
 
             settings_path = manager.download_artifact_file(
-                pac.REPO_ID,
+                cast(str, pac.REPO_ID),
                 pac.SETTINGS_FILE_NAME,
                 version=pac.SETTINGS_VERSION,
                 force_download=pac.SETTINGS_FORCE_DOWNLOAD,
@@ -82,7 +83,7 @@ def load_proving_artifacts(
             logger.info("downloaded settings")
 
             pk_path = manager.download_artifact_file(
-                pac.REPO_ID,
+                cast(str, pac.REPO_ID),
                 pac.PK_FILE_NAME,
                 version=pac.PK_VERSION,
                 force_download=pac.PK_FORCE_DOWNLOAD,
@@ -92,7 +93,7 @@ def load_proving_artifacts(
             logger.info("downloaded pk")
 
             vk_path = manager.download_artifact_file(
-                pac.REPO_ID,
+                cast(str, pac.REPO_ID),
                 pac.VK_FILE_NAME,
                 version=pac.VK_VERSION,
                 force_download=pac.VK_FORCE_DOWNLOAD,
@@ -102,7 +103,7 @@ def load_proving_artifacts(
             logger.info("downloaded vk")
 
             srs_path = manager.download_artifact_file(
-                pac.REPO_ID,
+                cast(str, pac.REPO_ID),
                 pac.SRS_FILE_NAME,
                 version=pac.SRS_VERSION,
                 force_download=pac.SRS_FORCE_DOWNLOAD,
