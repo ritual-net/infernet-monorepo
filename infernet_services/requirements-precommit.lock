@@ -27,6 +27,7 @@ eth-keys==0.5.1
 eth-rlp==1.0.1
 eth-typing==4.2.3
 eth-utils==4.1.1
+ezkl== 11.2.2
 filelock==3.14.0
 flask==3.0.3
 flatbuffers==24.3.25
