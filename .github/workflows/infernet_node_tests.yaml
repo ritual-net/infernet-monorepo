@@ -7,6 +7,12 @@ name: Run Infernet Node E2E Tests
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Infernet Node Docker tag'
+        required: true
+        type: string
+        default: 'latest'
 
 jobs:
   infernet-node-tests:
@@ -52,6 +58,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Print Docker Tag
+        run: |
+          echo "Docker Tag: ${{ env.DOCKER_TAG }}"
 
       - name: Pull service images
         run: |
