@@ -9,3 +9,9 @@ on:
         required: true
         type: string
         default: 'latest'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
