@@ -9,6 +9,13 @@ on:
     paths:
       - 'infernet_services/**'
       - '.github/workflows/infernet_services_tests.yaml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Infernet Node Docker tag'
+        required: true
+        type: string
+        default: 'latest'
 
 jobs:
   build-docker-and-run-e2e-tests:
