@@ -1,0 +1,17 @@
+name: Run Infernet Node E2E Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: 'Infernet Node Docker tag'
+        required: true
+        type: string
+        default: 'latest'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
