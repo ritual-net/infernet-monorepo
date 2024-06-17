@@ -5,7 +5,8 @@
 name: Run Infernet Node E2E Tests
 
 on:
-  pull_request
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   infernet-node-tests:
