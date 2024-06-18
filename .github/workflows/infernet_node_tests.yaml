@@ -65,7 +65,7 @@ jobs:
 
       - name: Pull service images
         run: |
-          docker compose -f infernet_services/deploy/docker-compose.yaml pull
+          DOCKER_TAG=${{ github.event.inputs.docker-tag }} docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
 
       - name: Build the container
