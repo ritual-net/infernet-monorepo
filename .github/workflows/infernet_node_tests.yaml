@@ -8,7 +8,7 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      version:
+      docker-tag:
         description: 'Infernet Node Docker tag'
         required: true
         type: string
@@ -61,7 +61,8 @@ jobs:
 
       - name: Print Docker Tag
         run: |
-          echo "Docker Tag: ${{ env.DOCKER_TAG }}"
+          echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
+
 
       - name: Pull service images
         run: |
