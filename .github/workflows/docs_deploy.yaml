@@ -2,9 +2,6 @@ name: Deploy to Vercel
 
 on:
   pull_request:
-    paths:
-      - 'libraries/**'
-      - '.github/workflows/docs_deploy.yaml'
   workflow_dispatch:
 
 jobs:
