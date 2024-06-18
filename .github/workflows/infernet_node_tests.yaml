@@ -63,6 +63,9 @@ jobs:
         run: |
           echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Pull service images
         run: |
           DOCKER_TAG=${{ github.event.inputs.docker-tag }} docker compose -f infernet_services/deploy/docker-compose.yaml pull
