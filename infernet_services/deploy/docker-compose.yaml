@@ -1,6 +1,6 @@
 services:
   node:
-    image: ritualnetwork/infernet-node:{{DOCKER_TAG}}
+    image: ritualnetwork/infernet-node-internal:{{DOCKER_TAG}}
     environment:
       DOCKER_TAG: 1.0.0  # Default value
     ports:
