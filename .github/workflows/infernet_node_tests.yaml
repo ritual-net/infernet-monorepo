@@ -63,7 +63,6 @@ jobs:
         run: |
           echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
 
-
       - name: Pull service images
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
