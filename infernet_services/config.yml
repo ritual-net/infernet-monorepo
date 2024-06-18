@@ -6,3 +6,4 @@ nav:
 - TGI Client Inference Service: reference/tgi_client_inference_service.md
 - Torch Inference Service: reference/torch_inference_service.md
 - HF Inference Client Service: reference/hf_inference_client_service.md
+- EZKL Proof Service: reference/ezkl_proof_service.md
