@@ -102,3 +102,4 @@ jobs:
           service: infernet_node
           service_dir: infernet_services/test_services
         run: make test-service
+
