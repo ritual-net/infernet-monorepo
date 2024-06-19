@@ -101,5 +101,5 @@ jobs:
           CI: true
           service: infernet_node
           service_dir: infernet_services/test_services
-        run: make test-service
+        run: DOCKER_TAG=${{ github.event.inputs.docker-tag }} make test-service
 
