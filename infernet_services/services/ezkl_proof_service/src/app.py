@@ -13,6 +13,8 @@ from huggingface_hub import hf_hub_download  # type: ignore
 from infernet_ml.utils.codec.ezkl_codec import (
     encode_onchain_payload,
     extract_proof_request,
+    extract_visibilities,
+    extract_processed_input_output
 )
 from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.utils.service_models import (
@@ -178,40 +180,6 @@ def load_proving_artifacts(
     logger.info("finished downloading artifacts")
 
     return compiled_model_path, settings_path, pk_path, vk_path, srs_path
-
-
-def extract_visibilities(settings: dict[str, Any]) -> tuple[str, str, str]:
-    """
-    Helper function to extract visibilities from a generated settings
-    file.
-
-    Args:
-        settings (dict[str, Any]): generated settings json file
-
-    Returns:
-        tuple[str, str, str]: input visibility, output visibility,
-        and param visibility
-    """
-    input_v = (
-        "Hashed"
-        if "Hashed" in settings["run_args"]["input_visibility"]
-        else settings["run_args"]["input_visibility"]
-    )
-
-    output_v = (
-        "Hashed"
-        if "Hashed" in settings["run_args"]["output_visibility"]
-        else settings["run_args"]["output_visibility"]
-    )
-
-    param_v = (
-        "Hashed"
-        if "Hashed" in settings["run_args"]["param_visibility"]
-        else settings["run_args"]["param_visibility"]
-    )
-    return input_v, output_v, param_v
-
-
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
