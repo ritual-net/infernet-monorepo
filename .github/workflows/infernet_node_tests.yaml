@@ -6,6 +6,8 @@ name: Infernet Node E2E Tests
 
 on:
   pull_request:
+  repository_dispatch:
+    types: [run-e2e-node-tests-event]
   workflow_dispatch:
     inputs:
       docker-tag:
