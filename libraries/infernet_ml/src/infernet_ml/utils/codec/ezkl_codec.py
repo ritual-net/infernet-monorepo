@@ -9,7 +9,6 @@ from typing import Any, Optional, cast
 
 from eth_abi import decode, encode  # type: ignore
 from ezkl import encode_evm_calldata, felt_to_big_endian  # type: ignore
-
 from infernet_ml.utils.codec.vector import decode_vector, encode_vector
 from infernet_ml.utils.service_models import (
     EZKLProofRequest,
@@ -171,6 +170,16 @@ def extract_proof_request(infernet_input: InfernetInput) -> EZKLProofRequest:
     """
     Helper function to extract a ProofRequest from an EZKL Service
     InfernetInput payload.
+    
+    Args:
+        infernet_input (InfernetInput): input to extract a ProofRequest from
+
+    Raises:
+        ValueError: thrown if an Unsupported source is provided
+
+    Returns:
+        EZKLProofRequest: the EZKLProofRequest, either decoded from 
+        the onchain bytes, or extracted directly.
     """
     match infernet_input.source:
         case JobLocation.ONCHAIN:
@@ -291,3 +300,31 @@ def encode_onchain_payload(
         logger.debug(f"addr_vk:{proof_request.vk_address} paylaod: {payload}")
 
         return payload
+    
+def extract_processed_input_output(
+    input_v: str, output_v: str, witness_dict: dict[str, Any]
+) -> tuple[Optional[list[int]], Optional[list[int]]]:
+    """
+    Helper to extract processed i/o from a witness.
+
+    Args:
+        input_v (str): visibility of input as str
+        output_v (str): visibility of output as str
+        witness_dict (dict[str, Any]): the generated witness dict
+
+    Returns:
+        tuple[Optional[list[int]], Optional[list[int]]]: processed input list,
+        processed output list
+    """
+    ip = op = None
+    if input_v.lower() == "hashed":
+        ip = witness_dict["processed_inputs"]["poseidon_hash"]
+
+    elif input_v.lower() == "encrypted":
+        ip = witness_dict["processed_inputs"]["ciphertexts"]
+
+    if output_v.lower() == "hashed":
+        op = witness_dict["processed_outputs"]["poseidon_hash"]
+    elif output_v.lower() == "encrypted":
+        op = witness_dict["processed_outputs"]["ciphertexts"]
+    return ip, op
