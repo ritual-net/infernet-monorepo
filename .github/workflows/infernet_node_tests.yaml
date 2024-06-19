@@ -2,7 +2,7 @@
 #
 # Ensures the codebase passes the pre-commit stack.
 
-name: Run Infernet Node E2E Tests
+name: Infernet Node E2E Tests
 
 on:
   pull_request:
@@ -64,8 +64,10 @@ jobs:
           echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
 
       - name: Pull service images
+        env:
+          DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: |
-          DOCKER_TAG=${{ github.event.inputs.docker-tag }} docker compose -f infernet_services/deploy/docker-compose.yaml pull
+          docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
 
       - name: Build the container
@@ -102,4 +104,5 @@ jobs:
           service: infernet_node
           service_dir: infernet_services/test_services
           DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
+
         run: make test-service
