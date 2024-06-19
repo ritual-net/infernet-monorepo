@@ -328,3 +328,34 @@ def extract_processed_input_output(
     elif output_v.lower() == "encrypted":
         op = witness_dict["processed_outputs"]["ciphertexts"]
     return ip, op
+
+def extract_visibilities(settings: dict[str, Any]) -> tuple[str, str, str]:
+    """
+    Helper function to extract visibilities from a generated settings
+    file.
+
+    Args:
+        settings (dict[str, Any]): generated settings json file
+
+    Returns:
+        tuple[str, str, str]: input visibility, output visibility,
+        and param visibility
+    """
+    input_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["input_visibility"]
+        else settings["run_args"]["input_visibility"]
+    )
+
+    output_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["output_visibility"]
+        else settings["run_args"]["output_visibility"]
+    )
+
+    param_v = (
+        "Hashed"
+        if "Hashed" in settings["run_args"]["param_visibility"]
+        else settings["run_args"]["param_visibility"]
+    )
+    return input_v, output_v, param_v
