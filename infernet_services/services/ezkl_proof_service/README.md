@@ -178,7 +178,7 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-The address vk field is not required by default and is mostly necessary for onchain job workflows that are using a seperate verifying key contract. See (EZKL documentation)[https://github.com/zkonduit/ezkl/blob/main/src/python.rs#L1493] for more info.
+The address vk field is not required by default and is mostly necessary for onchain job workflows that are using a seperate verifying key contract. See [EZKL documentation](https://github.com/zkonduit/ezkl/blob/main/src/python.rs#L1493) for more info.
 
 The shape of the witness input data and output data is dependent on the proving artifacts (i.e. the model input and output and proof settings). We use the infernet-ml library for encoding and decoding vectors, which requires the specification of a shape, DataType, and flattened array of data for each vector.
 
