@@ -212,33 +212,6 @@ def extract_visibilities(settings: dict[str, Any]) -> tuple[str, str, str]:
     return input_v, output_v, param_v
 
 
-def extract_processed_input_output(
-    input_v: str, output_v: str, witness_dict: dict[str, Any]
-) -> tuple[Optional[list[int]], Optional[list[int]]]:
-    """
-    Helper to extract processed i/o from a witness.
-
-    Args:
-        input_v (str): visibility of input as str
-        output_v (str): visibility of output as str
-        witness_dict (dict[str, Any]): the generated witness dict
-
-    Returns:
-        tuple[Optional[list[int]], Optional[list[int]]]: processed input list,
-        processed output list
-    """
-    ip = op = None
-    if input_v.lower() == "hashed":
-        ip = witness_dict["processed_inputs"]["poseidon_hash"]
-
-    elif input_v.lower() == "encrypted":
-        ip = witness_dict["processed_inputs"]["ciphertexts"]
-
-    if output_v.lower() == "hashed":
-        op = witness_dict["processed_outputs"]["poseidon_hash"]
-    elif output_v.lower() == "encrypted":
-        op = witness_dict["processed_outputs"]["ciphertexts"]
-    return ip, op
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
