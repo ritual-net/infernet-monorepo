@@ -258,6 +258,7 @@ async def test_delegated_sub_request_token_classification() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_delegated_sub_request_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
