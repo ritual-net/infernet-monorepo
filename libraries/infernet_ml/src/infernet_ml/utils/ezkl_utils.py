@@ -1,13 +1,20 @@
 """
-Library containing utility functions related to 
+Library containing utility functions related to
 EZKL and the EZKL Proof Service.
 """
 
 from functools import lru_cache
 from typing import cast
 
-from infernet_ml.utils.model_loader import ModelSource, ArweaveLoadArgs, HFLoadArgs, LocalLoadArgs, download_model
+from infernet_ml.utils.model_loader import (
+    ArweaveLoadArgs,
+    HFLoadArgs,
+    LocalLoadArgs,
+    ModelSource,
+    download_model,
+)
 from infernet_ml.utils.service_models import EZKLProvingArtifactsConfig
+
 
 @lru_cache
 def load_proving_artifacts(
