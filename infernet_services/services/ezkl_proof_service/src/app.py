@@ -73,9 +73,9 @@ def load_proving_artifacts(
 
     paths = []
     for prefix in ["COMPILED_MODEL", "SETTINGS", "PK", "VK", "SRS"]:
-        version = getattr(f"{prefix}_VERSION", pac)
-        filename = getattr(f"{prefix}_FILE_NAME", pac)
-        force_download = getattr(f"{prefix}_FORCE_DOWNLOAD", pac)
+        version = getattr(pac, f"{prefix}_VERSION")
+        filename = getattr(pac, f"{prefix}_FILE_NAME")
+        force_download = getattr(pac, f"{prefix}_FORCE_DOWNLOAD")
         load_args = args_builder(
             repo_id=cast(str, pac.REPO_ID),
             version=version,
@@ -87,7 +87,7 @@ def load_proving_artifacts(
 
         paths.append(download_model(pac.MODEL_SOURCE, load_args))
 
-    return paths[0], paths[1], paths[2], paths[3]
+    return paths[0], paths[1], paths[2], paths[3], paths[4]
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
