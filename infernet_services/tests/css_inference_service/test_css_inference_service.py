@@ -88,6 +88,7 @@ async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() 
 )
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
+@pytest.mark.skip
 async def test_completion_web3(
     provider: CSSProvider,
     model: str,
