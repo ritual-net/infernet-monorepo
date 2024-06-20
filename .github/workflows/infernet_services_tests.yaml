@@ -5,6 +5,8 @@
 name: Infernet Services Tests
 
 on:
+  schedule:
+    - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
   pull_request:
     paths:
       - 'infernet_services/**'
