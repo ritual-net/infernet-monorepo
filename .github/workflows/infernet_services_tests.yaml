@@ -9,8 +9,6 @@ on:
     paths:
       - 'infernet_services/**'
       - '.github/workflows/infernet_services_tests.yaml'
-  repository_dispatch:
-    types: [run-e2e-node-tests-event]
   workflow_dispatch:
     inputs:
       docker-tag:
