@@ -14,7 +14,7 @@ on:
         description: 'Infernet Node Docker tag'
         required: true
         type: string
-        default: 'latest'
+        default: '1.0.0'
 
 jobs:
   infernet-node-tests:
