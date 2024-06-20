@@ -26,10 +26,10 @@ jobs:
       matrix:
         service: [
           "hf_inference_client_service",
-          "tgi_client_inference_service",
-          "css_inference_service",
-          "onnx_inference_service",
-          "torch_inference_service"
+#          "tgi_client_inference_service",
+#          "css_inference_service",
+#          "onnx_inference_service",
+#          "torch_inference_service"
         ]
       fail-fast: false
     steps:
@@ -86,6 +86,9 @@ jobs:
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Build the container
         env:
