@@ -97,14 +97,19 @@ def parse_load_args(model_source: ModelSource, config: Any) -> LoadArgs:
             return LocalLoadArgs(path=config["model_path"])
         # parse the load arguments for the model from Hugging Face Hub
         case ModelSource.HUGGINGFACE_HUB:
-            return HFLoadArgs(repo_id=config["repo_id"], filename=config["filename"], version=config.get("version"), force_download=config.get("force_download", False))
+            return HFLoadArgs(
+                repo_id=config["repo_id"],
+                filename=config["filename"],
+                version=config.get("version"),
+                force_download=config.get("force_download", False),
+            )
         # parse the load arguments for the model from Arweave
         case ModelSource.ARWEAVE:
             return ArweaveLoadArgs(
                 repo_id=config["repo_id"],
                 filename=config["filename"],
                 version=config.get("version"),
-                force_download=config.get("force_download", False)
+                force_download=config.get("force_download", False),
             )
         case _:
             raise ValueError(f"Invalid model source {model_source}")
@@ -143,7 +148,7 @@ def download_model(
                     filename=hf_args.filename,
                     revision=hf_args.version,
                     cache_dir=hf_args.cache_path,
-                    force_download=hf_args.force_download
+                    force_download=hf_args.force_download,
                 ),
             )
         case ModelSource.ARWEAVE:
@@ -160,7 +165,7 @@ def download_model(
                 file_name=arweave_args.filename,
                 version=arweave_args.version,
                 base_path=base_path,
-                force_download=arweave_args.force_download
+                force_download=arweave_args.force_download,
             )
         case _:
             raise ValueError(f"Invalid model source {model_source}")
