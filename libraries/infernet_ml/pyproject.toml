@@ -1,6 +1,6 @@
 [project]
 name = "infernet-ml"
-version = "1.0.1.3"
+version = "1.0.1.4"
 description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
