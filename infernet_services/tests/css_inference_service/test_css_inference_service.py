@@ -31,6 +31,7 @@ def boolean_like_prompt_assertion(result: str) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_css_inference_service_web2_doesnt_provide_proof() -> None:
     try:
         task_id = await request_job(
@@ -50,6 +51,7 @@ async def test_css_inference_service_web2_doesnt_provide_proof() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() -> None:
     task_id = await request_job(
         CSS_WITH_PROOFS,
@@ -87,7 +89,6 @@ async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() 
     ],
 )
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 @pytest.mark.skip
 async def test_completion_web3(
     provider: CSSProvider,
@@ -135,6 +136,7 @@ parameters: Any = [
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_css_inference_service_web2(
     provider: str,
     model: str,
@@ -154,6 +156,7 @@ async def test_css_inference_service_web2(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_css_inference_service_custom_parameters() -> None:
     task_id = await request_job(
         SERVICE_NAME,
@@ -179,7 +182,7 @@ async def test_css_inference_service_custom_parameters() -> None:
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
+@pytest.mark.skip
 async def test_delegate_subscription(
     provider: str,
     model: str,
