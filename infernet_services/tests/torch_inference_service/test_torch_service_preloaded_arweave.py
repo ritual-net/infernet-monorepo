@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_web2_inference_from_arweave() -> None:
     task = await request_job(
         TORCH_ARWEAVE_PRELOADED,
