@@ -7,7 +7,7 @@ Generating proofs is a 3 step lifecycle:
 prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
 #### prove
 a proof is generated based on the provided artifacts that allows for verification given the verification keys. **The EZKL Proof Service is mainly concerned with this stage of the lifecycle.**
-#### verify 
+#### verify
 the proof output can be independently verified at this stage.
 
 The fixed proving artifacts for the model are downloaded on startup. For more information on the proof implementation and limitations, see [EZKL](https://github.com/zkonduit/ezkl).
