@@ -5,10 +5,9 @@ Module containing data models used by the service
 from enum import IntEnum
 from typing import Annotated, Any, Optional, Union
 
-from pydantic import BaseModel, StringConstraints, model_validator
-
 from infernet_ml.utils.codec.vector import DataType
 from infernet_ml.utils.model_loader import ModelSource
+from pydantic import BaseModel, StringConstraints, model_validator
 
 HexStr = Annotated[
     str, StringConstraints(strip_whitespace=True, pattern="^[a-fA-F0-9]+$")
@@ -56,10 +55,21 @@ class InfernetInput(BaseModel):
 class WitnessInputData(BaseModel):
     """
     data required to generate a EZKL request witness - specifically, an input
-    vector, and an output vector. For each of the vectors, we expect a single
-    list containing a single flattened vector of numeric values. for example,
-    an input tensor of [[1,2],[1,2]] should be flattened to [1,2,1,2], and the
-    input_data field would be [[1,2,1,2]]
+    vector, and an output vector.
+
+        Attributes:
+            input_data: Optional[list[list[int] | list[float]]] = None a single
+              list containing a single flattened vector of numeric values. For 
+              example, an input tensor of `[[1,2],[1,2]]` should be flattened 
+              to `[1,2,1,2]`, and the input_data field would be `[[1,2,1,2]]`
+            input_shape: Optional[list[int]] = None shape of the input
+            input_dtype: DataType = DataType.float type of the input
+            output_data: Optional[list[list[int] | list[float]]] = None a single
+              list containing a single flattened vector of numeric values. For 
+              example, an output tensor of `[[1,2],[1,2]]` should be flattened 
+              to `[1,2,1,2]`, and the output_data field would be `[[1,2,1,2]]`
+            output_shape: Optional[list[int]] = None shape of the output
+            output_dtype: DataType = DataType.float type of the output
     """
 
     input_data: Optional[list[list[int] | list[float]]] = None
@@ -72,7 +82,12 @@ class WitnessInputData(BaseModel):
 
 class EZKLProofRequest(BaseModel):
     """
-    A Request for a EZKL proof
+    A Request for a EZKL proof.
+        Attributes:
+          witness_data: WitnessInputData = WitnessInputData() data necessary to
+          generate a witness
+          vk_address: Optional[HexStr] = None the verifying key contract address
+
     """
 
     witness_data: WitnessInputData = WitnessInputData()
