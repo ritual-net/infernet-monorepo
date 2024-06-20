@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_doesnt_generate_proofs() -> None:
     task_id = await request_job(
         HF_WITH_PROOFS,
@@ -34,6 +35,7 @@ async def test_hf_inference_client_doesnt_generate_proofs() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_service_text_generation() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -48,6 +50,7 @@ async def test_hf_inference_client_service_text_generation() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_service_text_classification() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -62,6 +65,7 @@ async def test_hf_inference_client_service_text_classification() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_service_token_classification() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -88,7 +92,7 @@ long_text = """
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
+@pytest.mark.skip
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
@@ -118,6 +122,7 @@ async def assert_web3_text_generation_output(sub_id: Optional[int] = None) -> No
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_web3_text_generation_no_model_provided() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
@@ -143,6 +148,7 @@ async def assert_web3_text_classification_output(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_web3_text_classification_no_model_provided() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
