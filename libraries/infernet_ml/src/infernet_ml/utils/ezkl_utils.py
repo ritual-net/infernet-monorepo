@@ -4,7 +4,7 @@ EZKL and the EZKL Proof Service.
 """
 
 from functools import lru_cache
-from typing import cast
+from typing import Type, cast
 
 from infernet_ml.utils.model_loader import (
     ArweaveLoadArgs,
@@ -38,6 +38,7 @@ def load_proving_artifacts(
             settings_path, pk_path, vk_path, and srs_path)
     """
     is_local = False
+    args_builder: Type[ArweaveLoadArgs | HFLoadArgs | LocalLoadArgs]
     match pac.MODEL_SOURCE:
         case ModelSource.ARWEAVE:
             args_builder = ArweaveLoadArgs
@@ -50,18 +51,21 @@ def load_proving_artifacts(
             raise ValueError(f"unsupported ModelSource {pac.MODEL_SOURCE} provided")
 
     paths = []
+    load_args: ArweaveLoadArgs | HFLoadArgs | LocalLoadArgs
     for prefix in ["COMPILED_MODEL", "SETTINGS", "PK", "VK", "SRS"]:
         version = getattr(pac, f"{prefix}_VERSION")
         filename = getattr(pac, f"{prefix}_FILE_NAME")
         force_download = getattr(pac, f"{prefix}_FORCE_DOWNLOAD")
-        load_args = args_builder(
-            repo_id=cast(str, pac.REPO_ID),
-            version=version,
-            filename=filename,
-            force_download=force_download,
-        )
+
         if is_local:
-            load_args.path = filename
+            load_args = cast(Type[LocalLoadArgs], args_builder)(path=filename)
+        else:
+            load_args = cast(Type[ArweaveLoadArgs | HFLoadArgs], args_builder)(
+                repo_id=cast(str, pac.REPO_ID),
+                version=version,
+                filename=filename,
+                force_download=force_download,
+            )
 
         paths.append(download_model(pac.MODEL_SOURCE, load_args))
 
