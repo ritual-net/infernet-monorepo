@@ -98,22 +98,44 @@ class EZKLProofRequest(BaseModel):
 
 class EZKLProvingArtifactsConfig(BaseModel):
     """
-    There are 5 prefixes, each corresponding to an artifact:
-    COMPILED_MODEL - the ezkl compiled circuit of the model
-    SETTINGS - the proof settings for the model
-    PK - the proving key for the model, necessary to generate the proof
-    (needed by prover)
-    VK - the verifying key for the model, necessary to verify the proof
-    (needed by verifier)
-    SRS - the structured reference string necessary to generate proofs
-
-    The MODEL_SOURCE field determines where the artifacts will be loaded from.
-
-    each artifact has a 3 fields that configure how they are loaded :
-    FILE_NAME suffix - determines the file name / path to load
-    VERSION suffix - determines the version of the artifact to load
-    FORCE_DOWNLOAD suffix - if True, will force the download of the artifact even
-    if it already exists locally.
+    Configuration for loading EZKL Proving Artifacts.
+        Attributes:
+            MODEL_SOURCE: ModelSource source of the model
+            REPO_ID: Optional[str] = None id of the repo
+            COMPILED_MODEL_FILE_NAME: str = "network.compiled" file name or 
+                path for the compiled model
+            COMPILED_MODEL_VERSION: Optional[str] = None version of the 
+                compiled model
+            COMPILED_MODEL_FORCE_DOWNLOAD: bool = False whether or not
+                the compiled model should be force downloaded even if 
+                it already exists in the cache. Not relevant for local
+                artifacts.
+            SETTINGS_FILE_NAME: str = "settings.json" file name or path
+                for settings artifact
+            SETTINGS_VERSION: Optional[str] = None version of settings
+                artifact
+            SETTINGS_FORCE_DOWNLOAD: bool = False whether or not to 
+                the settings artifact should be force downloaded even
+                if it already exists in the cache. Not relevant for 
+                local artifacts
+            PK_FILE_NAME: str = "proving.key" file name or path for 
+                the pk artifact
+            PK_VERSION: Optional[str] = None version of the pk artifact
+            PK_FORCE_DOWNLOAD: bool = False whether or not the pk artifact
+                should be force downloaded even if it already exists in 
+                the cache. Not relevant for local artifacts.
+            VK_FILE_NAME: str = "verifying.key" the filename or path for 
+                the vk artifact.
+            VK_VERSION: Optional[str] = None the version of the vk artifact
+            VK_FORCE_DOWNLOAD: bool = False whether or not the vk artifact
+                should be force downloaded even if it already exists in the 
+                cache. Not relevant for local artifacts.
+            SRS_FILE_NAME: str = "kzg.srs" the filename or path for the srs
+                artifact.
+            SRS_VERSION: Optional[str] = None version of the srs artifact
+            SRS_FORCE_DOWNLOAD: bool = False whether or not the srs artifact 
+                should be force downloaded even it if already exists in the 
+                cache. Not relevant for local artifacts.
     """
 
     MODEL_SOURCE: ModelSource
