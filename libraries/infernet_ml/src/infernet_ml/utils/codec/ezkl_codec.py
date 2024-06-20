@@ -9,6 +9,7 @@ from typing import Any, Optional, cast
 
 from eth_abi import decode, encode  # type: ignore
 from ezkl import encode_evm_calldata, felt_to_big_endian  # type: ignore
+
 from infernet_ml.utils.codec.vector import decode_vector, encode_vector
 from infernet_ml.utils.service_models import (
     EZKLProofRequest,
@@ -170,7 +171,7 @@ def extract_proof_request(infernet_input: InfernetInput) -> EZKLProofRequest:
     """
     Helper function to extract a ProofRequest from an EZKL Service
     InfernetInput payload.
-    
+
     Args:
         infernet_input (InfernetInput): input to extract a ProofRequest from
 
@@ -178,7 +179,7 @@ def extract_proof_request(infernet_input: InfernetInput) -> EZKLProofRequest:
         ValueError: thrown if an Unsupported source is provided
 
     Returns:
-        EZKLProofRequest: the EZKLProofRequest, either decoded from 
+        EZKLProofRequest: the EZKLProofRequest, either decoded from
         the onchain bytes, or extracted directly.
     """
     match infernet_input.source:
@@ -300,7 +301,8 @@ def encode_onchain_payload(
         logger.debug(f"addr_vk:{proof_request.vk_address} paylaod: {payload}")
 
         return payload
-    
+
+
 def extract_processed_input_output(
     input_v: str, output_v: str, witness_dict: dict[str, Any]
 ) -> tuple[Optional[list[int]], Optional[list[int]]]:
@@ -328,6 +330,7 @@ def extract_processed_input_output(
     elif output_v.lower() == "encrypted":
         op = witness_dict["processed_outputs"]["ciphertexts"]
     return ip, op
+
 
 def extract_visibilities(settings: dict[str, Any]) -> tuple[str, str, str]:
     """
