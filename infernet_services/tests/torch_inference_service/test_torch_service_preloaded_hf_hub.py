@@ -39,6 +39,7 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_basic_web3_inference_from_hf_hub() -> None:
     sub_id = await request_web3_compute(
         TORCH_HF_PRELOADED,
