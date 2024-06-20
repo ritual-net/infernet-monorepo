@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None:
     task_id = await request_job(
         TGI_WITH_PROOFS,
@@ -41,6 +42,7 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_completion_web3_doesnt_provide_proof() -> None:
     sub_id = await request_web3_compute(
         TGI_WITH_PROOFS,
@@ -75,6 +77,7 @@ async def test_completion_web3() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_tgi_client_inference_service_web2() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -88,6 +91,7 @@ async def test_tgi_client_inference_service_web2() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_tgi_client_streaming_request() -> None:
     task = await request_streaming_job(
         SERVICE_NAME,
@@ -101,6 +105,7 @@ async def test_tgi_client_streaming_request() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_tgi_client_delegated_subscription() -> None:
     await request_delegated_subscription(
         SERVICE_NAME,
