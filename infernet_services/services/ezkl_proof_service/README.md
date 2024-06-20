@@ -2,16 +2,19 @@
 
 A service that generates zero knowledge proofs of inference for a given model based on the [EZKL library](https://ezkl.xyz/).
 
-Generating proofs is a step lifecycle:
-* setup - prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
-* prove - a proof is generated based on the provided artifacts that allows for verification given the verification keys. The EZKL Proof Service is mainly concerned with this stage of the lifecycle.
-* verify - the proof output can be independently verified at this stage
+Generating proofs is a 3 step lifecycle:
+#### setup
+prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
+#### prove
+a proof is generated based on the provided artifacts that allows for verification given the verification keys. **The EZKL Proof Service is mainly concerned with this stage of the lifecycle.**
+#### verify 
+the proof output can be independently verified at this stage.
 
 The fixed proving artifacts for the model are downloaded on startup. For more information on the proof implementation and limitations, see [EZKL](https://github.com/zkonduit/ezkl).
 
 For offchain job targets, the proof json is returned as a payload, allowing for offchain verification.
 
-For onchain job targets, a 5 element dictionary containing the raw input / processed input / raw output / processed output / proof calldata is returned. This allows onchain applications to optionally provide data attestation as part of the proof verification should the appropriate contract be deployed - see the [example notebook here](https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest.ipynb) for details on how to generate an on chain attestation contract.
+For onchain job targets, a 5 element dictionary containing the `raw input`, `processed input`, `raw output`, `processed output`, `proof calldata` is returned. This allows onchain applications to optionally provide data attestation as part of the proof verification should the appropriate contract be deployed - see the [example notebook here](https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest.ipynb) for details on how to generate an on chain attestation contract.
 
 ## Infernet Configuraton
 
@@ -62,59 +65,59 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
 - **Default**: `None`
 - **Example**: `"0.1"`
 
-## EZKL_PROOF_COMPILED_MODEL_FORCE_DOWNLOAD
+### EZKL_PROOF_COMPILED_MODEL_FORCE_DOWNLOAD
 - **Description**: whether the artifact should be force downloaded
 - **Default**: `False`
 
-## EZKL_PROOF_SETTINGS_FILE_NAME
+### EZKL_PROOF_SETTINGS_FILE_NAME
 - **Description**: file name path of the settings artifact
 - **Default**: `"settings.json"`
 
-## EZKL_PROOF_SETTINGS_VERSION
+### EZKL_PROOF_SETTINGS_VERSION
 - **Description**: version of the settings artifact
 - **Default**: `None`
 - **Example**: `"0.1"`
 
-## EZKL_PROOF_SETTINGS_FORCE_DOWNLOAD
+### EZKL_PROOF_SETTINGS_FORCE_DOWNLOAD
 - **Description**: whether the artifact should be force downloaded
 - **Default**: `False`
 
-## EZKL_PROOF_PK_FILE_NAME
+### EZKL_PROOF_PK_FILE_NAME
 - **Description**: file name path of the proving key artifact
 - **Default**: `"proving.key"`
 
-## EZKL_PROOF_PK_VERSION
+### EZKL_PROOF_PK_VERSION
 - **Description**: version of the proving key artifact
 - **Default**: `None`
 - **Example**: `"0.1"`
 
-## EZKL_PROOF_PK_FORCE_DOWNLOAD
+### EZKL_PROOF_PK_FORCE_DOWNLOAD
 - **Description**: whether the artifact should be force downloaded
 - **Default**: `False`
 
-## EZKL_PROOF_VK_FILE_NAME
+### EZKL_PROOF_VK_FILE_NAME
 - **Description**: file name path of the verifying key artifact
 - **Default**: `"verifying.key"`
 
-## EZKL_PROOF_VK_VERSION
+### EZKL_PROOF_VK_VERSION
 - **Description**: version of the verifying key artifact
 - **Default**: `None`
 - **Example**: `"0.1"`
 
-## EZKL_PROOF_VK_FORCE_DOWNLOAD
+### EZKL_PROOF_VK_FORCE_DOWNLOAD
 - **Description**: whether the artifact should be force downloaded
 - **Default**: `False`
 
-## EZKL_PROOF_SRS_FILE_NAME
+### EZKL_PROOF_SRS_FILE_NAME
 - **Description**: file name path of the structured reference string artifact
 - **Default**: `"kzg.srs"`
 
-## EZKL_PROOF_SRS_VERSION
+### EZKL_PROOF_SRS_VERSION
 - **Description**: version of the structured reference string artifact
 - **Default**: `None`
 - **Example**: `"0.1"`
 
-## EZKL_PROOF_SRS_FORCE_DOWNLOAD
+### EZKL_PROOF_SRS_FORCE_DOWNLOAD
 - **Description**: whether the artifact should be force downloaded
 - **Default**: `False`
 
@@ -247,10 +250,13 @@ the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) document
 further details.
 
 
-The shape of onchain data depends on whether there is
-* a vk address - the address of an seperate verifying key contract. (optional)
-* witness input data - vector input data of the witness. Optional - can be empty if private.
-* witness output data - vector output data of the witness. Optional - can be empty if private.
+The shape of onchain data depends on the following fields:
+#### vk address ####
+the address of an seperate verifying key contract. (optional)
+#### witness input data ####
+vector input data of the witness. Optional - can be empty if private.
+#### witness output data ####
+vector output data of the witness. Optional - can be empty if private.
 
 Input requests should be passed in as an encoded byte string. Here is an example of how
 to generate this for a EZKL proof request:
