@@ -1,6 +1,6 @@
 quart==0.19.6
 pydantic==2.7.1
-infernet_ml==1.0.1.1
+infernet_ml==1.0.1.2
 retry2==0.9.5
 python-dotenv==1.0.1
 ezkl==11.2.2
