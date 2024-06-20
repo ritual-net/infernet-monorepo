@@ -4,7 +4,6 @@ This service serves proofs via the EZKL proving library.
 import json
 import logging
 import tempfile
-from functools import lru_cache
 from typing import Any, Optional, cast
 
 import ezkl  # type: ignore
@@ -14,13 +13,8 @@ from infernet_ml.utils.codec.ezkl_codec import (
     extract_proof_request,
     extract_visibilities,
 )
-from infernet_ml.utils.model_loader import (
-    ArweaveLoadArgs,
-    HFLoadArgs,
-    LocalLoadArgs,
-    ModelSource,
-    download_model,
-)
+from infernet_ml.utils.ezkl_utils import load_proving_artifacts
+from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.utils.service_models import (
     EZKLProofRequest,
     EZKLProvingArtifactsConfig,
@@ -36,58 +30,6 @@ logger = logging.getLogger(__file__)
 
 DUMMY_ADDR = "0x0000000000000000000000000000000000000000"
 SERVICE_PREFIX = "EZKL_PROOF"
-
-
-@lru_cache
-def load_proving_artifacts(
-    pac: EZKLProvingArtifactsConfig,
-) -> tuple[str, str, str, str, str]:
-    """function to load the proving artifacts depending on the config.
-
-    If we are loading the artifacts from non local sources (i.e. HuggingFace
-        or Arweave): the REPO_ID field is used to determine the right file. Each
-        artifact can  be configured to load a specific version, and the loading can
-        be forced.
-
-    Args:
-        config (ProvingArtifactsConfig): Artifacts config for this App.
-
-    Raises:
-        ValueError: raised if an unsupported ModelSource provided
-
-    Returns:
-        tuple[str, str, str, str, str]: (compiled_model_path,
-            settings_path, pk_path, vk_path, and srs_path)
-    """
-    is_local = False
-    match pac.MODEL_SOURCE:
-        case ModelSource.ARWEAVE:
-            args_builder = ArweaveLoadArgs
-        case ModelSource.HUGGINGFACE_HUB:
-            args_builder = HFLoadArgs
-        case ModelSource.LOCAL:
-            args_builder = LocalLoadArgs
-            is_local = True
-        case _:
-            raise ValueError(f"unsupported ModelSource {pac.MODEL_SOURCE} provided")
-
-    paths = []
-    for prefix in ["COMPILED_MODEL", "SETTINGS", "PK", "VK", "SRS"]:
-        version = getattr(pac, f"{prefix}_VERSION")
-        filename = getattr(pac, f"{prefix}_FILE_NAME")
-        force_download = getattr(pac, f"{prefix}_FORCE_DOWNLOAD")
-        load_args = args_builder(
-            repo_id=cast(str, pac.REPO_ID),
-            version=version,
-            filename=filename,
-            force_download=force_download,
-        )
-        if is_local:
-            load_args.path = filename
-
-        paths.append(download_model(pac.MODEL_SOURCE, load_args))
-
-    return paths[0], paths[1], paths[2], paths[3], paths[4]
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
