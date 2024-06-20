@@ -69,9 +69,9 @@ def encode_proof_request(
     types = ["bool", "bool", "bool"]
     data: list[Any] = []
 
-    data.append(vk_addr is None)
-    data.append(input_vector_bytes is None)
-    data.append(output_vector_bytes is None)
+    data.append(vk_addr is not None)
+    data.append(input_vector_bytes is not None)
+    data.append(output_vector_bytes is not None)
 
     if vk_addr:
         types.append("address")
