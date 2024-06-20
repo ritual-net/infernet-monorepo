@@ -87,8 +87,8 @@ jobs:
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
 
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+#      - name: Setup upterm session
+#        uses: lhotari/action-upterm@v1
 
       - name: Build the container
         env:
