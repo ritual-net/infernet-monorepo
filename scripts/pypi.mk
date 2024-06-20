@@ -89,7 +89,8 @@ rc_file = ~/.zshrc
 else ifeq ($(findstring bash,$(shell echo $$SHELL)),bash)
 rc_file = ~/.bashrc
 else
-$(error Unknown shell)
+# assume bash shell if no match - needed for BuildJet CI runners which use various shell values like '2740SHELL'
+rc_file = ~/.bashrc
 endif
 auto-setup: activate-service-account get_index_url
 	echo 'export UV_EXTRA_INDEX_URL=$(index_url)\n' >> $(rc_file)
