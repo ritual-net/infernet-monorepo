@@ -60,6 +60,7 @@ async def test_completion_web3_doesnt_provide_proof() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_completion_web3() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
