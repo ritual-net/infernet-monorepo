@@ -109,6 +109,3 @@ jobs:
           # use default Docker tag if it's not specified
           DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: make test-service
-
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
