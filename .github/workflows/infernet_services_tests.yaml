@@ -26,10 +26,10 @@ jobs:
       matrix:
         service: [
           "hf_inference_client_service",
-#          "tgi_client_inference_service",
-#          "css_inference_service",
-#          "onnx_inference_service",
-#          "torch_inference_service"
+          "tgi_client_inference_service",
+          "css_inference_service",
+          "onnx_inference_service",
+          "torch_inference_service"
         ]
       fail-fast: false
     steps:
