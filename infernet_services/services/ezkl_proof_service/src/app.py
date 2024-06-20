@@ -10,12 +10,17 @@ from typing import Any, Optional, cast
 import ezkl  # type: ignore
 from infernet_ml.utils.codec.ezkl_codec import (
     encode_onchain_payload,
+    extract_processed_input_output,
     extract_proof_request,
     extract_visibilities,
-    extract_processed_input_output
 )
-from infernet_ml.utils.model_loader import download_model, HFLoadArgs, LocalLoadArgs, ArweaveLoadArgs
-from infernet_ml.utils.model_loader import ModelSource
+from infernet_ml.utils.model_loader import (
+    ArweaveLoadArgs,
+    HFLoadArgs,
+    LocalLoadArgs,
+    ModelSource,
+    download_model,
+)
 from infernet_ml.utils.service_models import (
     EZKLProofRequest,
     EZKLProvingArtifactsConfig,
@@ -65,23 +70,23 @@ def load_proving_artifacts(
             is_local = True
         case _:
             raise ValueError(f"unsupported ModelSource {pac.MODEL_SOURCE} provided")
-            
+
     paths = []
     for prefix in ["COMPILED_MODEL", "SETTINGS", "PK", "VK", "SRS"]:
-        version = getattr(f"{prefix}_VERSION",pac)
-        filename = getattr(f"{prefix}_FILE_NAME",pac)
-        force_download = getattr(f"{prefix}_FORCE_DOWNLOAD",pac)
+        version = getattr(f"{prefix}_VERSION", pac)
+        filename = getattr(f"{prefix}_FILE_NAME", pac)
+        force_download = getattr(f"{prefix}_FORCE_DOWNLOAD", pac)
         load_args = args_builder(
-                    repo_id=cast(str, pac.REPO_ID), 
-                    version=version,
-                    filename=filename,   
-                    force_download=force_download,                
+            repo_id=cast(str, pac.REPO_ID),
+            version=version,
+            filename=filename,
+            force_download=force_download,
         )
         if is_local:
             load_args.path = filename
 
         paths.append(download_model(pac.MODEL_SOURCE, load_args))
-  
+
     return paths[0], paths[1], paths[2], paths[3]
 
 
