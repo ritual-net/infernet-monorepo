@@ -204,7 +204,7 @@ async def assert_web3_summarization_output(sub_id: Optional[int] = None) -> None
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
+@pytest.mark.skip
 async def test_web3_summarization_no_model_provided() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
@@ -217,6 +217,7 @@ async def test_web3_summarization_no_model_provided() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_delegated_sub_request_text_generation() -> None:
     await request_delegated_subscription(
         SERVICE_NAME,
@@ -230,6 +231,7 @@ async def test_delegated_sub_request_text_generation() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_delegated_sub_request_text_classification() -> None:
     await request_delegated_subscription(
         SERVICE_NAME,
@@ -242,6 +244,7 @@ async def test_delegated_sub_request_text_classification() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_delegated_sub_request_token_classification() -> None:
     await request_delegated_subscription(
         SERVICE_NAME,

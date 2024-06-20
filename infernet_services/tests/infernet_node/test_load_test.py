@@ -51,7 +51,6 @@ async def _fire_subscription() -> None:
 
 # @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.skip()
 async def test_infernet_bulk_callback_consumers() -> None:
     await asyncio.gather(*[_fire_callback() for _ in range(NUM_SUBSCRIPTIONS)])
@@ -59,7 +58,6 @@ async def test_infernet_bulk_callback_consumers() -> None:
 
 # @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=2, reruns_delay=2)
 @pytest.mark.skip()
 async def test_infernet_bulk_delegated_subscription() -> None:
     await asyncio.gather(*[_fire_delegated() for _ in range(NUM_SUBSCRIPTIONS)])
