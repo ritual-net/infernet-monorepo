@@ -10,6 +10,10 @@ from test_library.infernet_fixture import handle_lifecycle
 load_dotenv()
 
 SERVICE_NAME = "tgi_client_inference_service"
+SERVICE_VERSION = "1.0.0"
+SERVICE_DOCKER_IMAGE = (
+    f"ritualnetwork/tgi_client_inference_service_internal:{SERVICE_VERSION}"
+)
 TGI_WITH_PROOFS = "tgi_client_inference_service_with_proofs"
 
 
@@ -23,11 +27,12 @@ def lifecycle() -> Generator[None, None, None]:
         [
             ServiceConfig.build(
                 SERVICE_NAME,
+                image_id=SERVICE_DOCKER_IMAGE,
                 env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args},
             ),
             ServiceConfig.build(
                 TGI_WITH_PROOFS,
-                image_id=f"ritualnetwork/{SERVICE_NAME}:latest",
+                image_id=SERVICE_DOCKER_IMAGE,
                 env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args},
                 generates_proofs=True,
                 port=3001,
