@@ -95,8 +95,8 @@ jobs:
           service: ${{ matrix.service }}
           CI: true
         run: |
-          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
-#        make build-service
+          make build-service
+#          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
 
       - name: Install UV
         run: python -m pip install uv
