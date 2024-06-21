@@ -8,9 +8,9 @@ on:
   schedule:
     - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
   pull_request:
-    paths:
-      - 'infernet_services/**'
-      - '.github/workflows/infernet_services_tests.yaml'
+#    paths:
+#      - 'infernet_services/**'
+#      - '.github/workflows/infernet_services_tests.yaml'
   workflow_dispatch:
     inputs:
       docker-tag:

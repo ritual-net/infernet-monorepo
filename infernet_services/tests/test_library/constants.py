@@ -68,3 +68,8 @@ skip_deploying = False
 skip_contract = False
 skip_teardown = False
 suppress_logs = False
+
+# skip_deploying = True
+# skip_contract = True
+# skip_teardown = True
+# suppress_logs = True
