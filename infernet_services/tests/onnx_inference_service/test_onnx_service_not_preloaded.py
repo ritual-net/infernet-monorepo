@@ -34,7 +34,6 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_doesnt_provide_proof() -> None:
     try:
         task_id = await request_job(
@@ -53,7 +52,6 @@ async def test_basic_web2_inference_doesnt_provide_proof() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_onnx_service_doesnt_generate_proofs() -> None:
     task_id = await request_job(
         ONNX_WITH_PROOFS,
@@ -69,7 +67,6 @@ async def test_onnx_service_doesnt_generate_proofs() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_from_arweave() -> None:
     task = await request_job(
         ONNX_SERVICE_NOT_PRELOADED,
