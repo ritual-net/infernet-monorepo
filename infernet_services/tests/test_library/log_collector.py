@@ -33,8 +33,8 @@ class LogCollector:
                     break
                 decoded_line = line.decode().strip()
                 self.logs.append((tag, decoded_line))
-                log.info("regex pattern: %s", self.regex_pattern)
-                log.info("decoded line: %s", decoded_line)
+                log.debug("regex pattern: %s", self.regex_pattern)
+                log.debug("decoded line: %s", decoded_line)
                 if self.regex_pattern and re.search(
                     self.regex_pattern, decoded_line, self.regex_flags
                 ):

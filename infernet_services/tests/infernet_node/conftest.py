@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from typing import Any, Dict, Generator
@@ -18,6 +19,7 @@ from test_library.web3_utils import (
     get_deployed_contract_address,
     run_forge_script,
 )
+from web3.contract.async_contract import AsyncContractFunction
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +58,27 @@ def deploy_contracts() -> None:
 ECHO_SERVICE = "echo"
 ECHO_WITH_PROOFS = "echo_with_proofs"
 ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS = "echo_with_payment_requirements"
+
+
+@pytest.fixture(autouse=True)
+def monkeypatch_web3() -> None:
+    """
+    Monkeypatch the transact method of AsyncContractFunction to be thread-safe.
+
+    This is used to keep track of the nonce of the transactions. By default, web3.py does
+    set the nonce, but if we're sending parallel transactions it's unable to correctly
+    keep track of the nonce.
+    """
+    orig = AsyncContractFunction.transact
+    lock = asyncio.Lock()
+
+    async def transact_patched(
+        self: AsyncContractFunction, *args: Any, **kwargs: Any
+    ) -> Any:
+        async with lock:
+            return await orig(self, *args, **kwargs)
+
+    AsyncContractFunction.transact = transact_patched  # type: ignore
 
 
 def post_config_gen_hook(_config: Dict[str, Any]) -> Dict[str, Any]:

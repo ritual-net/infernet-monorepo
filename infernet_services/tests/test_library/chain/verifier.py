@@ -5,7 +5,6 @@ from typing import Optional
 from eth_typing import ChecksumAddress
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.wallet import InfernetWallet
-from test_library.test_config import global_config
 from test_library.web3_utils import get_abi
 
 
@@ -28,9 +27,7 @@ class GenericAtomicVerifier:
     async def set_price(
         self: GenericAtomicVerifier, token: ChecksumAddress, price: int
     ) -> None:
-        tx = await global_config.tx_submitter.submit(
-            self._contract.functions.setPrice(token, price)
-        )
+        tx = await self._contract.functions.setPrice(token, price).transact()
         await self._rpc.get_tx_receipt(tx)
         assert await self._contract.functions.fee(token).call() == price
 
@@ -51,9 +48,7 @@ class GenericAtomicVerifier:
     async def disallow_token(
         self: GenericAtomicVerifier, token: ChecksumAddress
     ) -> None:
-        tx = await global_config.tx_submitter.submit(
-            self._contract.functions.disallowToken(token)
-        )
+        tx = await self._contract.functions.disallowToken(token).transact()
         await self._rpc.get_tx_receipt(tx)
         assert await self._contract.functions.acceptedPayments(token).call() is False
 
@@ -69,7 +64,5 @@ class GenericLazyVerifier(GenericAtomicVerifier):
     async def finalize(
         self: GenericLazyVerifier, sub_id: int, interval: int, node: ChecksumAddress
     ) -> None:
-        tx = await global_config.tx_submitter.submit(
-            self._contract.functions.finalize(sub_id, interval, node)
-        )
+        tx = await self._contract.functions.finalize(sub_id, interval, node).transact()
         await self._rpc.get_tx_receipt(tx)

@@ -5,7 +5,6 @@ from typing import Dict, Optional, cast
 
 from eth_account import Account
 from eth_typing import ChecksumAddress
-from test_library.chain.tx_submitter import TxSubmitter
 from test_library.constants import (
     ANVIL_NODE,
     DEFAULT_COORDINATOR_ADDRESS,
@@ -64,12 +63,6 @@ class NetworkConfig:
     contract_address: Optional[str]
         The address of the consumer contract. If not provided it's read from
         the 'consumer-contracts/deployments' directory.
-
-    tx_submitter: Optional[TxSubmitter]
-        The TxSubmitter instance that the testing framework will use to send
-        transactions. This is used to keep track of the nonce of the transactions. By
-        default web3.py does check for nonce, but if we're sending parallel transactions
-        then we need to keep track of the nonce ourselves.
     """
 
     rpc_url: str
@@ -108,7 +101,6 @@ class NetworkConfig:
         self.protocol_fee_recipient = protocol_fee_recipient
         self.tester_private_key = tester_private_key
         self.contract_address = contract_address
-        self._tx_submitter: Optional[TxSubmitter] = None
         self._account: Optional[Account] = None
 
     def get_node_payment_wallet(self: NetworkConfig) -> ChecksumAddress:
@@ -153,7 +145,6 @@ class NetworkConfig:
             await async_construct_sign_and_send_raw_middleware(account)
         )
         w3.eth.default_account = account.address
-        self._tx_submitter = TxSubmitter(w3)
         self._account = account
         return self
 
@@ -162,12 +153,6 @@ class NetworkConfig:
         if self._account is None:
             raise ValueError("NetworkConfig is not initialized.")
         return self._account
-
-    @property
-    def tx_submitter(self: NetworkConfig) -> TxSubmitter:
-        if self._tx_submitter is None:
-            raise ValueError("NetworkConfig is not initialized.")
-        return self._tx_submitter
 
 
 default_network_config: NetworkConfig = NetworkConfig(

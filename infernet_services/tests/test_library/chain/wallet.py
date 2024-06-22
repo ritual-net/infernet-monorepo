@@ -19,7 +19,7 @@ from web3.types import TxReceipt, Wei
 
 async def fund_address_with_eth(address: ChecksumAddress, amount: int) -> None:
     rpc = await get_rpc()
-    tx = await global_config.tx_submitter.send_tx(
+    tx = await rpc.send_transaction(
         {
             "to": address,
             "value": cast(Wei, amount),
@@ -43,9 +43,7 @@ async def fund_wallet_with_token(
         address=get_deployed_contract_address(token_name),
         abi=get_abi("FakeMoney.sol", "FakeMoney"),
     )
-    tx = await global_config.tx_submitter.submit(
-        contract.functions.mint(wallet.address, amount)
-    )
+    tx = await contract.functions.mint(wallet.address, amount).transact()
     balance_bafore = await contract.functions.balanceOf(wallet.address).call()
 
     await rpc.get_tx_receipt(tx)
