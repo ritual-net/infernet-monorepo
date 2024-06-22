@@ -52,6 +52,7 @@ launch.json
 
 # wallet files
 **/keyfile-arweave.json
+**/wallet.json
 
 # shared volume files
 shared

@@ -45,13 +45,13 @@ def stop_services() -> None:
     with open(config_path(), "r") as f:
         cfg = json.load(f)
     names = " ".join([service["id"] for service in cfg["containers"]])
-    subprocess.run(shlex.split(f"docker kill {names}"))
-    subprocess.run(shlex.split(f"docker rm {names}"))
+    subprocess.check_call(shlex.split(f"docker kill {names}"))
+    subprocess.check_call(shlex.split(f"docker rm {names}"))
 
 
 def stop_node_and_services() -> None:
     stop_services()
-    subprocess.run(shlex.split("make stop-node"))
+    subprocess.check_call(shlex.split("make stop-node"))
 
 
 def dump_logs(docker_id: str) -> None:
