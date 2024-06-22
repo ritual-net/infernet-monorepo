@@ -22,7 +22,9 @@ pre-commit-library:
 		$(MAKE) setup-library-env && \
 		uv pip install -r pyproject.toml; \
 	fi
-	$(MAKE) prod-mode
+	if [ -z "$$CI"]; then \
+		$(MAKE) prod-mode; \
+	fi
 	PYTHONPATH=libraries/$(library)/src pre-commit run \
 		--files $$(git ls-files | grep -vE '^infernet_services/' | grep 'libraries/$(library)')
 
