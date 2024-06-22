@@ -2,7 +2,7 @@ import logging
 
 import pytest
 from eth_abi.abi import decode, encode
-from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.assertion_utils import LogAssertoor
 from test_library.constants import ANVIL_NODE
 from test_library.test_config import global_config
 from test_library.web2_utils import (
@@ -42,19 +42,19 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
 
 @pytest.mark.asyncio
 async def test_completion_web3_doesnt_provide_proof() -> None:
-    sub_id = await request_web3_compute(
-        TGI_WITH_PROOFS,
-        encode(
-            ["string"],
-            ["whats 2 + 2?"],
-        ),
-        # a non-zero address means this requires proof
-        verifier=global_config.coordinator_address,
-    )
-
-    await assert_regex_in_node_logs(
-        f"container execution errored.*{sub_id}.*proofs are not supported"
-    )
+    async with LogAssertoor() as assertoor:
+        sub_id = await request_web3_compute(
+            TGI_WITH_PROOFS,
+            encode(
+                ["string"],
+                ["whats 2 + 2?"],
+            ),
+            # a non-zero address means this requires proof
+            verifier=global_config.coordinator_address,
+        )
+        await assertoor.set_regex(
+            f"container execution errored.*{sub_id}.*proofs are not supported"
+        )
 
 
 @pytest.mark.asyncio

@@ -6,7 +6,7 @@ from eth_abi.abi import decode
 from infernet_client.chain.token import Token
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
-from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.assertion_utils import LogAssertoor
 from test_library.chain.wallet import MockToken, create_wallet, fund_wallet_with_eth
 from test_library.constants import (
     DEFAULT_PROTOCOL_FEE_RECIPIENT,
@@ -47,9 +47,8 @@ async def get_node_balance() -> int:
 
 @pytest.mark.asyncio
 async def test_infernet_callback_consumer() -> None:
-    sub_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
-
-    await assert_regex_in_node_logs("Sent tx")
+    async with LogAssertoor("Sent tx"):
+        sub_id = await request_web3_compute(ECHO_SERVICE, encoded_echo_input)
 
     await assert_output(sub_id)
 
@@ -58,14 +57,14 @@ async def test_infernet_callback_consumer() -> None:
 async def test_infernet_basic_payment_insufficient_allowance() -> None:
     wallet = await create_wallet()
     await fund_wallet_with_eth(wallet, int(1e18))
-    await request_web3_compute(
-        ECHO_SERVICE,
-        encoded_echo_input,
-        payment_amount=int(1e18),
-        wallet=wallet.address,
-    )
 
-    await assert_regex_in_node_logs(".*insufficient allowance.*")
+    async with LogAssertoor(".*insufficient allowance.*"):
+        await request_web3_compute(
+            ECHO_SERVICE,
+            encoded_echo_input,
+            payment_amount=int(1e18),
+            wallet=wallet.address,
+        )
 
 
 @pytest.mark.asyncio
@@ -125,18 +124,16 @@ async def test_infernet_basic_payment_insufficient_balance() -> None:
         ZERO_ADDRESS,
         int(amount),
     )
-
-    await request_web3_compute(
-        ECHO_SERVICE,
-        encoded_echo_input,
-        payment_amount=int(amount),
-        payment_token=ZERO_ADDRESS,
-        wallet=wallet.address,
-    )
-
-    await assert_regex_in_node_logs(
+    async with LogAssertoor(
         f".*subscription wallet.*insufficient balance.*{wallet.address}"
-    )
+    ):
+        await request_web3_compute(
+            ECHO_SERVICE,
+            encoded_echo_input,
+            payment_amount=int(amount),
+            payment_token=ZERO_ADDRESS,
+            wallet=wallet.address,
+        )
 
 
 async def setup_wallet_with_eth_and_approve_contract(
@@ -204,7 +201,6 @@ async def test_infernet_basic_payment_custom_token() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_basic_payment_unaccepted_token() -> None:
     wallet = await create_wallet()
     rejected_money = get_deployed_contract_address("RejectedMoney")
@@ -219,22 +215,19 @@ async def test_infernet_basic_payment_unaccepted_token() -> None:
         rejected_money,
         int(amount),
     )
-
-    await request_web3_compute(
-        ECHO_SERVICE,
-        encoded_echo_input,
-        payment_amount=int(amount),
-        payment_token=rejected_money,
-        wallet=wallet.address,
-    )
-
-    await assert_regex_in_node_logs(
-        f"skipping subscription.*token {rejected_money} not accepted"
-    )
+    async with LogAssertoor(
+        f"skipping subscription.*token {rejected_money} not accepted", timeout=20
+    ):
+        await request_web3_compute(
+            ECHO_SERVICE,
+            encoded_echo_input,
+            payment_amount=int(amount),
+            payment_token=rejected_money,
+            wallet=wallet.address,
+        )
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_ignore_subscription_with_low_bid() -> None:
     funding = int(1e18)
     wallet = await create_wallet()
@@ -248,15 +241,15 @@ async def test_infernet_ignore_subscription_with_low_bid() -> None:
         int(funding),
     )
 
-    await request_web3_compute(
-        ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS,
-        encoded_echo_input,
-        payment_amount=int(funding / 2),
-        payment_token=ZERO_ADDRESS,
-        wallet=wallet.address,
-    )
-
-    await assert_regex_in_node_logs(
+    async with LogAssertoor(
         f"skipping subscription.*token {ZERO_ADDRESS} below minimum payment "
-        f"requirements"
-    )
+        f"requirements",
+        timeout=10,
+    ):
+        await request_web3_compute(
+            ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS,
+            encoded_echo_input,
+            payment_amount=int(funding / 2),
+            payment_token=ZERO_ADDRESS,
+            wallet=wallet.address,
+        )

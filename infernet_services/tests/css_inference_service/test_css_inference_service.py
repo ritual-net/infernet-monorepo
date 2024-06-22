@@ -100,7 +100,8 @@ async def test_completion_web3(
     )
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (result,) = decode(["string"], output, strict=False)
+        (raw, processed) = decode(["bytes", "bytes"], output)
+        (result,) = decode(["string"], raw, strict=False)
         boolean_like_prompt_assertion(result)
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
