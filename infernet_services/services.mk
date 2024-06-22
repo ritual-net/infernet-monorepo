@@ -100,7 +100,10 @@ dev-mode:
 	sed -i '' 's/suppress_logs = False/suppress_logs = True/' $$constants_path
 
 prod-mode:
-	@constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
+	@if [ -n "$$CI" ]; then \
+		exit 0; \
+	fi; \
+	constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
 	sed -i '' 's/skip_deploying = True/skip_deploying = False/' $$constants_path; \
 	sed -i '' 's/skip_contract = True/skip_contract = False/' $$constants_path; \
 	sed -i '' 's/skip_teardown = True/skip_teardown = False/' $$constants_path; \
