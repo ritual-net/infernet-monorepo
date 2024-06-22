@@ -25,11 +25,11 @@ jobs:
     strategy:
       matrix:
         service: [
-#          "hf_inference_client_service",
+          "hf_inference_client_service",
 #          "tgi_client_inference_service",
           "css_inference_service",
-#          "onnx_inference_service",
-#          "torch_inference_service"
+          "onnx_inference_service",
+          "torch_inference_service"
         ]
       fail-fast: false
     steps:
@@ -95,7 +95,7 @@ jobs:
           service: ${{ matrix.service }}
           CI: true
         run: |
-          docker pull ritualnetwork/css_inference_service_internal:1.0.0
+          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
 #        make build-service
 
       - name: Install UV

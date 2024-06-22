@@ -19,7 +19,9 @@ ONNX_HF_PRELOADED = "onnx_inference_service_preloaded_hf"
 ONNX_SERVICE_NOT_PRELOADED = "onnx_inference_service_not_preloaded"
 ONNX_WITH_PROOFS = "onnx_inference_service_with_proofs"
 
-ONNX_SERVICE_DOCKER_IMG = "ritualnetwork/onnx_inference_service:latest"
+SERVICE_VERSION = "1.0.0"
+ONNX_SERVICE_NAME = "onnx_inference_service_internal"
+ONNX_SERVICE_DOCKER_IMG = f"ritualnetwork/{ONNX_SERVICE_NAME}:{SERVICE_VERSION}"
 
 
 @pytest.fixture(scope="session", autouse=True)
