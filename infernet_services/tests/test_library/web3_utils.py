@@ -284,9 +284,8 @@ async def request_web3_compute(
         int: Subscription ID.
     """
     consumer = await get_consumer_contract()
-    log.info(f"requesting compute {service_id} {input!r}")
 
-    fn = consumer.functions.requestCompute(
+    tx = await consumer.functions.requestCompute(
         service_id,
         input,
         redundancy,
@@ -294,8 +293,7 @@ async def request_web3_compute(
         payment_amount,
         wallet,
         verifier,
-    )
-    tx = await global_config.tx_submitter.submit(fn)
+    ).transact()
 
     log.info(f"awaiting transaction {tx.hex()}")
     receipt = await (await get_rpc()).get_tx_receipt(tx)

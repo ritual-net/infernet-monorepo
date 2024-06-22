@@ -8,7 +8,6 @@ from infernet_node.conftest import ECHO_SERVICE
 from reretry import retry  # type: ignore
 from test_library.assertion_utils import LogAssertoor
 from test_library.constants import ZERO_ADDRESS
-from test_library.test_config import global_config
 from test_library.web3_utils import (
     echo_input,
     echo_output,
@@ -61,9 +60,7 @@ async def set_subscription_consumer_input(
     sub_id: int, i: str, contract_name: str = SUBSCRIPTION_CONSUMER_CONTRACT
 ) -> TxReceipt:
     consumer = await get_consumer_contract(f"{contract_name}.sol", contract_name)
-    tx = await global_config.tx_submitter.submit(
-        consumer.functions.setSubscriptionInput(sub_id, echo_input(i))
-    )
+    tx = await consumer.functions.setSubscriptionInput(sub_id, echo_input(i)).transact()
     return await (await get_rpc()).get_tx_receipt(tx)
 
 
@@ -84,20 +81,18 @@ async def create_sub_with_random_input(
 
     consumer = await get_subscription_consumer_contract(contract_name=contract_name)
 
-    tx = await global_config.tx_submitter.submit(
-        consumer.functions.createSubscription(
-            echo_input(i),
-            ECHO_SERVICE,
-            frequency,
-            period,
-            redundancy,
-            lazy,
-            payment_token,
-            payment_amount,
-            wallet,
-            verifier,
-        )
-    )
+    tx = await consumer.functions.createSubscription(
+        echo_input(i),
+        ECHO_SERVICE,
+        frequency,
+        period,
+        redundancy,
+        lazy,
+        payment_token,
+        payment_amount,
+        wallet,
+        verifier,
+    ).transact()
 
     receipt = await (await get_rpc()).get_tx_receipt(tx)
     sub_id = get_sub_id_from_receipt(receipt)
@@ -134,6 +129,4 @@ async def test_infernet_cancelled_subscription() -> None:
 
     consumer = await get_subscription_consumer_contract()
     async with LogAssertoor(f"subscription cancelled.*{sub_id}"):
-        await global_config.tx_submitter.submit(
-            consumer.functions.cancelSubscription(sub_id)
-        )
+        await consumer.functions.cancelSubscription(sub_id).transact()
