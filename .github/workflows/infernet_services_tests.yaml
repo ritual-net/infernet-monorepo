@@ -7,7 +7,7 @@ name: Infernet Services Tests
 on:
   schedule:
     - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
-  push:
+  pull_request:
     paths:
       - 'infernet_services/**'
       - '.github/workflows/infernet_services_tests.yaml'
@@ -82,7 +82,7 @@ jobs:
       - name: Pull service images
         env:
           # use default Docker tag if it's not specified
-          DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
@@ -96,6 +96,7 @@ jobs:
           CI: true
         run: |
           make build-service
+#          useful for faster iteration time when debugging
 #          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
 
       - name: Install UV
@@ -128,6 +129,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
           service: ${{ matrix.service }}
-          DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: make test-service
 
