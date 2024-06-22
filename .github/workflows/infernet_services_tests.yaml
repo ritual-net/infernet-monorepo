@@ -30,6 +30,7 @@ jobs:
           "css_inference_service",
           "onnx_inference_service",
           "torch_inference_service"
+          "ezkl_proof_service"
         ]
       fail-fast: false
     steps:
