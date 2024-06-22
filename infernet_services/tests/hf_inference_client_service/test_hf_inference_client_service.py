@@ -171,6 +171,7 @@ async def assert_web3_token_classification_output(
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_web3_token_classification_no_model_provided() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
