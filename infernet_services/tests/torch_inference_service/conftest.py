@@ -21,7 +21,9 @@ TORCH_ARWEAVE_PRELOADED = "torch_inference_service_preloaded_arweave"
 TORCH_HF_PRELOADED = "torch_inference_service_preloaded_hf"
 TORCH_SERVICE_NOT_PRELOADED = "torch_inference_service_not_preloaded"
 SERVICE_VERSION = "1.0.0"
-TORCH_SERVICE_DOCKER_IMG = f"ritualnetwork/torch_inference_service_internal:{SERVICE_VERSION}"
+TORCH_SERVICE_DOCKER_IMG = (
+    f"ritualnetwork/torch_inference_service_internal:{SERVICE_VERSION}"
+)
 TORCH_WITH_PROOFS = "torch_inference_service_with_proofs"
 
 
