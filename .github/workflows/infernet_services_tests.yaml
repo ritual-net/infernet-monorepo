@@ -5,19 +5,19 @@
 name: Infernet Services Tests
 
 on:
-#  schedule:
-#    - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
+  schedule:
+    - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
   push:
-#    paths:
-#      - 'infernet_services/**'
-#      - '.github/workflows/infernet_services_tests.yaml'
-#  workflow_dispatch:
-#    inputs:
-#      docker-tag:
-#        description: 'Infernet Node Docker tag'
-#        required: true
-#        type: string
-#        default: 'latest'
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_tests.yaml'
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: 'Infernet Node Docker tag'
+        required: true
+        type: string
+        default: 'latest'
 
 jobs:
   build-docker-and-run-e2e-tests:
