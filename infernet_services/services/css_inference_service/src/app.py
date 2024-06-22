@@ -14,8 +14,8 @@ from infernet_ml.utils.codec.css import (
     decode_css_completion_request,
     decode_css_request,
 )
-from infernet_ml.utils.css_utils import RetryParams
 from infernet_ml.utils.css_mux import ApiKeys, CSSCompletionParams, CSSRequest, Provider
+from infernet_ml.utils.css_utils import RetryParams
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
