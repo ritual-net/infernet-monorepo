@@ -2,9 +2,9 @@
 Due to a bug in pytest-asyncio, the tests in this file are not run in CI, rather they
 are run manually.
 """
-
 import asyncio
 import logging
+import os
 import random
 from uuid import uuid4
 
@@ -49,30 +49,30 @@ async def _fire_subscription() -> None:
     await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=TIMEOUT)
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 async def test_infernet_bulk_callback_consumers() -> None:
     await asyncio.gather(*[_fire_callback() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
+@pytest.mark.flaky(reruns=2, reruns_delay=2)
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 async def test_infernet_bulk_delegated_subscription() -> None:
     await asyncio.gather(*[_fire_delegated() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
+@pytest.mark.skip
 async def test_infernet_bulk_subscriptions() -> None:
     await asyncio.gather(*[_fire_subscription() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
+@pytest.mark.skip
 async def test_infernet_interwoven_subscriptions() -> None:
     tasks = []
     for _ in range(NUM_SUBSCRIPTIONS):
