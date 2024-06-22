@@ -9,7 +9,7 @@ from infernet_node.test_callback import (
     assert_output,
     setup_wallet_with_eth_and_approve_contract,
 )
-from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.assertion_utils import LogAssertoor
 from test_library.chain.utils import balance_of, node_balance, protocol_balance
 from test_library.chain.verifier import GenericAtomicVerifier, GenericLazyVerifier
 from test_library.chain.wallet import create_wallet, fund_address_with_eth
@@ -33,17 +33,19 @@ INVALID_PROOF = "do NOT trust me bro"
 @pytest.mark.asyncio
 async def test_proof_payment_service_does_not_provide_proof() -> None:
     wallet = await create_wallet()
-    sub_id = await request_web3_compute(
-        ECHO_SERVICE,
-        echo_input(f"{uuid4()}", VALID_PROOF),
-        payment_amount=funding,
-        payment_token=ZERO_ADDRESS,
-        wallet=wallet.address,
-        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
-    )
-    await assert_regex_in_node_logs(
-        f"Ignored subscription creation.*{sub_id}.*container does not generate proof.*"
-    )
+    async with LogAssertoor() as assertoor:
+        sub_id = await request_web3_compute(
+            ECHO_SERVICE,
+            echo_input(f"{uuid4()}", VALID_PROOF),
+            payment_amount=funding,
+            payment_token=ZERO_ADDRESS,
+            wallet=wallet.address,
+            verifier=get_deployed_contract_address("GenericAtomicVerifier"),
+        )
+        await assertoor.set_regex(
+            f"Ignored subscription creation.*{sub_id}.*container "
+            f"does not generate proof.*"
+        )
 
 
 @pytest.mark.asyncio
@@ -60,15 +62,15 @@ async def test_proof_payment_unsupported_token_by_verifier() -> None:
 
     await verifier.disallow_token(ZERO_ADDRESS)
 
-    await request_web3_compute(
-        ECHO_WITH_PROOFS,
-        echo_input(f"{uuid4()}", VALID_PROOF),
-        payment_amount=funding,
-        payment_token=ZERO_ADDRESS,
-        wallet=wallet.address,
-        verifier=get_deployed_contract_address("GenericAtomicVerifier"),
-    )
-    await assert_regex_in_node_logs(".*Unsupported verifier token.*")
+    async with LogAssertoor(".*Unsupported verifier token.*"):
+        await request_web3_compute(
+            ECHO_WITH_PROOFS,
+            echo_input(f"{uuid4()}", VALID_PROOF),
+            payment_amount=funding,
+            payment_token=ZERO_ADDRESS,
+            wallet=wallet.address,
+            verifier=get_deployed_contract_address("GenericAtomicVerifier"),
+        )
 
 
 async def _get_balances(

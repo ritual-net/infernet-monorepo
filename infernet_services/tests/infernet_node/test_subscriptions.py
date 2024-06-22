@@ -6,7 +6,7 @@ from eth_abi.abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from infernet_node.conftest import ECHO_SERVICE
 from reretry import retry  # type: ignore
-from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.assertion_utils import LogAssertoor
 from test_library.constants import ZERO_ADDRESS
 from test_library.test_config import global_config
 from test_library.web3_utils import (
@@ -127,15 +127,13 @@ async def test_infernet_recurring_subscription() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_cancelled_subscription() -> None:
     (sub_id, i) = await create_sub_with_random_input(2, 3)
     await assert_subscription_consumer_output(sub_id, echo_output(i))
     log.info(f"First output received, cancelling next delivery: {sub_id}")
 
     consumer = await get_subscription_consumer_contract()
-
-    await global_config.tx_submitter.submit(
-        consumer.functions.cancelSubscription(sub_id)
-    )
-    await assert_regex_in_node_logs(f"subscription cancelled.*{sub_id}")
+    async with LogAssertoor(f"subscription cancelled.*{sub_id}"):
+        await global_config.tx_submitter.submit(
+            consumer.functions.cancelSubscription(sub_id)
+        )

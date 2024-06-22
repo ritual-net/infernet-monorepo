@@ -1,16 +1,34 @@
+from __future__ import annotations
+
 import json
+from typing import Optional
 
 from test_library.constants import NODE_LOG_CMD
 from test_library.log_collector import LogCollector
 
 
-async def assert_regex_in_node_logs(regex: str, timeout: int = 4) -> None:
-    collector = await LogCollector().start(NODE_LOG_CMD)
-    found, logs = await collector.wait_for_line(regex, timeout=timeout)
+class LogAssertoor:
+    def __init__(self, regex: Optional[str] = None, timeout: int = 4):
+        self.timeout = timeout
+        self.collector: LogCollector
+        self.regex = regex
 
-    assert found, (
-        f"Expected {regex} to exist in the output logs. Collected logs: "
-        f"{json.dumps(logs, indent=2)}"
-    )
+    async def __aenter__(self) -> LogAssertoor:
+        self.collector = await LogCollector().start(NODE_LOG_CMD)
+        return self
 
-    await collector.stop()
+    async def __aexit__(
+        self, exc_type: Exception, exc_value: Exception, traceback: Exception
+    ) -> None:
+        if self.regex:
+            found, logs = await self.collector.wait_for_line(
+                self.regex, timeout=self.timeout
+            )
+            assert found, (
+                f"Expected {self.regex} to exist in the output logs. Collected logs: "
+                f"{json.dumps(logs, indent=2)}"
+            )
+        await self.collector.stop()
+
+    async def set_regex(self, regex: str) -> None:
+        self.regex = regex

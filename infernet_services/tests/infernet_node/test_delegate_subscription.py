@@ -16,7 +16,7 @@ from infernet_node.test_subscriptions import (
     set_subscription_consumer_input,
 )
 from reretry import retry  # type: ignore
-from test_library.assertion_utils import assert_regex_in_node_logs
+from test_library.assertion_utils import LogAssertoor
 from test_library.chain.wallet import create_wallet, fund_wallet_with_eth
 from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
 from test_library.test_config import global_config
@@ -55,7 +55,7 @@ async def create_delegated_subscription(
     payment_amount: int = 0,
     payment_token: str = ZERO_ADDRESS,
     wallet: ChecksumAddress = ZERO_ADDRESS,
-    timeout: int = 5,
+    timeout: int = 10,
     freq: int = 10,
     return_subscription_id: bool = True,
 ) -> int:
@@ -124,7 +124,6 @@ async def test_infernet_delegated_subscription_happy_path() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_infernet_delegated_subscription_active_at_later() -> None:
     i = f"{uuid4()}"
 
@@ -133,7 +132,7 @@ async def test_infernet_delegated_subscription_active_at_later() -> None:
     )
 
     await assert_subscription_consumer_output(
-        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
+        sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=15
     )
 
 
@@ -169,9 +168,9 @@ async def test_infernet_delegated_subscription_with_redundancy() -> None:
         sub_id, echo_output(i), contract_name=DELEGATE_SUB_CONSUMER_CONTRACT, timeout=10
     )
 
-    next_sub = await get_next_subscription_id()
-
-    await assert_regex_in_node_logs(f"subscription expired.*{next_sub-1}")
+    async with LogAssertoor() as assertoor:
+        next_sub = await get_next_subscription_id()
+        await assertoor.set_regex(f"subscription expired.*{next_sub-1}")
 
 
 @pytest.mark.asyncio
@@ -213,17 +212,16 @@ async def test_infernet_delegated_subscription_not_approved() -> None:
     # fund the wallet with 1 eth but don't approve the contract to spend it
     await fund_wallet_with_eth(wallet, int(funding))
 
-    await create_delegated_subscription(
-        echo_input(f"{uuid4()}"),
-        4,
-        1,
-        redundancy=2,
-        wallet=wallet.address,
-        payment_amount=int(funding / 2),
-        return_subscription_id=False,
-    )
-
-    await assert_regex_in_node_logs(".*insufficient allowance.*")
+    async with LogAssertoor(".*insufficient allowance.*"):
+        await create_delegated_subscription(
+            echo_input(f"{uuid4()}"),
+            4,
+            1,
+            redundancy=2,
+            wallet=wallet.address,
+            payment_amount=int(funding / 2),
+            return_subscription_id=False,
+        )
 
 
 @pytest.mark.asyncio
@@ -289,15 +287,14 @@ async def test_infernet_delegated_subscription_with_not_enough_money() -> None:
         amount * 4,
     )
 
-    await create_delegated_subscription(
-        echo_input(f"{uuid4()}"),
-        4,
-        1,
-        redundancy=1,
-        wallet=wallet.address,
-        payment_token=mock_token.address,
-        payment_amount=amount * 2,
-        return_subscription_id=False,
-    )
-
-    await assert_regex_in_node_logs(".*insufficient balance.*")
+    async with LogAssertoor(".*insufficient balance.*"):
+        await create_delegated_subscription(
+            echo_input(f"{uuid4()}"),
+            4,
+            1,
+            redundancy=1,
+            wallet=wallet.address,
+            payment_token=mock_token.address,
+            payment_amount=amount * 2,
+            return_subscription_id=False,
+        )
