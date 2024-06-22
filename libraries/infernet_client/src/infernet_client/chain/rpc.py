@@ -36,7 +36,7 @@ async contract instance
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Type
 
 from eth_account import Account
 from eth_typing import ChecksumAddress
@@ -109,7 +109,7 @@ class RPC:
         address: Optional[ChecksumAddress] = None,
         abi: Optional[ABI] = None,
         bytecode: Optional[bytes] = None,
-    ) -> AsyncContract:
+    ) -> AsyncContract | Type[AsyncContract]:
         """Returns a web3py async contract instance
 
         Args:
@@ -119,7 +119,7 @@ class RPC:
                 None.
 
         Returns:
-            AsyncContract: Contract instance
+            AsyncContract | Type[AsyncContract]: Web3py async contract instance
         """
         return self._web3.eth.contract(address=address, abi=abi, bytecode=bytecode)
 
