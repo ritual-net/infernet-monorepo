@@ -9,7 +9,7 @@ from infernet_node.test_callback import (
     assert_output,
     setup_wallet_with_eth_and_approve_contract,
 )
-from test_library.assertion_utils import LogAssertoor
+from test_library.log_assertoor import LogAssertoor
 from test_library.chain.utils import balance_of, node_balance, protocol_balance
 from test_library.chain.verifier import GenericAtomicVerifier, GenericLazyVerifier
 from test_library.chain.wallet import create_wallet, fund_address_with_eth
