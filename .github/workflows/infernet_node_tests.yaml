@@ -68,7 +68,7 @@ jobs:
       - name: Pull service images
         env:
           # use default Docker tag if it's not specified
-          DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
@@ -107,5 +107,5 @@ jobs:
           service: infernet_node
           service_dir: infernet_services/test_services
           # use default Docker tag if it's not specified
-          DOCKER_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: make test-service
