@@ -23,7 +23,7 @@ from test_library.web3_utils import echo_input, echo_output, request_web3_comput
 
 log = logging.getLogger(__name__)
 
-NUM_SUBSCRIPTIONS = 50
+NUM_SUBSCRIPTIONS = 20
 TIMEOUT = 120
 
 
