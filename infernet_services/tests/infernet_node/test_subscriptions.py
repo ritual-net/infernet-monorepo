@@ -6,7 +6,7 @@ from eth_abi.abi import decode
 from eth_abi.exceptions import InsufficientDataBytes
 from infernet_node.conftest import ECHO_SERVICE
 from reretry import retry  # type: ignore
-from test_library.assertion_utils import LogAssertoor
+from test_library.log_assertoor import LogAssertoor
 from test_library.constants import ZERO_ADDRESS
 from test_library.web3_utils import (
     echo_input,

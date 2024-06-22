@@ -7,7 +7,7 @@ from infernet_node.test_delegate_subscription import (
     get_next_subscription_id,
 )
 from infernet_node.test_subscriptions import create_sub_with_random_input
-from test_library.assertion_utils import LogAssertoor
+from test_library.log_assertoor import LogAssertoor
 from test_library.web3_utils import echo_input
 
 log = logging.getLogger(__name__)

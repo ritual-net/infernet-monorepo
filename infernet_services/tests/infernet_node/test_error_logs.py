@@ -2,7 +2,7 @@ import logging
 from enum import IntEnum
 
 import pytest
-from test_library.assertion_utils import LogAssertoor
+from test_library.log_assertoor import LogAssertoor
 from test_library.constants import ANVIL_NODE
 from test_library.web3_utils import get_consumer_contract
 from web3 import AsyncHTTPProvider, AsyncWeb3

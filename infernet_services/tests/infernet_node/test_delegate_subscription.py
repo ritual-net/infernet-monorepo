@@ -16,7 +16,7 @@ from infernet_node.test_subscriptions import (
     set_subscription_consumer_input,
 )
 from reretry import retry  # type: ignore
-from test_library.assertion_utils import LogAssertoor
+from test_library.log_assertoor import LogAssertoor
 from test_library.chain.wallet import create_wallet, fund_wallet_with_eth
 from test_library.constants import PROTOCOL_FEE, ZERO_ADDRESS
 from test_library.test_config import global_config
