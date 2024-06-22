@@ -14,7 +14,7 @@ class LogAssertoor:
         self.regex = regex
 
     async def __aenter__(self) -> LogAssertoor:
-        self.collector = await LogCollector().start(NODE_LOG_CMD)
+        self.collector = await LogCollector(self.regex).start(NODE_LOG_CMD)
         return self
 
     async def __aexit__(
