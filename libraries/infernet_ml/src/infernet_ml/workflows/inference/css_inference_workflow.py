@@ -150,7 +150,7 @@ from typing import Any, Iterator, Optional, Union
 
 from retry import retry
 
-from infernet_ml.utils.common_types import DEFAULT_RETRY_PARAMS, RetryParams
+from infernet_ml.utils.css_utils import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     CSSRequest,

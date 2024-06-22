@@ -10,7 +10,8 @@ from test_library.infernet_fixture import handle_lifecycle
 
 load_dotenv()
 
-SERVICE_NAME = "css_inference_service"
+SERVICE_NAME = "css_inference_service_internal"
+SERVICE_VERSION = "1.0.0"
 CSS_WITH_PROOFS = "css_with_proofs"
 
 
@@ -35,12 +36,13 @@ def lifecycle() -> Generator[None, None, None]:
     yield from handle_lifecycle(
         [
             ServiceConfig.build(
-                SERVICE_NAME,
+                name=SERVICE_NAME,
+                image_id=f"ritualnetwork/{SERVICE_NAME}:{SERVICE_VERSION}",
                 env_vars=env_vars,
             ),
             ServiceConfig.build(
                 name=CSS_WITH_PROOFS,
-                image_id=f"ritualnetwork/{SERVICE_NAME}:latest",
+                image_id=f"ritualnetwork/{SERVICE_NAME}:{SERVICE_VERSION}",
                 env_vars=env_vars,
                 port=3001,
                 generates_proofs=True,

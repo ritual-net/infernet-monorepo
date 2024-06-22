@@ -171,8 +171,8 @@ async def assert_generic_callback_consumer_output(
             assert await consumer.functions.receivedToggle().call() != received_toggle
 
         await _wait_till_next_output()
-
-        return assertions(b"", await consumer.functions.lastOutput().call(), b"")
+        last_output = await consumer.functions.lastOutput().call()
+        return assertions(b"", last_output, b"")
 
     @retry(
         exceptions=(AssertionError, InsufficientDataBytes, ContractLogicError),
