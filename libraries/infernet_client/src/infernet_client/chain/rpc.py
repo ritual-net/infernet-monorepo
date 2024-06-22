@@ -104,17 +104,24 @@ class RPC:
         """
         return self._web3.to_checksum_address(address)
 
-    def get_contract(self, address: ChecksumAddress, abi: ABI) -> AsyncContract:
+    def get_contract(
+        self,
+        address: Optional[ChecksumAddress] = None,
+        abi: Optional[ABI] = None,
+        bytecode: Optional[bytes] = None,
+    ) -> AsyncContract:
         """Returns a web3py async contract instance
 
         Args:
-            address (ChecksumAddress): Contract address
-            abi (ABI): Contract ABI
+            address (Optional[ChecksumAddress]): Contract address. Defaults to None.
+            abi (Optional[ABI]): Contract ABI. Defaults to None.
+            bytecode (Optional[bytes]): Contract bytecode. Defaults to
+                None.
 
         Returns:
             AsyncContract: Contract instance
         """
-        return self._web3.eth.contract(address=address, abi=abi)
+        return self._web3.eth.contract(address=address, abi=abi, bytecode=bytecode)
 
     async def get_balance(self, address: ChecksumAddress) -> int:
         """Collects balance for an address

@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from eth_abi import decode  # type: ignore
 from infernet_ml.utils.codec.ezkl_codec import encode_proof_request
 from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
-from solcx import compile_standard, install_solc
+from solcx import compile_standard
 from test_library.test_config import global_config
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 load_dotenv()
 
 
-async def create_testReadsContract(
+async def create_test_reads_contract(
     input_list: list[float],
 ) -> tuple[int, dict[str, Any]]:
     """
@@ -94,7 +94,7 @@ async def create_testReadsContract(
     )["output"]["abi"]
 
     # Deploy the contract
-    w3 = (await get_rpc())._web3
+    rpc = await get_rpc()
 
     with tempfile.NamedTemporaryFile(mode="w") as input:
         # create temp input json
@@ -114,12 +114,12 @@ async def create_testReadsContract(
 
     processed_output_list = [processed_output]
 
-    TestReads = w3.eth.contract(abi=abi, bytecode=bytecode)
-    tx_hash = await TestReads.constructor(  # type: ignore
+    test_reads = rpc.get_contract(abi=abi, bytecode=bytecode)
+    tx_hash = await test_reads.constructor(  # type: ignore
         processed_output_list
     ).transact()
-    tx_receipt = await w3.eth.wait_for_transaction_receipt(tx_hash)
-    contract = w3.eth.contract(address=tx_receipt["contractAddress"], abi=abi)
+    tx_receipt = await rpc.get_tx_receipt(tx_hash)
+    contract = rpc.get_contract(address=tx_receipt["contractAddress"], abi=abi)
 
     # Interact with the contract
     calldata = []
@@ -148,7 +148,7 @@ async def create_testReadsContract(
 
 
 async def ezkl_deploy(
-    output_dict: dict[str, Any]
+    output_dict: dict[str, Any],
 ) -> tuple[AsyncContract, AsyncContract]:
     """
     helper function to deploy and return the EZKL EVM verifier and Attester
@@ -221,6 +221,37 @@ async def ezkl_deploy(
     return verifier, attester
 
 
+output_list = [
+    0.013130365870893002,
+    0.02553769201040268,
+    0.012407325208187103,
+    0.013771230354905128,
+    0.042016975581645966,
+    0.02824574150145054,
+    0.0006408646586351097,
+    0.016479281708598137,
+    0.015838416293263435,
+    0.010129566304385662,
+    0.03322179242968559,
+    0.023092227056622505,
+    0.02639247477054596,
+    0.05993044748902321,
+    0.03353797644376755,
+    0.016262909397482872,
+    0.026708658784627914,
+    0.010445748455822468,
+    0.012721805833280087,
+    0.03294740244746208,
+    0.02022559754550457,
+    0.03351482003927231,
+    0.07052753120660782,
+    0.03701271489262581,
+    0.020793013274669647,
+    0.037580132484436035,
+    0.01678711734712124,
+]
+
+
 @pytest.mark.asyncio
 async def test_completion() -> None:
     """
@@ -232,43 +263,9 @@ async def test_completion() -> None:
     This test relies on EZKL proving artifacts
     generated from this EZKL example notebook:
     https://github.com/zkonduit/ezkl/blob/main/examples/notebooks/data_attest_hashed.ipynb
-
-
-
     """
-    install_solc("0.8.17", show_progress=True)
 
     input_list = TEST_INPUT
-
-    output_list = [
-        0.013130365870893002,
-        0.02553769201040268,
-        0.012407325208187103,
-        0.013771230354905128,
-        0.042016975581645966,
-        0.02824574150145054,
-        0.0006408646586351097,
-        0.016479281708598137,
-        0.015838416293263435,
-        0.010129566304385662,
-        0.03322179242968559,
-        0.023092227056622505,
-        0.02639247477054596,
-        0.05993044748902321,
-        0.03353797644376755,
-        0.016262909397482872,
-        0.026708658784627914,
-        0.010445748455822468,
-        0.012721805833280087,
-        0.03294740244746208,
-        0.02022559754550457,
-        0.03351482003927231,
-        0.07052753120660782,
-        0.03701271489262581,
-        0.020793013274669647,
-        0.037580132484436035,
-        0.01678711734712124,
-    ]
 
     input_data = Tensor(input_list)
 
@@ -281,14 +278,16 @@ async def test_completion() -> None:
     output_dtype = DataType.float
     output_bytes = encode_vector(output_dtype, output_shape, output_data)
 
-    processed_output_expected, output_dict = await create_testReadsContract(input_list)
+    processed_output_expected, output_dict = await create_test_reads_contract(
+        input_list
+    )
     evm_verifier, attester = await ezkl_deploy(output_dict)
 
     data = encode_proof_request(
         vk_addr=None, input_vector_bytes=input_bytes, output_vector_bytes=output_bytes
     )
 
-    task_id = await request_web3_compute(
+    sub_id = await request_web3_compute(
         SERVICE_NAME,
         data,
     )
@@ -297,7 +296,7 @@ async def test_completion() -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         raw_input, processed_input = decode(["bytes", "bytes"], input)
         in_dtype, in_shape, in_data = decode_vector(raw_input)
-        len(processed_input) == 0, "should have no processed input"
+        assert len(processed_input) == 0, "should have no processed input"
         assert (
             in_dtype == input_dtype
         ), f"input dtype does't match: {in_dtype} {input_dtype}"
@@ -324,7 +323,7 @@ async def test_completion() -> None:
         ), "input data doesnt match"
         proofs.append(proof)
 
-    await assert_generic_callback_consumer_output(task_id, _assertions)
+    await assert_generic_callback_consumer_output(sub_id, _assertions)
 
     verif_calldata_bytes = proofs[0]
 
