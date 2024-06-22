@@ -2,8 +2,8 @@ import logging
 
 import pytest
 from eth_abi.abi import decode, encode
-from test_library.log_assertoor import LogAssertoor
 from test_library.constants import ANVIL_NODE
+from test_library.log_assertoor import LogAssertoor
 from test_library.test_config import global_config
 from test_library.web2_utils import (
     get_job,

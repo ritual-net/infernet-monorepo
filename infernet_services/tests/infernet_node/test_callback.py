@@ -6,13 +6,13 @@ from eth_abi.abi import decode
 from infernet_client.chain.token import Token
 from infernet_client.chain.wallet import InfernetWallet
 from infernet_node.conftest import ECHO_SERVICE, ECHO_SERVICE_WITH_PAYMENT_REQUIREMENTS
-from test_library.log_assertoor import LogAssertoor
 from test_library.chain.wallet import MockToken, create_wallet, fund_wallet_with_eth
 from test_library.constants import (
     DEFAULT_PROTOCOL_FEE_RECIPIENT,
     PROTOCOL_FEE,
     ZERO_ADDRESS,
 )
+from test_library.log_assertoor import LogAssertoor
 from test_library.test_config import global_config
 from test_library.web3_utils import (
     assert_balance,
