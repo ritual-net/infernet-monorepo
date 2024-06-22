@@ -52,6 +52,8 @@ jobs:
       run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
 
     - name: Install dependencies
+      env:
+        CI: true
       run: |
         uv pip install -r infernet_services/requirements-precommit.lock
         uv pip install -r pyproject.toml
