@@ -19,7 +19,6 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_web2_inference_from_arweave() -> None:
     task = await request_job(
         TORCH_ARWEAVE_PRELOADED,
@@ -39,7 +38,6 @@ async def test_web2_inference_from_arweave() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_web3_inference_from_arweave() -> None:
     sub_id = await request_web3_compute(
         TORCH_ARWEAVE_PRELOADED,

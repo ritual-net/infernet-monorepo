@@ -63,13 +63,7 @@ def hf_model_id(model_id: str) -> str:
 def arweave_model_id(model_id: str) -> str:
     return f"{os.environ['MODEL_OWNER']}/{model_id}"
 
-
-skip_deploying = False
-skip_contract = False
-skip_teardown = False
-suppress_logs = False
-
-# skip_deploying = True
-# skip_contract = True
-# skip_teardown = True
-# suppress_logs = True
+skip_deploying = True
+skip_contract = True
+skip_teardown = True
+suppress_logs = True

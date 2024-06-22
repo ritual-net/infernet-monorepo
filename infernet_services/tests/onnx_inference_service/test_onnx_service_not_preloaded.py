@@ -83,7 +83,6 @@ async def test_basic_web2_inference_from_arweave() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web3_inference_from_arweave() -> None:
     sub_id = await request_web3_compute(
         ONNX_SERVICE_NOT_PRELOADED,
@@ -115,7 +114,6 @@ hf_model_source, hf_load_args = (
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_from_hf_hub() -> None:
     task = await request_job(
         ONNX_SERVICE_NOT_PRELOADED,
@@ -132,7 +130,6 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web3_inference_from_hf_hub() -> None:
     sub_id = await request_web3_compute(
         ONNX_SERVICE_NOT_PRELOADED,
@@ -154,7 +151,6 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_delegated_sub_request() -> None:
     await request_delegated_subscription(
         ONNX_SERVICE_NOT_PRELOADED,

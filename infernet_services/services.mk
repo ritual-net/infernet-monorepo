@@ -90,3 +90,17 @@ solc_version?=0.8.17
 
 set-solc:
 	solc-select use $(solc_version) --always-install
+
+dev-mode:
+	constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
+	sed -i '' 's/skip_deploying = False/skip_deploying = True/' $$constants_path; \
+	sed -i '' 's/skip_contract = False/skip_contract = True/' $$constants_path; \
+	sed -i '' 's/skip_teardown = False/skip_teardown = True/' $$constants_path; \
+	sed -i '' 's/suppress_logs = False/suppress_logs = True/' $$constants_path
+
+prod-mode:
+	constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
+	sed -i.bak 's/skip_deploying = True/skip_deploying = False/' $$constants_path; \
+	sed -i.bak 's/skip_contract = True/skip_contract = False/' $$constants_path; \
+	sed -i.bak 's/skip_teardown = True/skip_teardown = False/' $$constants_path; \
+	sed -i.bak 's/suppress_logs = True/suppress_logs = False/' $$constants_path

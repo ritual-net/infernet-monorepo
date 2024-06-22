@@ -34,7 +34,6 @@ ar_model_source, ar_load_args = (
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_doesnt_provide_proof() -> None:
     task_id = await request_job(
         TORCH_WITH_PROOFS,
@@ -57,7 +56,6 @@ async def test_basic_web2_inference_doesnt_provide_proof() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_from_hf_hub() -> None:
     task = await request_job(
         TORCH_SERVICE_NOT_PRELOADED,
@@ -77,7 +75,6 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web3_inference_from_hf_hub() -> None:
     sub_id = await request_web3_compute(
         TORCH_SERVICE_NOT_PRELOADED,
@@ -101,7 +98,6 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_delegate_subscription_inference() -> None:
     await request_delegated_subscription(
         TORCH_SERVICE_NOT_PRELOADED,

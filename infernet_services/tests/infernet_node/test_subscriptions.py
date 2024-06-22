@@ -106,7 +106,6 @@ async def create_sub_with_random_input(
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_infernet_subscription_consumer_happy_path() -> None:
     (sub_id, i) = await create_sub_with_random_input(1, 2)
 
@@ -114,7 +113,6 @@ async def test_infernet_subscription_consumer_happy_path() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_infernet_recurring_subscription() -> None:
     (sub_id, i) = await create_sub_with_random_input(2, 2)
     await assert_subscription_consumer_output(sub_id, echo_output(i))
@@ -130,7 +128,6 @@ async def test_infernet_recurring_subscription() -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
-@pytest.mark.skip
 async def test_infernet_cancelled_subscription() -> None:
     (sub_id, i) = await create_sub_with_random_input(2, 3)
     await assert_subscription_consumer_output(sub_id, echo_output(i))
