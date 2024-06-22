@@ -101,9 +101,7 @@ async def test_completion_web3(
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (result,) = decode(["string"], output, strict=False)
-        assert (
-            "yes" in result.lower() or "no" in result.lower()
-        ), f"yes or no should be in result, instead got {result}"
+        boolean_like_prompt_assertion(result)
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
 
@@ -111,14 +109,14 @@ async def test_completion_web3(
 parameters: Any = [
     "provider, model, params",
     [
-        # (
-        #     "OPENAI",
-        #     "gpt-4",
-        #     {
-        #         "endpoint": "completions",
-        #         "messages": [{"role": "user", "content": boolean_like_prompt}],
-        #     },
-        # ),
+        (
+            "OPENAI",
+            "gpt-4",
+            {
+                "endpoint": "completions",
+                "messages": [{"role": "user", "content": boolean_like_prompt}],
+            },
+        ),
         (
             "PERPLEXITYAI",
             "mistral-7b-instruct",
