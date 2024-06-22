@@ -8,11 +8,11 @@ log = logging.getLogger(__name__)
 
 
 class LogCollector:
-    def __init__(self: "LogCollector"):
+    def __init__(self: "LogCollector", regex: Optional[str] = None):
         self.running = False
         self.logs: List[Tuple[str, str]] = []
         self.line_event: asyncio.Event = asyncio.Event()
-        self.regex_pattern: Optional[str] = None
+        self.regex_pattern: Optional[str] = regex
         self.regex_flags: Any = re.IGNORECASE
 
     async def start(self: "LogCollector", cmd: str) -> "LogCollector":
