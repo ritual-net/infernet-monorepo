@@ -184,7 +184,9 @@ async def assert_generic_callback_consumer_output(
         _input = await consumer.functions.receivedInput(_sub_id).call()
         _output = await consumer.functions.receivedOutput(_sub_id).call()
         _proof = await consumer.functions.receivedProof(_sub_id).call()
-        log.info(f"consumer contract call: {_input} {_output} {_proof}")
+        log.info(
+            f"consumer contract call: {_input.hex()} {_output.hex()} {_proof.hex()}"
+        )
         assertions(_input, _output, _proof)
 
     await _assert(sub_id)
