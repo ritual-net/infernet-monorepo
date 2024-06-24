@@ -171,8 +171,8 @@ async def assert_generic_callback_consumer_output(
             assert await consumer.functions.receivedToggle().call() != received_toggle
 
         await _wait_till_next_output()
-
-        return assertions(b"", await consumer.functions.lastOutput().call(), b"")
+        last_output = await consumer.functions.lastOutput().call()
+        return assertions(b"", last_output, b"")
 
     @retry(
         exceptions=(AssertionError, InsufficientDataBytes, ContractLogicError),
@@ -184,7 +184,9 @@ async def assert_generic_callback_consumer_output(
         _input = await consumer.functions.receivedInput(_sub_id).call()
         _output = await consumer.functions.receivedOutput(_sub_id).call()
         _proof = await consumer.functions.receivedProof(_sub_id).call()
-        log.info(f"consumer contract call: {_input} {_output} {_proof}")
+        log.info(
+            f"consumer contract call: {_input.hex()} {_output.hex()} {_proof.hex()}"
+        )
         assertions(_input, _output, _proof)
 
     await _assert(sub_id)
@@ -284,9 +286,8 @@ async def request_web3_compute(
         int: Subscription ID.
     """
     consumer = await get_consumer_contract()
-    log.info(f"requesting compute {service_id} {input!r}")
 
-    fn = consumer.functions.requestCompute(
+    tx = await consumer.functions.requestCompute(
         service_id,
         input,
         redundancy,
@@ -294,8 +295,7 @@ async def request_web3_compute(
         payment_amount,
         wallet,
         verifier,
-    )
-    tx = await global_config.tx_submitter.submit(fn)
+    ).transact()
 
     log.info(f"awaiting transaction {tx.hex()}")
     receipt = await (await get_rpc()).get_tx_receipt(tx)

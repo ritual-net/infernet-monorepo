@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
     task = await request_job(
         ONNX_ARWEAVE_PRELOADED,
@@ -38,7 +37,6 @@ async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_basic_web3_inference_from_arweave_from_preloaded_model() -> None:
     sub_id = await request_web3_compute(
         ONNX_ARWEAVE_PRELOADED,

@@ -2,8 +2,8 @@ import logging
 
 import pytest
 from eth_abi.abi import decode, encode
-from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.constants import ANVIL_NODE
+from test_library.log_assertoor import LogAssertoor
 from test_library.test_config import global_config
 from test_library.web2_utils import (
     get_job,
@@ -24,7 +24,6 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None:
     task_id = await request_job(
         TGI_WITH_PROOFS,
@@ -42,25 +41,23 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_completion_web3_doesnt_provide_proof() -> None:
-    sub_id = await request_web3_compute(
-        TGI_WITH_PROOFS,
-        encode(
-            ["string"],
-            ["whats 2 + 2?"],
-        ),
-        # a non-zero address means this requires proof
-        verifier=global_config.coordinator_address,
-    )
-
-    await assert_regex_in_node_logs(
-        f"container execution errored.*{sub_id}.*proofs are not supported"
-    )
+    async with LogAssertoor() as assertoor:
+        sub_id = await request_web3_compute(
+            TGI_WITH_PROOFS,
+            encode(
+                ["string"],
+                ["whats 2 + 2?"],
+            ),
+            # a non-zero address means this requires proof
+            verifier=global_config.coordinator_address,
+        )
+        await assertoor.set_regex(
+            f"container execution errored.*{sub_id}.*proofs are not supported"
+        )
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_completion_web3() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,
@@ -78,7 +75,6 @@ async def test_completion_web3() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_tgi_client_inference_service_web2() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -92,7 +88,6 @@ async def test_tgi_client_inference_service_web2() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_tgi_client_streaming_request() -> None:
     task = await request_streaming_job(
         SERVICE_NAME,
@@ -106,7 +101,6 @@ async def test_tgi_client_streaming_request() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_tgi_client_delegated_subscription() -> None:
     await request_delegated_subscription(
         SERVICE_NAME,

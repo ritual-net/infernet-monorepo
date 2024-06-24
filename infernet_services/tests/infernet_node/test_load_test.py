@@ -23,7 +23,7 @@ from test_library.web3_utils import echo_input, echo_output, request_web3_comput
 
 log = logging.getLogger(__name__)
 
-NUM_SUBSCRIPTIONS = 150
+NUM_SUBSCRIPTIONS = 20
 TIMEOUT = 120
 
 
@@ -49,30 +49,22 @@ async def _fire_subscription() -> None:
     await assert_subscription_consumer_output(sub_id, echo_output(i), timeout=TIMEOUT)
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
 async def test_infernet_bulk_callback_consumers() -> None:
     await asyncio.gather(*[_fire_callback() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
 async def test_infernet_bulk_delegated_subscription() -> None:
     await asyncio.gather(*[_fire_delegated() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
 async def test_infernet_bulk_subscriptions() -> None:
     await asyncio.gather(*[_fire_subscription() for _ in range(NUM_SUBSCRIPTIONS)])
 
 
-# @pytest.mark.skipif(os.getenv("CI") == "true", reason="CI does not run this test")
 @pytest.mark.asyncio
-@pytest.mark.skip()
 async def test_infernet_interwoven_subscriptions() -> None:
     tasks = []
     for _ in range(NUM_SUBSCRIPTIONS):

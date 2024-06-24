@@ -1,15 +1,18 @@
 import asyncio
+import logging
 import re
 from asyncio import StreamReader
 from typing import Any, List, Optional, Tuple, cast
 
+log = logging.getLogger(__name__)
+
 
 class LogCollector:
-    def __init__(self: "LogCollector"):
+    def __init__(self: "LogCollector", regex: Optional[str] = None):
         self.running = False
         self.logs: List[Tuple[str, str]] = []
         self.line_event: asyncio.Event = asyncio.Event()
-        self.regex_pattern: Optional[str] = None
+        self.regex_pattern: Optional[str] = regex
         self.regex_flags: Any = re.IGNORECASE
 
     async def start(self: "LogCollector", cmd: str) -> "LogCollector":
@@ -30,6 +33,8 @@ class LogCollector:
                     break
                 decoded_line = line.decode().strip()
                 self.logs.append((tag, decoded_line))
+                log.debug("regex pattern: %s", self.regex_pattern)
+                log.debug("decoded line: %s", decoded_line)
                 if self.regex_pattern and re.search(
                     self.regex_pattern, decoded_line, self.regex_flags
                 ):
