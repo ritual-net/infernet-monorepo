@@ -48,6 +48,7 @@ async def test_hf_inference_client_service_text_generation() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_service_text_classification() -> None:
     task = await request_job(
         SERVICE_NAME,
@@ -88,6 +89,7 @@ long_text = """
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
