@@ -149,6 +149,7 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 
     await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
 
+
 @pytest.mark.asyncio
 async def test_delegated_sub_request() -> None:
     await request_delegated_subscription(
