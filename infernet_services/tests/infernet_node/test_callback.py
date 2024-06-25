@@ -228,7 +228,7 @@ async def test_infernet_basic_payment_unaccepted_token() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
+@pytest.mark.flaky(retries=3, delay=1)
 async def test_infernet_ignore_subscription_with_low_bid() -> None:
     funding = int(1e18)
     wallet = await create_wallet()
