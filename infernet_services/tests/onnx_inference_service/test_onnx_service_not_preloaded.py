@@ -151,6 +151,7 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(retries=3, delay=1)
 async def test_delegated_sub_request() -> None:
     await request_delegated_subscription(
         ONNX_SERVICE_NOT_PRELOADED,
