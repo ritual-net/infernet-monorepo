@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(retries=3, delay=1)
 async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
     task = await request_job(
         ONNX_ARWEAVE_PRELOADED,
