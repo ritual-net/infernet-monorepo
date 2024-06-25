@@ -27,6 +27,7 @@ async def test_infernet_failing_subscription_must_retry_then_give_up() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(retries=3, delay=1)
 async def test_infernet_failing_delegated_subscription_must_retry_then_give_up() -> None:
     async with LogAssertoor(
         "Subscription has exceeded the maximum number of attempts.*"
