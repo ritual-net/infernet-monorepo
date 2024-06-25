@@ -31,7 +31,6 @@ INVALID_PROOF = "do NOT trust me bro"
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(retries=3, delay=1)
 async def test_proof_payment_service_does_not_provide_proof() -> None:
     wallet = await create_wallet()
     async with LogAssertoor() as assertoor:
