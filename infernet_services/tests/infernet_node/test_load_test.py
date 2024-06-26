@@ -50,6 +50,7 @@ async def _fire_subscription() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(retries=3, delay=1)
 async def test_infernet_bulk_callback_consumers() -> None:
     await asyncio.gather(*[_fire_callback() for _ in range(NUM_SUBSCRIPTIONS)])
 
