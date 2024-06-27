@@ -38,14 +38,14 @@ deploy-node:
 	jq '.containers[0].env = $(shell echo $(env))' \
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
 	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.0.0"} \
-	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
+	docker compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 start-infernet-anvil:
-	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d infernet-anvil
+	@docker compose -f $(deploy_dir)/docker-compose.yaml up -d infernet-anvil
 
 stop-infernet-anvil:
-	docker-compose -f $(deploy_dir)/docker-compose.yaml kill infernet-anvil || true
-	docker-compose -f $(deploy_dir)/docker-compose.yaml rm -f infernet-anvil || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml kill infernet-anvil || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml rm -f infernet-anvil || true
 
 stop-service:
 	services=`docker ps -aq --filter "name=$(service)*"` && \
