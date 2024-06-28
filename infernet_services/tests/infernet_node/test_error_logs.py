@@ -2,9 +2,8 @@ import logging
 from enum import IntEnum
 
 import pytest
-from test_library.assertion_utils import assert_regex_in_node_logs
 from test_library.constants import ANVIL_NODE
-from test_library.test_config import global_config
+from test_library.log_assertoor import LogAssertoor
 from test_library.web3_utils import get_consumer_contract
 from web3 import AsyncHTTPProvider, AsyncWeb3
 
@@ -119,9 +118,5 @@ w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 @pytest.mark.asyncio
 async def test_infernet_error_logs(error_id: ErrorId, expected_log: str) -> None:
     consumer = await get_consumer_contract(f"{contract_name}.sol", contract_name)
-
-    await global_config.tx_submitter.submit(
-        consumer.functions.echoThis(f"{error_id.value}")
-    )
-
-    await assert_regex_in_node_logs(expected_log)
+    async with LogAssertoor(expected_log):
+        await consumer.functions.echoThis(f"{error_id.value}").transact()

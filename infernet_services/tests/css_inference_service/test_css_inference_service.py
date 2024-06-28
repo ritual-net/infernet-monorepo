@@ -87,7 +87,6 @@ async def test_css_inference_service_web2_doesnt_provide_proof_even_with_flag() 
     ],
 )
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_completion_web3(
     provider: CSSProvider,
     model: str,
@@ -101,10 +100,9 @@ async def test_completion_web3(
     )
 
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (result,) = decode(["string"], output, strict=False)
-        assert (
-            "yes" in result.lower() or "no" in result.lower()
-        ), f"yes or no should be in result, instead got {result}"
+        (raw, processed) = decode(["bytes", "bytes"], output)
+        (result,) = decode(["string"], raw, strict=False)
+        boolean_like_prompt_assertion(result)
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
 
@@ -178,28 +176,29 @@ async def test_css_inference_service_custom_parameters() -> None:
 
 @pytest.mark.parametrize(*parameters)
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_delegate_subscription(
     provider: str,
     model: str,
     params: dict[str, Any],
 ) -> None:
-    await request_delegated_subscription(
-        SERVICE_NAME,
-        {
-            "provider": provider,
-            "endpoint": "completions",
-            "model": model,
-            "params": params,
-        },
-    )
+    for i in range(10):
+        await request_delegated_subscription(
+            SERVICE_NAME,
+            {
+                "provider": provider,
+                "endpoint": "completions",
+                "model": model,
+                "params": params,
+            },
+        )
 
-    def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (result,) = decode(["string"], output, strict=False)
-        log.info(f"got result: {result}")
-        boolean_like_prompt_assertion(result)
+        def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
+            (raw, processed) = decode(["bytes", "bytes"], output)
+            (result,) = decode(["string"], raw)
+            log.info(f"got result: {result}")
+            boolean_like_prompt_assertion(result)
 
-    await assert_generic_callback_consumer_output(None, _assertions)
+        await assert_generic_callback_consumer_output(None, _assertions)
 
 
 @pytest.mark.parametrize(*parameters)

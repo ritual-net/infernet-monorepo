@@ -88,7 +88,6 @@ long_text = """
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
@@ -111,7 +110,8 @@ async def test_hf_inference_client_service_summarization() -> None:
 
 async def assert_web3_text_generation_output(sub_id: Optional[int] = None) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (out,) = decode(["string"], output, strict=False)
+        (raw, _) = decode(["bytes", "bytes"], output)
+        (out,) = decode(["string"], raw)
         assert "4" in out
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
@@ -133,7 +133,7 @@ async def assert_web3_text_classification_output(
     sub_id: Optional[int] = None,
 ) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
+        (raw, _) = decode(["bytes", "bytes"], output)
         (labels, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
         log.info("labels: %s scores %s", labels, scores)
         assert labels[0] == "POSITIVE"
@@ -162,7 +162,7 @@ async def assert_web3_token_classification_output(
     sub_id: Optional[int] = None,
 ) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
+        (raw, _) = decode(["bytes", "bytes"], output, strict=False)
         (groups, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
         assert groups[0] == "MISC"
         assert (scores[0] / 1e6) > 0.8
@@ -189,7 +189,7 @@ async def test_web3_token_classification_no_model_provided() -> None:
 
 async def assert_web3_summarization_output(sub_id: Optional[int] = None) -> None:
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
-        (raw, processed) = decode(["bytes", "bytes"], output, strict=False)
+        (raw, _) = decode(["bytes", "bytes"], output, strict=False)
         (result,) = decode(["string"], raw, strict=False)
         assert len(result) < len(long_text)
 
@@ -197,7 +197,6 @@ async def assert_web3_summarization_output(sub_id: Optional[int] = None) -> None
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_web3_summarization_no_model_provided() -> None:
     sub_id = await request_web3_compute(
         SERVICE_NAME,

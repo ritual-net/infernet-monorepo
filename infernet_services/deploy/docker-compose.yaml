@@ -1,8 +1,8 @@
-version: '3'
-
 services:
   node:
-    image: ritualnetwork/infernet-node:1.0.0
+    image: ritualnetwork/infernet-node-internal:${INFERNET_NODE_TAG}
+    environment:
+      INFERNET_NODE_TAG: 1.0.0  # Default value
     ports:
       - "0.0.0.0:4000:4000"
     volumes:

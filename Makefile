@@ -43,6 +43,7 @@ endif
 		uv pip install -r infernet_services/requirements-precommit.lock; \
 	fi
 	$(MAKE) pre-commit -C infernet_services ls_flag=$(ls_flag) $(post)
+	$(MAKE) prod-mode
 	files=$$(git ls-files $(ls_flag) infernet_services) && \
 	pre-commit run black --files $$files $(post) && \
 	pre-commit run isort --files $$files $(post) && \

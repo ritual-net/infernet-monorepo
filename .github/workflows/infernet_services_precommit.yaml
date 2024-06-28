@@ -57,4 +57,6 @@ jobs:
         uv pip install -r pyproject.toml
 
     - name: Run pre-commit hooks
+      env:
+        CI: true
       run: make pre-commit-services

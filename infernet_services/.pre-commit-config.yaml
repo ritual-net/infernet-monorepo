@@ -48,6 +48,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: mypy_ezkl_proof_service
+        name: mypy ezkl_proof_service
+        entry: mypy --strict
+        files: ^infernet_services/services/ezkl_proof_service
+        language: system
+        types: [python]
+
+  - repo: local
+    hooks:
       - id: mypy echo service
         name: mypy echo service
         entry: mypy --strict

@@ -6,6 +6,7 @@ EZKL and the EZKL Proof Service.
 from functools import lru_cache
 from typing import Type, cast
 
+from infernet_ml.utils.ezkl_models import EZKLProvingArtifactsConfig
 from infernet_ml.utils.model_loader import (
     ArweaveLoadArgs,
     HFLoadArgs,
@@ -13,7 +14,6 @@ from infernet_ml.utils.model_loader import (
     ModelSource,
     download_model,
 )
-from infernet_ml.utils.service_models import EZKLProvingArtifactsConfig
 
 
 @lru_cache
