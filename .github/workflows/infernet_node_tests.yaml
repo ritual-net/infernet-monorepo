@@ -48,6 +48,9 @@ jobs:
         env:
           CI: true
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -86,6 +89,7 @@ jobs:
 
       - name: Install UV
         run: python -m pip install uv
+
 
       # Can't install from uv with the --system flag much like what we do in our
       # dockerfiles, because we'd have to run it as root.
