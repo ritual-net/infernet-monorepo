@@ -6,6 +6,9 @@ include infernet_services/services.mk
 
 SHELL := /bin/bash
 
+# suppress "entering directory" messages
+MAKEFLAGS += --no-print-directory
+
 clean:
 	rm -rf dist
 
