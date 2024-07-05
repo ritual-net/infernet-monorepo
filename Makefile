@@ -4,8 +4,6 @@ include scripts/gcp.mk
 include scripts/pypi.mk
 include infernet_services/services.mk
 
-.DEFAULT_GOAL := check-setup
-
 SHELL := /bin/bash
 
 clean:

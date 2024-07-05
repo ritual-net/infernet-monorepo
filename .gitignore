@@ -65,8 +65,8 @@ shared
 packages
 
 # gcp secret files
-*-deployer-key.json
-*-deployer-key.json.b64
+*-key.json
+*-key.json.b64
 
 playground
 
