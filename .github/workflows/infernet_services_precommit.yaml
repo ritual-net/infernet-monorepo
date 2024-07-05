@@ -29,8 +29,8 @@ jobs:
       env:
         CI: true
 
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
+#    - name: Setup upterm session
+#      uses: lhotari/action-upterm@v1
 
     - uses: webfactory/ssh-agent@v0.9.0
       with:
