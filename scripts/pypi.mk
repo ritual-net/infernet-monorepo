@@ -28,7 +28,6 @@ repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(a
 # twine oauth2 username
 username := _token
 
-
 show-token:
 	@echo $(token)
 
@@ -81,12 +80,12 @@ gcp-setup: activate-service-account get_index_url
 
 export_prefix ?= "export "
 
+get-index-url:
+	@gcloud auth activate-service-account --key-file=pypi-deployer-key.json; \
+	echo "https://_token:`gcloud auth print-access-token`@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple"
+
 generate-uv-env-file:
-	@if ! [ "`gcloud config get project`" = "$(GCP_PROJECT)" ]; then \
-		gcloud config set project $(GCP_PROJECT); \
-	fi; \
-	gcloud auth activate-service-account --key-file=pypi-deployer-key.json; \
-	index_url=`gcloud auth print-access-token`; \
+	index_url=`make get-index-url`; \
 	echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$$index_url" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
