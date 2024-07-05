@@ -82,7 +82,12 @@ gcp-setup: activate-service-account get_index_url
 export_prefix ?= "export "
 
 generate-uv-env-file:
-	@echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
+	@if ! [ "`gcloud config get project`" = "$(GCP_PROJECT)" ]; then \
+		gcloud config set project $(GCP_PROJECT); \
+	fi; \
+	gcloud auth activate-service-account --key-file=pypi-deployer-key.json; \
+	index_url=`gcloud auth print-access-token`; \
+	echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$$index_url" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
