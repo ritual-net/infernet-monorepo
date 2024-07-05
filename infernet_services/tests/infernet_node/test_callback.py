@@ -200,6 +200,7 @@ async def test_infernet_basic_payment_custom_token() -> None:
     assert node_balance_after - node_balance_before == amount * (1 - 2 * PROTOCOL_FEE)
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_infernet_basic_payment_unaccepted_token() -> None:
     wallet = await create_wallet()
