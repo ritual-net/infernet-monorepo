@@ -1,11 +1,10 @@
-include infernet_services/services.mk
+include scripts/setup.mk
 include scripts/docs.mk
 include scripts/gcp.mk
 include scripts/pypi.mk
+include infernet_services/services.mk
 
-ifneq ("$(wildcard gcp.env)","")
-include gcp.env
-endif
+.DEFAULT_GOAL := check-setup
 
 SHELL := /bin/bash
 
