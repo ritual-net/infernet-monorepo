@@ -12,7 +12,9 @@ GCP_PROJECT := private-pypi-418615
 
 init-repo:
 	@echo "🚀 initializing repo"
-	@gcloud config set project $(GCP_PROJECT) && \
+	@if [ -z "$$CI" ]; then \
+		gcloud config set project $(GCP_PROJECT); \
+	fi; \
 	make pull-secrets
 
 add-secret:
