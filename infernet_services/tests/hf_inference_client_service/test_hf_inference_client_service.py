@@ -61,6 +61,7 @@ async def test_hf_inference_client_service_text_classification() -> None:
     assert result[0].get("score") > 0.8
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_hf_inference_client_service_token_classification() -> None:
     task = await request_job(
