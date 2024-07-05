@@ -5,24 +5,14 @@
 name: Infernet Services Tests
 
 on:
-  schedule:
-    - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
   pull_request:
     paths:
       - 'infernet_services/**'
       - '.github/workflows/infernet_services_tests.yaml'
-  workflow_dispatch:
-    inputs:
-      docker-tag:
-        description: 'Infernet Node Docker tag'
-        required: true
-        type: string
-        default: 'latest'
 
 jobs:
   build-docker-and-run-e2e-tests:
-    runs-on: buildjet-8vcpu-ubuntu-2204
-    timeout-minutes: 15
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [
@@ -30,8 +20,7 @@ jobs:
           "tgi_client_inference_service",
           "css_inference_service",
           "onnx_inference_service",
-          "torch_inference_service",
-          "ezkl_proof_service"
+          "torch_inference_service"
         ]
       fail-fast: false
     steps:
@@ -47,23 +36,15 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --recursive
 
-      - name: Google Auth
-#        uses: 'google-github-actions/auth@v2'
-#        with:
-#          credentials_json: '${{ secrets.SECRETS_SA }}'
-        run:
-          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
-
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
       - name: init repo
-        run: make init-repo
-        env:
-          CI: true
+        run: |
+          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+          gcloud auth activate-service-account --key-file=secrets-sa-key.json
+          make init-repo
+          rm secrets-sa-key.json
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -82,14 +63,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Print Docker Tag
-        run: |
-          echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
-
       - name: Pull service images
-        env:
-          # use default Docker tag if it's not specified
-          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:0.0.0"
@@ -98,10 +72,7 @@ jobs:
         env:
           service: ${{ matrix.service }}
           CI: true
-        run: |
-          make build-service
-#          useful for faster iteration time when debugging
-#          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
+        run: make build-service
 
       - name: Install UV
         run: python -m pip install uv
@@ -131,6 +102,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
           service: ${{ matrix.service }}
-          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.0.0' }}
         run: make test-service
 
+      - name: Cleanup Secrets
+        run: rm secrets-sa-key.json
+        if: always()

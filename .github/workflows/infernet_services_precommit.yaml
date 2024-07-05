@@ -16,21 +16,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Google auth
-#      uses: google-github-actions/auth@v2
-#      with:
-#        credentials_json: '${{ secrets.SECRETS_SA }}'
-      run:
-        echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
-
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
-
     - name: Set up cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
     - name: init repo
-      run: make init-repo
+      run: |
+        echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+        gcloud auth activate-service-account --key-file=secrets-sa-key.json
+        make init-repo
+        rm secrets-sa-key.json
       env:
         CI: true
 
@@ -64,3 +58,7 @@ jobs:
       env:
         CI: true
       run: make pre-commit-services
+
+    - name: Cleanup Secrets
+      run: rm secrets-sa-key.json
+      if: always()
