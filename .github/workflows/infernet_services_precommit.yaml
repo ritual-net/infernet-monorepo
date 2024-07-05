@@ -24,7 +24,6 @@ jobs:
         echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
         gcloud auth activate-service-account --key-file=secrets-sa-key.json
         make init-repo
-        rm secrets-sa-key.json
       env:
         CI: true
 
