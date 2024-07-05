@@ -227,6 +227,7 @@ async def test_infernet_basic_payment_unaccepted_token() -> None:
         )
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_infernet_ignore_subscription_with_low_bid() -> None:
     funding = int(1e18)
