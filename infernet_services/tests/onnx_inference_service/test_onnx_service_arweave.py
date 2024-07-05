@@ -20,6 +20,7 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
     task = await request_job(
