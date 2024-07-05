@@ -84,7 +84,7 @@ get-index-url:
 generate-uv-env-file:
 	index_url=`make get-index-url`; \
 	echo "index url: $$index_url"; \
-	echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$$index_url" > uv.env
+	echo "$(export_prefix) UV_EXTRA_INDEX_URL=$$index_url" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
