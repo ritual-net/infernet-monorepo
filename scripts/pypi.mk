@@ -31,9 +31,6 @@ username := _token
 show-token:
 	@echo $(token)
 
-show-index-url:
-	@echo $(index_url)
-
 # explicit install command to test uv installation
 uv-install:
 	uv venv; \

@@ -11,7 +11,7 @@ endif
 GCP_PROJECT := private-pypi-418615
 
 init-repo:
-	@echo "🚀 initializing repo"
+	@echo "🚀 initializing repo";
 	@if [ -z "$$CI" ]; then \
 		gcloud config set project $(GCP_PROJECT); \
 	fi; \
@@ -30,9 +30,9 @@ add-secrets:
 	@make add-secret name=pypi-key file="pypi-deployer-key.json"
 
 pull-secret:
-	@if gcloud secrets list | grep -q $(name); then \
+	@if gcloud secrets list --project $(GCP_PROJECT) | grep -q $(name); then \
 		echo "ℹ️ pulling secret $(name) to $(file)"; \
-		gcloud secrets versions access latest --secret=$(name) > $(file); \
+		gcloud secrets versions access latest --project $(GCP_PROJECT) --secret=$(name) > $(file); \
 	else \
 		echo "secret $(name) not found"; \
 	fi
