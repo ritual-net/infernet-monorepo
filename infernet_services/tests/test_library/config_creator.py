@@ -89,7 +89,7 @@ class ServiceConfig(BaseModel):
         """
         return cls(
             name=name,
-            image_id=image_id or f"ritualnetwork/{name}:latest",
+            image_id=image_id or f"ritualnetwork/{name}",
             port=port,
             env_vars=env_vars if env_vars else {},
             accepted_payments=accepted_payments or {ZERO_ADDRESS: 0},
