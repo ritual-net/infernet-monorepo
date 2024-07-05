@@ -48,9 +48,14 @@ jobs:
           git -c protocol.version=2 submodule update --init --force --recursive
 
       - name: Google Auth
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.SECRETS_SA }}'
+#        uses: 'google-github-actions/auth@v2'
+#        with:
+#          credentials_json: '${{ secrets.SECRETS_SA }}'
+        run:
+          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -59,9 +64,6 @@ jobs:
         run: make init-repo
         env:
           CI: true
-
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -115,9 +117,7 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Get UV env file
-        env:
-          export_prefix: ""
-        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+        run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
         run: uv pip install -r infernet_services/requirements-e2e-tests.lock
