@@ -197,4 +197,4 @@ To do so:
 make deploy-node service=<service-name>
 ```
 
-This will deploy the service along with the Infernet node.
+This will deploy the service along with the Infernet node..
