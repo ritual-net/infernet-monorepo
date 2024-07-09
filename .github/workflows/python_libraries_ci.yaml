@@ -40,18 +40,16 @@ jobs:
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
 
-      - name: Google Auth
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_JSON }}'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
-
-      - name: 'Get env var files'
+      - name: init repo
         run: |
-          echo '${{ secrets.GCP_ENV }}' > gcp.env
-          echo '${{ secrets.TESTS_ENV }}' > .env
+          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+          gcloud auth activate-service-account --key-file=secrets-sa-key.json
+          make init-repo
+        env:
+          CI: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -70,9 +68,7 @@ jobs:
           echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Get UV env file
-        env:
-          export_prefix: ""
-        run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+        run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
 
       # first line is the project's specific dependencies,
       - name: Install dependencies
@@ -96,3 +92,7 @@ jobs:
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
 
         run: make test-library library=${{ matrix.library }}
+
+      - name: Cleanup Secrets
+        run: rm secrets-sa-key.json
+        if: always()

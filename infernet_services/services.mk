@@ -3,7 +3,9 @@ service_dir ?= $(toplevel_dir)/services
 deploy_dir ?= $(toplevel_dir)/deploy
 
 build-service:
-	$(MAKE) build -C $(service_dir)/$(service) index_url=$(index_url)
+	@index_url=`make get-index-url`; \
+	echo "index url: $$index_url"; \
+	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
 
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)

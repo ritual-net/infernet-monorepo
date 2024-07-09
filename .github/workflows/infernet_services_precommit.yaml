@@ -16,17 +16,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Google auth
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_JSON }}
-
     - name: Set up cloud SDK
       uses: google-github-actions/setup-gcloud@v2
 
-    - name: Get env vars
+    - name: init repo
       run: |
-        echo '${{ secrets.GCP_ENV }}' > gcp.env
+        echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+        gcloud auth activate-service-account --key-file=secrets-sa-key.json
+        make init-repo
+      env:
+        CI: true
 
     - uses: webfactory/ssh-agent@v0.9.0
       with:
@@ -47,9 +46,7 @@ jobs:
         echo PATH=$PATH >> $GITHUB_ENV
 
     - name: Get UV env file
-      env:
-        export_prefix: ""
-      run: make generate-uv-env-file && cat uv.env >> $GITHUB_ENV
+      run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
 
     - name: Install dependencies
       run: |
@@ -60,3 +57,7 @@ jobs:
       env:
         CI: true
       run: make pre-commit-services
+
+    - name: Cleanup Secrets
+      run: rm secrets-sa-key.json
+      if: always()

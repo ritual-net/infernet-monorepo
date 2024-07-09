@@ -1,13 +1,13 @@
-include infernet_services/services.mk
+include scripts/setup.mk
 include scripts/docs.mk
 include scripts/gcp.mk
 include scripts/pypi.mk
-
-ifneq ("$(wildcard gcp.env)","")
-include gcp.env
-endif
+include infernet_services/services.mk
 
 SHELL := /bin/bash
+
+# suppress "entering directory" messages
+MAKEFLAGS += --no-print-directory
 
 clean:
 	rm -rf dist
