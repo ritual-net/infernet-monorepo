@@ -28,12 +28,8 @@ repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(a
 # twine oauth2 username
 username := _token
 
-
 show-token:
 	@echo $(token)
-
-show-index-url:
-	@echo $(index_url)
 
 # explicit install command to test uv installation
 uv-install:
@@ -81,15 +77,22 @@ gcp-setup: activate-service-account get_index_url
 
 export_prefix ?= "export "
 
+get-index-url:
+	@gcloud auth activate-service-account --key-file=pypi-deployer-key.json; \
+	echo "https://_token:`gcloud auth print-access-token`@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple"
+
 generate-uv-env-file:
-	@echo "`echo $(export_prefix)`UV_EXTRA_INDEX_URL=$(index_url)" > uv.env
+	index_url=`make get-index-url`; \
+	echo "index url: $$index_url"; \
+	echo "$(export_prefix)UV_EXTRA_INDEX_URL=$$index_url" > uv.env
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
 else ifeq ($(findstring bash,$(shell echo $$SHELL)),bash)
 rc_file = ~/.bashrc
 else
-$(error Unknown shell)
+# assume bash shell if no match - needed for BuildJet CI runners which use various shell values like '2740SHELL'
+rc_file = ~/.bashrc
 endif
 auto-setup: activate-service-account get_index_url
 	echo 'export UV_EXTRA_INDEX_URL=$(index_url)\n' >> $(rc_file)

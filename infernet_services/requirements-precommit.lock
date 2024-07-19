@@ -27,6 +27,7 @@ eth-keys==0.5.1
 eth-rlp==1.0.1
 eth-typing==4.2.3
 eth-utils==4.1.1
+ezkl== 11.2.2
 filelock==3.14.0
 flask==3.0.3
 flatbuffers==24.3.25
@@ -43,7 +44,7 @@ hypercorn==0.16.0
 hyperframe==6.0.1
 identify==2.5.36
 idna==3.7
-infernet-ml==1.0.0
+infernet-ml==1.1.0.1
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0
@@ -64,7 +65,7 @@ nodeenv==1.8.0
 numpy==1.26.4
 onnx==1.16.0
 onnxruntime==1.17.3
-packaging==24.0
+packaging==23.2
 pandas==2.2.2
 parsimonious==0.10.0
 pillow==10.3.0
@@ -119,4 +120,6 @@ websockets==12.0
 werkzeug==3.0.3
 wsproto==1.2.0
 yarl==1.9.4
-infernet-client==1.0.0
+infernet-client==1.0.1.0
+py-solc-x==2.0.3
+solc-select==1.0.4

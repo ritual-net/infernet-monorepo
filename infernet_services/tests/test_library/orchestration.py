@@ -91,11 +91,7 @@ def start_anvil_node() -> None:
     cmd = "make start-infernet-anvil"
     log.info(f"Running command: {cmd}")
 
-    result = subprocess.run(shlex.split(cmd))
-    if result.returncode != 0:
-        msg = f"Error starting the anvil node: {result}"
-        log.error(msg)
-        raise Exception(msg)
+    subprocess.check_call(shlex.split(cmd))
 
 
 def deploy_node(
@@ -114,8 +110,4 @@ def deploy_node(
             cmd += f" {k}={v}"
     log.info(f"Running command: {cmd}")
 
-    result = subprocess.run(shlex.split(cmd))
-    if result.returncode != 0:
-        msg = f"Error deploying the node: {result}"
-        log.error(msg)
-        raise Exception(msg)
+    subprocess.check_call(shlex.split(cmd))

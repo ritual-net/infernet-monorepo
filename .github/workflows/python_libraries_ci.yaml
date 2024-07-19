@@ -18,13 +18,38 @@ jobs:
       fail-fast: false
 
     steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
+
       - name: Checkout
         uses: actions/checkout@v4
 
-      # pull submodules manually
+      # needed for ritual_arweave
+      - name: Setup bun & install lsof
+        if: matrix.library == 'ritual_arweave'
+        uses: oven-sh/setup-bun@v1
+
+      # needed for ritual_arweave
+      - name: Install arlocal
+        if: matrix.library == 'ritual_arweave'
+        run: sudo $(which bun) i -g arlocal
+
+      # pull submodules manually since some are private
       - run: |
           git submodule sync --recursive
           git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: init repo
+        run: |
+          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+          gcloud auth activate-service-account --key-file=secrets-sa-key.json
+          make init-repo
+        env:
+          CI: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,6 +67,9 @@ jobs:
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
+      - name: Get UV env file
+        run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
+
       # first line is the project's specific dependencies,
       - name: Install dependencies
         run: |
@@ -49,4 +77,22 @@ jobs:
           uv pip install -r pyproject.toml
 
       - name: Run pre-commit hooks
+        env:
+          CI: true
         run: make pre-commit-library library=${{ matrix.library }}
+
+      - name: Run tests
+        env:
+          # We need to list the env vars here again for them to get filtered out in logs
+          PYTHONPATH: libraries/${{ matrix.library }}/src
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
+          GOOSEAI_API_KEY: ${{ secrets.GOOSEAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
+
+        run: make test-library library=${{ matrix.library }}
+
+      - name: Cleanup Secrets
+        run: rm secrets-sa-key.json
+        if: always()

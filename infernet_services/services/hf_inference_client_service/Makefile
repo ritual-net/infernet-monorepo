@@ -1,9 +1,9 @@
 DOCKER_ORG := ritualnetwork
-SERVICE_NAME := hf_inference_client_service
-TAG := $(DOCKER_ORG)/$(SERVICE_NAME):latest
+SERVICE_NAME := hf_inference_client_service_internal
+TAG := $(DOCKER_ORG)/$(SERVICE_NAME):1.0.0
 
 build:
-	@docker build -t $(TAG) --ssh default --build-arg index_url=$(index_url) .
+	@docker build -t $(TAG) --build-arg index_url=$(index_url) .
 
 run:
 	docker run --rm --name $(SERVICE_NAME) -p 3000:3000 $(TAG)

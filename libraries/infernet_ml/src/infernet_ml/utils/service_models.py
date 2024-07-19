@@ -1,5 +1,5 @@
 """
-Module containing data models used by the service
+Module containing data models used by services.
 """
 
 from enum import IntEnum
@@ -25,6 +25,12 @@ class InfernetInput(BaseModel):
     Infernet containers must accept InfernetInput. Depending on the source (onchain vs.
      offchain), the associated data object is either a hex string from an onchain
     source meant to be decoded directly, or a data dictionary (off chain source).
+
+    Attributes:
+        source: the JobLocation source of the input.
+        destination: the JobLocation destination of the input.
+        data: The Job specific data
+        requires_proof: whether the job requires a proof to be returned.
     """
 
     source: JobLocation

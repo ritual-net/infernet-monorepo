@@ -3,7 +3,9 @@ service_dir ?= $(toplevel_dir)/services
 deploy_dir ?= $(toplevel_dir)/deploy
 
 build-service:
-	$(MAKE) build -C $(service_dir)/$(service) index_url=$(index_url)
+	@index_url=`make get-index-url`; \
+	echo "index url: $$index_url"; \
+	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
 
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
@@ -37,14 +39,15 @@ deploy-node:
 	[ -n "$$create_config" ] && \
 	jq '.containers[0].env = $(shell echo $(env))' \
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
-	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d
+	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.0.0"} \
+	docker compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 start-infernet-anvil:
-	docker-compose -f $(deploy_dir)/docker-compose.yaml up -d infernet-anvil
+	@docker compose -f $(deploy_dir)/docker-compose.yaml up -d infernet-anvil
 
 stop-infernet-anvil:
-	docker-compose -f $(deploy_dir)/docker-compose.yaml kill infernet-anvil || true
-	docker-compose -f $(deploy_dir)/docker-compose.yaml rm -f infernet-anvil || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml kill infernet-anvil || true
+	@docker compose -f $(deploy_dir)/docker-compose.yaml rm -f infernet-anvil || true
 
 stop-service:
 	services=`docker ps -aq --filter "name=$(service)*"` && \
@@ -85,3 +88,25 @@ update-lock:
 
 open-terminal:
 	osascript -e 'tell app "Terminal" to do script "$(command)"'
+
+solc_version?=0.8.17
+
+set-solc:
+	solc-select use $(solc_version) --always-install
+
+dev-mode:
+	@constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
+	sed -i '' 's/skip_deploying = False/skip_deploying = True/' $$constants_path; \
+	sed -i '' 's/skip_contract = False/skip_contract = True/' $$constants_path; \
+	sed -i '' 's/skip_teardown = False/skip_teardown = True/' $$constants_path; \
+	sed -i '' 's/suppress_logs = False/suppress_logs = True/' $$constants_path
+
+prod-mode:
+	@if [ -n "$$CI" ]; then \
+		exit 0; \
+	fi; \
+	constants_path=`find infernet_services | grep test_lib | grep "constants\.py"`; \
+	sed -i '' 's/skip_deploying = True/skip_deploying = False/' $$constants_path; \
+	sed -i '' 's/skip_contract = True/skip_contract = False/' $$constants_path; \
+	sed -i '' 's/skip_teardown = True/skip_teardown = False/' $$constants_path; \
+	sed -i '' 's/suppress_logs = True/suppress_logs = False/' $$constants_path

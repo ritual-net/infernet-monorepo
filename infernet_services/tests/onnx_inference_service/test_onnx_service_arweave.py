@@ -20,8 +20,8 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
     task = await request_job(
         ONNX_ARWEAVE_PRELOADED,
@@ -38,7 +38,6 @@ async def test_basic_web2_inference_from_arweave_from_preloaded_model() -> None:
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(reruns=3, reruns_delay=2)
 async def test_basic_web3_inference_from_arweave_from_preloaded_model() -> None:
     sub_id = await request_web3_compute(
         ONNX_ARWEAVE_PRELOADED,
