@@ -50,6 +50,35 @@ in `config.json`.
   service.
 - **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2, "max_delay": 10, "jitter": [0.5, 1.5]}}`
 
+### RETRY_PARAMS (in TGI_INF_WORKFLOW_KW_ARGS)
+- **Description**: The retry parameters for the inference workflow. (optional)
+
+#### tries
+
+- **Description**: The number of retries for the inference workflow.
+- **Default**: `3`
+
+#### delay
+
+- **Description**: The delay (in seconds) between retries.
+- **Default**: `3`
+
+#### max_delay
+
+- **Description**: The maximum delay (in seconds) between retries.
+- **Default**: `null`
+
+#### backoff
+
+- **Description**: The backoff (in seconds) between retries.
+- **Default**: `2`
+
+#### jitter
+
+- **Description**: The jitter (in seconds) to add to requests.
+- **Default**: `[0.5, 1.5]`
+
+
 ## Usage
 
 Inference requests to the service that orginate offchain can be initiated with `python`
