@@ -29,12 +29,7 @@ in `config.json`.
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
                 "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{}",
-                "TGI_REQUEST_TRIES": "3",
-                "TGI_REQUEST_DELAY": "3",
-                "TGI_REQUEST_MAX_DELAY": "10",
-                "TGI_REQUEST_BACKOFF": "2",
-                "TGI_REQUEST_JITTER": "[0.5, 1.5]"
+                "TGI_INF_WORKFLOW_KW_ARGS": "{\"retry_params\": {\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}}"
             }
         }
     ]
@@ -53,32 +48,7 @@ in `config.json`.
 
 - **Description**: Any argument passed here will be defaulted when sending to the TGI
   service.
-- **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
-
-### TGI_REQUEST_TRIES
-
-- **Description**: The number of retries for the TGI inference workflow.
-- **Default**: `3`
-
-### TGI_REQUEST_DELAY
-
-- **Description**: The delay (in seconds) between retries.
-- **Default**: `3`
-
-### TGI_REQUEST_MAX_DELAY
-
-- **Description**: The maximum delay (in seconds) between retries.
-- **Default**: `10`
-
-### TGI_REQUEST_BACKOFF
-
-- **Description**: The backoff (in seconds) between retries.
-- **Default**: `2`
-
-### TGI_REQUEST_JITTER
-
-- **Description**: The jitter (in seconds) to add to requests.
-- **Default**: `[0.5, 1.5]`
+- **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2, "max_delay": 10, "jitter": [0.5, 1.5]}}`
 
 ## Usage
 
