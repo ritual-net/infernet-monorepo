@@ -25,13 +25,7 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
-                "CSS_INF_WORKFLOW_KW_ARGS": "{}",
-                "CSS_REQUEST_TRIES": "3",
-                "CSS_REQUEST_DELAY": "3",
-                "CSS_REQUEST_MAX_DELAY": "10",
-                "CSS_REQUEST_BACKOFF": "2",
-                "CSS_REQUEST_JITTER": "[0.5, 1.5]"
+                "RETRY_PARAMS": "{\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": null, \"jitter\": [0.5, 1.5]}"
             }
         }
     ]
@@ -50,40 +44,31 @@ environment variable:
 
 ## Environment Variables
 
-### CSS_INF_WORKFLOW_POSITIONAL_ARGS
+### RETRY_PARAMS
 
-- **Description**: The first argument is the name of the provider, and the second
-  argument is the endpoint.
-- **Default**: `["OPENAI", "completions"]`
+- **Description**: The retry parameters for the inference workflow.
 
-### CSS_INF_WORKFLOW_KW_ARGS
-
-- **Description**: Any argument passed here will be defaulted when sending to the CSS
-  provider.
-- **Default**: `{}`
-- **Example**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
-
-### CSS_REQUEST_TRIES
+#### tries
 
 - **Description**: The number of retries for the inference workflow.
 - **Default**: `3`
 
-### CSS_REQUEST_DELAY
+#### delay
 
 - **Description**: The delay (in seconds) between retries.
 - **Default**: `3`
 
-### CSS_REQUEST_MAX_DELAY
+#### max_delay
 
 - **Description**: The maximum delay (in seconds) between retries.
-- **Default**: `10`
+- **Default**: `null`
 
-### CSS_REQUEST_BACKOFF
+#### backoff
 
 - **Description**: The backoff (in seconds) between retries.
 - **Default**: `2`
 
-### CSS_REQUEST_JITTER
+#### jitter
 
 - **Description**: The jitter (in seconds) to add to requests.
 - **Default**: `[0.5, 1.5]`
