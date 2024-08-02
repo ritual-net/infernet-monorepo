@@ -25,6 +25,9 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
+                "OPENAI_API_KEY": "...",
+                "PERPLEXITYAI_API_KEY": "...",
+                "GOOSEAI_API_KEY": "...",
                 "RETRY_PARAMS": "{\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": null, \"jitter\": [0.5, 1.5]}"
             }
         }
