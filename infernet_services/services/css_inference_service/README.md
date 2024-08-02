@@ -47,6 +47,18 @@ environment variable:
 
 ## Environment Variables
 
+### OPENAI_API_KEY
+
+- **Description**: The API key for OpenAI (optional)
+
+### PERPLEXITYAI_API_KEY
+
+- **Description**: The API key for PerplexityAI (optional)
+
+### GOOSEAI_API_KEY
+
+- **Description**: The API key for GooseAI (optional)
+
 ### RETRY_PARAMS
 
 - **Description**: The retry parameters for the inference workflow.
