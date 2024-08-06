@@ -15,24 +15,24 @@ in `config.json`.
 
 ```json
 {
-  "log_path": "infernet_node.log",
-  //...... contents abbreviated
-  "containers": [
-    {
-      "id": "onnx_inference_service",
-      "image": "your_org/onnx_inference_service:latest",
-      "external": true,
-      "port": "3000",
-      "allowed_delegate_addresses": [],
-      "allowed_addresses": [],
-      "allowed_ips": [],
-      "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {
-        "MODEL_SOURCE": "1",
-        "LOAD_ARGS": "{}"
-      }
-    }
-  ]
+    "log_path": "infernet_node.log",
+    //...... contents abbreviated
+    "containers": [
+        {
+            "id": "onnx_inference_service",
+            "image": "your_org/onnx_inference_service:latest",
+            "external": true,
+            "port": "3000",
+            "allowed_delegate_addresses": [],
+            "allowed_addresses": [],
+            "allowed_ips": [],
+            "command": "--bind=0.0.0.0:3000 --workers=2",
+            "env": {
+                "MODEL_SOURCE": "1",
+                "LOAD_ARGS": "{}"
+            }
+        }
+    ]
 }
 ```
 
@@ -362,33 +362,35 @@ on port `4000`.
 
 === "CLI"
 
-```bash
-infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
-    --params params.json --input input.json
-# Success: Subscription created.
-```
+  ```bash
+  infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+      --params params.json --input input.json
+  # Success: Subscription created.
+  ```
 
 where `params.json` looks like this:
 
 ```json
 {
-  "owner": "0x00Bd138aBD7....................",
-  // Subscription Owner
-  "active_at": 0,
-  // Instantly active
-  "period": 3,
-  // 3 seconds between intervals
-  "frequency": 2,
-  // Process 2 times
-  "redundancy": 2,
-  // 2 nodes respond each time
-  "containers": ["SERVICE_NAME"],
-  // comma-separated list of containers
-  "lazy": false,
-  "verifier": "0x0000000000000000000000000000000000000000",
-  "payment_amount": 0,
-  "payment_token": "0x0000000000000000000000000000000000000000",
-  "wallet": "0x0000000000000000000000000000000000000000"
+    "owner": "0x00Bd138aBD7....................",
+    // Subscription Owner
+    "active_at": 0,
+    // Instantly active
+    "period": 3,
+    // 3 seconds between intervals
+    "frequency": 2,
+    // Process 2 times
+    "redundancy": 2,
+    // 2 nodes respond each time
+    "containers": [
+        "SERVICE_NAME"
+    ],
+    // comma-separated list of containers
+    "lazy": false,
+    "verifier": "0x0000000000000000000000000000000000000000",
+    "payment_amount": 0,
+    "payment_token": "0x0000000000000000000000000000000000000000",
+    "wallet": "0x0000000000000000000000000000000000000000"
 }
 ```
 
@@ -396,18 +398,28 @@ and where `input.json` looks like this:
 
 ```json
 {
-  "model_source": 1,
-  "load_args": {
-    "repo_id": "your_org/model",
-    "filename": "iris.onnx",
-    "version": "v1"
-  },
-  "inputs": {
-    "input": {
-      "values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-      "shape": [1, 4],
-      "dtype": "float"
+    "model_source": 1,
+    "load_args": {
+        "repo_id": "your_org/model",
+        "filename": "iris.onnx",
+        "version": "v1"
+    },
+    "inputs": {
+        "input": {
+            "values": [
+                [
+                    1.0380048,
+                    0.5586108,
+                    1.1037828,
+                    1.712096
+                ]
+            ],
+            "shape": [
+                1,
+                4
+            ],
+            "dtype": "float"
+        }
     }
-  }
 }
 ```

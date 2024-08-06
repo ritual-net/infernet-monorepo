@@ -15,26 +15,26 @@ in `config.json`.
 
 ```json
 {
-  "log_path": "infernet_node.log",
-  //...... contents abbreviated
-  "containers": [
-    {
-      "id": "torch_inference_service",
-      "image": "your_org/torch_inference_service:latest",
-      "external": true,
-      "port": "3000",
-      "allowed_delegate_addresses": [],
-      "allowed_addresses": [],
-      "allowed_ips": [],
-      "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {
-        "MODEL_SOURCE": 1,
-        // ARWEAVE
-        "LOAD_ARGS": "{\"repo_id\": \"Ritual-Net/sk2torch-example\", \"filename\": \"model.torch\"}",
-        "USE_JIT": "false"
-      }
-    }
-  ]
+    "log_path": "infernet_node.log",
+    //...... contents abbreviated
+    "containers": [
+        {
+            "id": "torch_inference_service",
+            "image": "your_org/torch_inference_service:latest",
+            "external": true,
+            "port": "3000",
+            "allowed_delegate_addresses": [],
+            "allowed_addresses": [],
+            "allowed_ips": [],
+            "command": "--bind=0.0.0.0:3000 --workers=2",
+            "env": {
+                "MODEL_SOURCE": 1,
+                // ARWEAVE
+                "LOAD_ARGS": "{\"repo_id\": \"Ritual-Net/sk2torch-example\", \"filename\": \"model.torch\"}",
+                "USE_JIT": "false"
+            }
+        }
+    ]
 }
 ```
 
