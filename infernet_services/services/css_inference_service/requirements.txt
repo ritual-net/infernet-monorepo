@@ -4,3 +4,4 @@ infernet_ml==1.0.0
 retry2==0.9.5
 eth-abi==5.0.1
 python-dotenv==1.0.1
+torch==2.3.0

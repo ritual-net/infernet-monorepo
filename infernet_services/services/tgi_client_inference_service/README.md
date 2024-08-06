@@ -15,29 +15,29 @@ in `config.json`.
 
 ```json
 {
-    "log_path": "infernet_node.log",
-    //...... contents abbreviated
-    "containers": [
-        {
-            "id": "tgi_client_inference_service",
-            "image": "your_org/tgi_client_inference_service:latest",
-            "external": true,
-            "port": "3000",
-            "allowed_delegate_addresses": [],
-            "allowed_addresses": [],
-            "allowed_ips": [],
-            "command": "--bind=0.0.0.0:3000 --workers=2",
-            "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{}",
-                "TGI_REQUEST_TRIES": "3",
-                "TGI_REQUEST_DELAY": "3",
-                "TGI_REQUEST_MAX_DELAY": "10",
-                "TGI_REQUEST_BACKOFF": "2",
-                "TGI_REQUEST_JITTER": "[0.5, 1.5]"
-            }
-        }
-    ]
+  "log_path": "infernet_node.log",
+  //...... contents abbreviated
+  "containers": [
+    {
+      "id": "tgi_client_inference_service",
+      "image": "your_org/tgi_client_inference_service:latest",
+      "external": true,
+      "port": "3000",
+      "allowed_delegate_addresses": [],
+      "allowed_addresses": [],
+      "allowed_ips": [],
+      "command": "--bind=0.0.0.0:3000 --workers=2",
+      "env": {
+        "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
+        "TGI_INF_WORKFLOW_KW_ARGS": "{}",
+        "TGI_REQUEST_TRIES": "3",
+        "TGI_REQUEST_DELAY": "3",
+        "TGI_REQUEST_MAX_DELAY": "10",
+        "TGI_REQUEST_BACKOFF": "2",
+        "TGI_REQUEST_JITTER": "[0.5, 1.5]"
+      }
+    }
+  ]
 }
 ```
 
@@ -200,7 +200,7 @@ input_bytes = encode(
 ```
 
 Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
-you can use the following functions to request and recieve compute:
+you can use the following functions to request and receive compute:
 
 ```solidity
 pragma solidity ^0.8.0;

@@ -12,29 +12,29 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
 
 ```json
 {
-    "log_path": "infernet_node.log",
-    //...... contents abbreviated
-    "containers": [
-        {
-            "id": "css_inference_service",
-            "image": "your_org/css_inference_service:latest",
-            "external": true,
-            "port": "3000",
-            "allowed_delegate_addresses": [],
-            "allowed_addresses": [],
-            "allowed_ips": [],
-            "command": "--bind=0.0.0.0:3000 --workers=2",
-            "env": {
-                "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
-                "CSS_INF_WORKFLOW_KW_ARGS": "{}",
-                "CSS_REQUEST_TRIES": "3",
-                "CSS_REQUEST_DELAY": "3",
-                "CSS_REQUEST_MAX_DELAY": "10",
-                "CSS_REQUEST_BACKOFF": "2",
-                "CSS_REQUEST_JITTER": "[0.5, 1.5]"
-            }
-        }
-    ]
+  "log_path": "infernet_node.log",
+  //...... contents abbreviated
+  "containers": [
+    {
+      "id": "css_inference_service",
+      "image": "your_org/css_inference_service:latest",
+      "external": true,
+      "port": "3000",
+      "allowed_delegate_addresses": [],
+      "allowed_addresses": [],
+      "allowed_ips": [],
+      "command": "--bind=0.0.0.0:3000 --workers=2",
+      "env": {
+        "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[\"OPENAI\", \"completions\"]",
+        "CSS_INF_WORKFLOW_KW_ARGS": "{}",
+        "CSS_REQUEST_TRIES": "3",
+        "CSS_REQUEST_DELAY": "3",
+        "CSS_REQUEST_MAX_DELAY": "10",
+        "CSS_REQUEST_BACKOFF": "2",
+        "CSS_REQUEST_JITTER": "[0.5, 1.5]"
+      }
+    }
+  ]
 }
 ```
 
@@ -212,7 +212,7 @@ locally on port `4000`.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "endpoint": "completions", "provider": "OPENAI", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}}'
     ```
 
 ### Web3 Request (Onchain Subscription)
