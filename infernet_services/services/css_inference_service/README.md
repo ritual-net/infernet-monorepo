@@ -8,7 +8,7 @@ object, encapsulating the backend, preprocessing, and postprocessing logic
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`. For documentation on the overall configuration,
-consult [the infernet node documentation](https://docs.ritual.net/infernet/node/configuration)
+consult [the infernet node documentation](https://docs.ritual.net/infernet/node/configuration/v1_1_0)
 
 ```json
 {
@@ -212,7 +212,7 @@ locally on port `4000`.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "endpoint": "completions", "provider": "OPENAI", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}}'
     ```
 
 ### Web3 Request (Onchain Subscription)

@@ -190,7 +190,7 @@ To do so:
 
 1. Create a `config.json` file under the `infernet_services/deploy` directory. To learn
    about the possible config params, refer
-   to [the configuration documentation](https://docs.ritual.net/infernet/node/configuration).
+   to [the configuration documentation](https://docs.ritual.net/infernet/node/configuration/v1_1_0).
 2. Run the following command:
 
 ```bash

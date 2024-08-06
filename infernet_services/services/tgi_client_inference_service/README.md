@@ -200,7 +200,7 @@ input_bytes = encode(
 ```
 
 Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
-you can use the following functions to request and recieve compute:
+you can use the following functions to request and receive compute:
 
 ```solidity
 pragma solidity ^0.8.0;

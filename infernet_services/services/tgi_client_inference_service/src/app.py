@@ -118,7 +118,7 @@ def create_app() -> Quart:
                         return stream_generator()
 
                 result = await run_sync(workflow.inference)(input_data=inf_request)
-                logging.info("recieved result from workflow: %s", result)
+                logging.info("received result from workflow: %s", result)
 
                 match inf_input:
                     case InfernetInput(

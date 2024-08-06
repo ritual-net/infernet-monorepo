@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   node:
@@ -15,27 +15,25 @@ services:
     depends_on:
       - redis
       - infernet-anvil
-    restart:
-      on-failure
+    restart: on-failure
     extra_hosts:
       - "host.docker.internal:host-gateway"
     stop_grace_period: 1m
     container_name: infernet-node
 
   redis:
-    image: redis:latest
+    image: redis:7.4.0
     ports:
-    - "6379:6379"
+      - "6379:6379"
     networks:
       - network
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
       - redis-data:/data
-    restart:
-      on-failure
+    restart: on-failure
 
   fluentbit:
-    image: fluent/fluent-bit:latest
+    image: fluent/fluent-bit:3.1.4
     expose:
       - "24224"
     environment:
@@ -45,17 +43,16 @@ services:
       - /var/log:/var/log:ro
     networks:
       - network
-    restart:
-      on-failure
+    restart: on-failure
 
   infernet-anvil:
-      image: ritualnetwork/infernet-anvil:1.0.0
-      command: --host 0.0.0.0 --port 3000 --load-state infernet_deployed.json -b 1
-      ports:
-        - "8545:3000"
-      networks:
-        - network
-      container_name: infernet-anvil
+    image: ritualnetwork/infernet-anvil:1.0.0
+    command: --host 0.0.0.0 --port 3000 --load-state infernet_deployed.json -b 1
+    ports:
+      - "8545:3000"
+    networks:
+      - network
+    container_name: infernet-anvil
 
 networks:
   network:

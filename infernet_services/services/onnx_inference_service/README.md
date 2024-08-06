@@ -153,7 +153,7 @@ on port 4000.
     iris_input_vector_params = {
         "values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
         "shape": (1, 4),
-        "dtype": 0  # float
+        "dtype": "float"  # float
     }
     job_id = await client.request_job(
         "SERVICE_NAME",
@@ -206,7 +206,7 @@ on port 4000.
                     1,
                     4
                 ],
-                "dtype": 0
+                "dtype": "float"
             }
         }
     }
@@ -217,7 +217,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}, "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": 0}}}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}, "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": "float"}}}}'
     ```
 
 ### Web3 Request (Onchain Subscription)
@@ -254,7 +254,7 @@ input_bytes = encode(
 ```
 
 Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
-you can use the following functions to request and recieve compute:
+you can use the following functions to request and receive compute:
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -355,7 +355,7 @@ on port `4000`.
             "version": "v1"
         },
         "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-                             "shape": [1, 4], "dtype": 0}}
+                             "shape": [1, 4], "dtype": "float"}}
     },
     )
     ```
@@ -418,7 +418,7 @@ and where `input.json` looks like this:
                 1,
                 4
             ],
-            "dtype": 0
+            "dtype": "float"
         }
     }
 }
