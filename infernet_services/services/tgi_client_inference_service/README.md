@@ -28,8 +28,8 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{\"retry_params\": {\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}}"
+                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30, {\"Authorization\": \"Bearer: xxxxxxxxxxxxx \"}, {\"cookies\": {\"sessionid\": \"abcd1234\"}}, {\"retry_params\": {\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}}]",
+                "TGI_INF_WORKFLOW_KW_ARGS": "{\"temperature\": 0.5, \"top_k\": 10}"
             }
         }
     ]
@@ -40,17 +40,26 @@ in `config.json`.
 
 ### TGI_INF_WORKFLOW_POSITIONAL_ARGS
 
-- **Description**: The first argument is the TGI service URL, and the second argument is
-  the connection timeout.
-- **Default**: `["http://FILL_HOSTNAME_HERE", 30]`
+- **Description**: Arguments passed to the TGI workflow applied positionally.
 
-### TGI_INF_WORKFLOW_KW_ARGS
+#### server_url
 
-- **Description**: Any argument passed here will be defaulted when sending to the TGI
-  service.
-- **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2, "max_delay": 10, "jitter": [0.5, 1.5]}}`
+- **Description**: The TGI service URL.
 
-### RETRY_PARAMS (in TGI_INF_WORKFLOW_KW_ARGS)
+#### connection_timeout
+
+- **Description**: The connection timeout.
+
+#### headers
+
+- **Description**: The headers to pass to the TGI service.
+
+#### cookies
+
+- **Description**: The cookies to pass to the TGI service.
+
+
+### retry_params
 - **Description**: The retry parameters for the inference workflow. (optional)
 
 #### tries
@@ -77,6 +86,12 @@ in `config.json`.
 
 - **Description**: The jitter (in seconds) to add to requests.
 - **Default**: `[0.5, 1.5]`
+
+### TGI_INF_WORKFLOW_KW_ARGS
+
+- **Description**: Any argument passed here will passed in as a keyword argument to the TGI workflow. Used to set the TGI inference parameters.
+
+Refer to the [TGI documentation](https://huggingface.github.io/text-generation-inference/#/Text%20Generation%20Inference/generate) for a full list of available parameters.
 
 
 ## Usage
