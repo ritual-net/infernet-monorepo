@@ -100,8 +100,6 @@ class InfernetWallet:
         Returns:
             The transaction receipt
         """
-        tx_hash = await self._contract.functions.withdraw(
-            token, amount
-        ).transact()
+        tx_hash = await self._contract.functions.withdraw(token, amount).transact()
         receipt = await self._rpc.get_tx_receipt(tx_hash)
         return receipt
