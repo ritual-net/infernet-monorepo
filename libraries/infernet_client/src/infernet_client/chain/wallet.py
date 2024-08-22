@@ -14,7 +14,7 @@ Approve a spender to spend a certain amount of tokens
 - `get_token_balance(token: ChecksumAddress) -> int`: Get the balance of a token in the
 wallet
 - `withdraw(token: ChecksumAddress, amount: int) -> TxReceipt`:
-Withdraw an amout of unlocked tokens(only the wallet owner)"""
+Withdraw an amount of unlocked tokens (only by wallet owner)"""
 
 from __future__ import annotations
 
