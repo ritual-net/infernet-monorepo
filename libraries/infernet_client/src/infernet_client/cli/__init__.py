@@ -533,7 +533,9 @@ def withdraw(
     amount: str,
 ) -> None:
     """
-    Withdraw an amount of unlocked tokens. Only the wallet owner
+    Withdraw tokens. 
+    
+    Only unlocked tokens can be withdrawn. Only usable by the wallet owner.
 
     Example:
         infernet-client withdraw --rpc-url http://localhost:8545 \
@@ -563,6 +565,6 @@ def withdraw(
 
     receipt = asyncio.run(_withdraw())
     click.echo(
-        f"Success: withdrawal of \n\tamount: {amount}\n\ttoken: {token}"
+        f"Success: withdrawal of amount: {amount}\n\ttoken: {token}"
         f"\n\ttx: {receipt['transactionHash'].hex()}"
     )

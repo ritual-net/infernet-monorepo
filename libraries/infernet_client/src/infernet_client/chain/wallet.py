@@ -97,6 +97,10 @@ class InfernetWallet:
         """
         Withdraw tokens not locked in escrow. Only usable by wallet owner
 
+        Args:
+            token: The address of the token
+            amount: The amount to withdraw
+            
         Returns:
             The transaction receipt
         """

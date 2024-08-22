@@ -867,11 +867,11 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 
     ```json
     Success: approved spender: 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e for
-        amount: 10 ether
-        token: 0x0000000000000000000000000000000000000000
+        amount: 1 ether
+        token: 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26
         tx: 0x7c0b7b68abf9787ff971e7bd3510faccbf6f5f705186cf6e806b5dae8eeaaa30
     ```
-    for more information on the `fund` command, run `infernet-client fund --help`
+    for more information on the `approve` command, run `infernet-client approve --help`
 
 ### Fund your Wallet
 
@@ -919,6 +919,62 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
         tx: 0xac45dd0d6b1c7ba77df5c0672b19a2cc314ed6b8790a68b5f986df3a34d9da12
     ```
     for more information on the `fund` command, run `infernet-client fund --help`
+
+### Withdraw from an Infernet wallet
+
+=== "Python"
+
+    ```python
+    from web3 import Web3
+
+    from infernet_client.chain.rpc import RPC
+    from infernet_client.chain.wallet_factory import WalletFactory
+
+    # set these values to your own
+    your_key = "0x"
+    wallet = "0x"
+    token = "0x"
+    amount_int = 1000
+
+
+    async def main():
+        rpc = RPC("http://localhost:8545")
+        await rpc.initialize_with_private_key(your_key)
+
+        infernet_wallet = InfernetWallet(
+            Web3.to_checksum_address(wallet),
+            rpc,
+        )
+        await infernet_wallet.withdraw(
+            Web3.to_checksum_address(token),
+            amount_int,
+        )
+
+    if __name__ == "__main__":
+        import asyncio
+
+        asyncio.run(create_wallet())
+
+    ```
+
+=== "CLI"
+
+    ``` bash
+    infernet-client withdraw --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
+            --amount '1000'
+    ```
+
+    **Expected Output:**
+
+    ```json
+    Success: withdrawal of amount: 1000
+        token: 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26
+        tx: 0x7c0b7b68abf9787ff971e7bd3510faccbf6f5f705186cf6e806b5dae8eeaaa30
+    ```
+    for more information on the `withdraw` command, run `infernet-client withdraw --help`
 
 
 ### More Info
