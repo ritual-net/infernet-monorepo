@@ -1,6 +1,6 @@
 [project]
 name = "infernet-ml"
-version = "1.1.0"
+version = "2.0.0.36"
 description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
@@ -11,7 +11,8 @@ dependencies = [
     "pydantic>=2.5.3,<3.0.0",
     "huggingface-hub>=0.17.3,<1.0.0",
     "click>=8.1.7,<9.0.0",
-    "ritual-arweave>=0.1.0,<1.0.0",
+    "ritual-arweave>=0.2.0.8,<1.0.0",
+    "web3>=6.16.0,<7.0.0"
 ]
 
 readme = "README.md"
@@ -23,6 +24,7 @@ requires-python = ">= 3.10"
 development = [
     "pre-commit>=3.7.0,<4.0.0",
     "pytest>=8.1.1,<9.0.0",
+    "pytest-asyncio>=0.21.1",
     "mypy>=1.9.0,<2.0.0",
     "isort>=5.13.2,<6.0.0",
     "torch>=2.1.2,<3.0.0",
@@ -40,7 +42,11 @@ development = [
 torch_inference = [
     "torch>=2.0.0,<3.0.0",
     "sk2torch>=1.2.0,<2.0.0",
-    "numpy>=1.25.2,<2.0.0",
+]
+
+# utilities for building an infernet service
+service_utils = [
+    "quart>=0.19.0,<1.0.0",
 ]
 
 # bark inference service
@@ -55,7 +61,6 @@ onnx_inference = [
     "torch>=2.0.0,<3.0.0",
     "onnx>=1.15.0,<2.0.0",
     "onnxruntime>=1.16.3,<2.0.0",
-    "numpy>=1.25.2,<2.0.0",
 ]
 
 # llm inference dependencies
@@ -93,9 +98,12 @@ hf_diffusion_inference = [
     "transformers>=4.38,<5.0.0",
 ]
 
-# ezkl proving service
+# ezkl-related dependencies
 ezkl = [
     "ezkl>=11.2.0,<12.0.0",
+    "torch>=2.0.0,<3.0.0",
+    "onnx>=1.15.0,<2.0.0",
+    "onnxruntime>=1.16.3,<2.0.0",
 ]
 
 [build-system]

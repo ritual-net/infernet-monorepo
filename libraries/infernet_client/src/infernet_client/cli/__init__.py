@@ -517,6 +517,7 @@ def find_nodes(c: list[str], n: int, skip: int, url: str) -> None:
     nodes = asyncio.run(client.get_nodes_by_container_ids(c, n, skip))
     click.echo(json.dumps(nodes, indent=2))
 
+
 @token_option
 @wallet_option
 @amount_option
@@ -533,8 +534,8 @@ def withdraw(
     amount: str,
 ) -> None:
     """
-    Withdraw tokens. 
-    
+    Withdraw tokens.
+
     Only unlocked tokens can be withdrawn. Only usable by the wallet owner.
 
     Example:

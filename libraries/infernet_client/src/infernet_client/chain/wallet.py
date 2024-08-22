@@ -100,7 +100,7 @@ class InfernetWallet:
         Args:
             token: The address of the token
             amount: The amount to withdraw
-            
+
         Returns:
             The transaction receipt
         """

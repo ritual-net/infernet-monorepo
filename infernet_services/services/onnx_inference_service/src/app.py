@@ -26,6 +26,7 @@ from infernet_ml.utils.spec import (
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceWorkflow,
+    ONNXInferenceResult,
 )
 from pydantic import ValidationError as PydValError
 from quart import Quart, abort
@@ -115,9 +116,10 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         )
 
                 logging.info(f"inference_input: {inf_req}")
-                result: List[RitualVector] = await run_sync(workflow.inference)(
+                res: ONNXInferenceResult = await run_sync(workflow.inference)(
                     inf_req.workflow_input
                 )
+                result = res.output
 
                 logging.info("received result from workflow: %s", result)
 
