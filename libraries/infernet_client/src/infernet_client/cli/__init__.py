@@ -403,6 +403,7 @@ def approve_spender(
             --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
             --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
             --spender 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e \
+            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
             --amount '1 ether'
 
 
@@ -515,3 +516,53 @@ def find_nodes(c: list[str], n: int, skip: int, url: str) -> None:
     client = RouterClient(url)
     nodes = asyncio.run(client.get_nodes_by_container_ids(c, n, skip))
     click.echo(json.dumps(nodes, indent=2))
+
+@token_option
+@wallet_option
+@amount_option
+@rpc_url_option
+@private_key_option
+@cli.command(
+    name="withdraw",
+)
+def withdraw(
+    rpc_url: str,
+    private_key: str,
+    wallet: str,
+    token: str,
+    amount: str,
+) -> None:
+    """
+    Withdraw an amount of unlocked tokens. Only the wallet owner
+
+    Example:
+        infernet-client withdraw --rpc-url http://localhost:8545 \
+            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
+            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
+            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
+            --amount '1 ether'
+
+
+    """  # noqa: E501
+
+    async def _withdraw() -> TxReceipt:
+        rpc = RPC(rpc_url)
+        await rpc.initialize_with_private_key(private_key)
+        infernet_wallet = InfernetWallet(
+            Web3.to_checksum_address(wallet),
+            rpc,
+        )
+        _split = amount.split(" ")
+        # if no denomination provided, use token decimals
+        n, u = _split if len(_split) == 2 else (amount, "wei")
+        amount_int = Web3.to_wei(n, u)
+        return await infernet_wallet.withdraw(
+            Web3.to_checksum_address(token),
+            amount_int,
+        )
+
+    receipt = asyncio.run(_withdraw())
+    click.echo(
+        f"Success: withdrawal of \n\tamount: {amount}\n\ttoken: {token}"
+        f"\n\ttx: {receipt['transactionHash'].hex()}"
+    )

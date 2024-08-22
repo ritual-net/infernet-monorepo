@@ -13,7 +13,8 @@ Approve a spender to spend a certain amount of tokens
 - `get_balance() -> int`: Get the native balance of the wallet
 - `get_token_balance(token: ChecksumAddress) -> int`: Get the balance of a token in the
 wallet
-"""
+- `withdraw(token: ChecksumAddress, amount: int) -> TxReceipt`:
+Withdraw an amout of unlocked tokens(only the wallet owner)"""
 
 from __future__ import annotations
 
@@ -91,3 +92,16 @@ class InfernetWallet:
             The balance of the token
         """
         return await Token(token, self._rpc).balance_of(self.address)
+
+    async def withdraw(self, token: ChecksumAddress, amount: int) -> TxReceipt:
+        """
+        Withdraw tokens not locked in escrow. Only usable by wallet owner
+
+        Returns:
+            The transaction receipt
+        """
+        tx_hash = await self._contract.functions.withdraw(
+            token, amount
+        ).transact()
+        receipt = await self._rpc.get_tx_receipt(tx_hash)
+        return receipt

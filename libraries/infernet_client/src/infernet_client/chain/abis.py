@@ -2,14 +2,14 @@
 A simple module containing all of the ABIs that `infernet-client`'s classes use.
 
 ### ABI's
-- `WALLET_FACOTRY_ABI`: The ABI for the `WalletFactory` contract.
+- `WALLET_FACTORY_ABI`: The ABI for the `WalletFactory` contract.
 - `WALLET_ABI`: The ABI for the `Wallet` contract.
 - `ERC20_ABI`: The ABI for an `ERC20` contract.
 """
 
 from web3.types import ABI
 
-WALLET_FACOTRY_ABI: ABI = [
+WALLET_FACTORY_ABI: ABI = [
     {
         "type": "function",
         "name": "isValidWallet",
@@ -54,6 +54,16 @@ WALLET_ABI: ABI = [
         "type": "function",
         "name": "owner",
         "outputs": [{"name": "result", "type": "address"}],
+    },
+    {
+        "type": "function",
+        "name": "withdraw",
+        "inputs": [
+            {"name": "token", "type": "address"},
+            {"name": "amount", "type": "uint256"},
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable",
     },
 ]
 

@@ -32,7 +32,7 @@ from typing import cast
 from eth_typing import ChecksumAddress
 from web3.contract.async_contract import AsyncContractFunction
 
-from infernet_client.chain.abis import WALLET_FACOTRY_ABI
+from infernet_client.chain.abis import WALLET_FACTORY_ABI
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.wallet import InfernetWallet
 
@@ -54,7 +54,7 @@ class WalletFactory:
 
         self.address = address
         self._rpc = rpc
-        self._contract = self._rpc.get_contract(address=address, abi=WALLET_FACOTRY_ABI)
+        self._contract = self._rpc.get_contract(address=address, abi=WALLET_FACTORY_ABI)
 
     async def create_wallet(
         self: WalletFactory,

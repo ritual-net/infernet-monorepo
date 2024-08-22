@@ -859,6 +859,7 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
             --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
             --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
             --spender 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e \
+            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
             --amount '1 ether'
     ```
 
