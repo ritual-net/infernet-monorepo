@@ -1,8 +1,7 @@
 # Infernet Client
-
 Welcome to the Infernet Client, a lightweight Python library and CLI tool that streamlines interaction with the [Infernet Node](https://github.com/ritual-net/infernet-node) and the [Infernet Router](https://github.com/ritual-net/infernet-router). The Infernet Node provides robust computational capabilities through a well-defined API, while the Router allows for discovering nodes and containers running remotely, across the Infernet network.
 
-It also allows you to create and manage an Infernet Wallet is used for the [Payment System](https://docs.ritual.net/infernet/payments).
+It also allows you to create and manage an Infernet Wallet that is required for the [Payment System](https://docs.ritual.net/infernet/payments).
 
 ## Features
 
