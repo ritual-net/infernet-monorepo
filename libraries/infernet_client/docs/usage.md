@@ -896,7 +896,7 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 
     **Expected Output:**
 
-    ```json
+    ```text
     Success: wallet created.
 	    Address: 0xFC88d25810C68a7686178b534e0c5e22787DF22d
 	    Owner: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
@@ -953,7 +953,7 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 
     **Expected Output:**
 
-    ```json
+    ```text
     Success: approved spender: 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e for
         amount: 10 ether
         token: 0x0000000000000000000000000000000000000000
@@ -999,7 +999,7 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 
     **Expected Output:**
 
-    ```json
+    ```text
     Success: sent
         amount: 10 ether
         token: 0x0000000000000000000000000000000000000000
