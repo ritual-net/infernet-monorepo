@@ -1,6 +1,6 @@
 
 # Infernet Client Usage
-The following examples assume an Infernet Node is running at http://localhost:4000.
+The following examples assume an Infernet Node is running at `http://localhost:4000`.
 
 You can pass the node url with every command using `--url`, or you can set it once as an ENV variable:
 ```bash
@@ -174,9 +174,10 @@ and [JobResponse](https://docs.ritual.net/infernet/node/api#jobresponse).
     }
     ```
 
-### Request a job with proofs
+### Request w/ proof
 
-Create a direct compute request, along with a proof requirement.
+Create a direct compute request, along with a proof requirement. See [JobRequest](https://docs.ritual.net/infernet/node/api#jobrequest)
+and [JobResponse](https://docs.ritual.net/infernet/node/api#jobresponse).
 
 === "Python"
 
@@ -767,12 +768,13 @@ See [/api/status](https://docs.ritual.net/infernet/node/api#put-apistatus).
 
 ### Router URL
 
-By default, the official Ritual router is used. You can instead pass your own router url with every command using `--url`, or you can set it once as an ENV variable:
+By default, the [official](https://docs.ritual.net/infernet/router/introduction#production-router) Ritual router is used. You can instead pass your own router url with every command using `--url`, or you can set it once as an ENV variable:
 ```bash
 export ROUTER_URL=http://localhost:4000
 ```
 
 ### Containers
+
 To browse all containers currently running across the network, use `containers`:
 ```
 Usage: infernet-client containers [OPTIONS]
@@ -784,6 +786,7 @@ Options:
 ```
 
 **Example:**
+
 ```bash
 infernet-client containers
 # [
@@ -801,6 +804,7 @@ infernet-client containers
 ```
 
 ### Find Nodes
+
 To discover nodes running one or more specific containers, use `find`:
 ```
 Usage: infernet-client find [OPTIONS]
@@ -816,6 +820,7 @@ Options:
 ```
 
 **Examples:**
+
 ```bash
 infernet-client find -c hello-world
 # [
@@ -845,11 +850,12 @@ infernet-client find -c goodbye-world
 
 ## Infernet Wallet
 
-
-### Create Wallet
-
 To make use of Infernet's payment features, you'll need to have an Infernet wallet. This
 is a wallet that is created via Infernet's `WalletFactory` contract.
+
+### Create
+
+To create an Infernet Wallet, you can use `create-wallet`.
 
 === "Python"
 
@@ -902,7 +908,9 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 	    Owner: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
     ```
 
-### Approve an Address to Spend
+### Approve address
+
+To approve an address to spend tokens from an Infernet Wallet, you can use `approve`.
 
 === "Python"
 
@@ -961,7 +969,9 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
     ```
     for more information on the `fund` command, run `infernet-client fund --help`
 
-### Fund your Wallet
+### Fund
+
+To fund an Infernet Wallet, you can use `fund`.
 
 === "Python"
 
@@ -1010,5 +1020,6 @@ is a wallet that is created via Infernet's `WalletFactory` contract.
 
 
 ### More Info
+
 To learn more about the library, consult the [`Wallet`](../reference/infernet_client/chain/wallet/) &
 [`WalletFactory`](../reference/infernet_client/chain/wallet_factory/) reference pages.
