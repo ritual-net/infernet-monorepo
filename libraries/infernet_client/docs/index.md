@@ -15,8 +15,12 @@ Among other things, this library makes it easy to:
 - **Typed**: Complete type annotations for better editor support and reduced bugs.
 
 
+## Prerequisites
+
+- [Python >= 3.9](https://www.python.org/downloads/)
+
 ## Installation
-You can either install `infernet-client` via [`uv` (Recommended)](https://astral.sh/blog/uv) or via `pip`.
+You can either install `infernet-client` via [`uv`](https://astral.sh/blog/uv) (recommended) or via `pip`.
 
 === "uv"
 

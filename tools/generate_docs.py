@@ -204,6 +204,7 @@ def generate_vercel_files(project_name: str) -> None:
     os.makedirs(".vercel", exist_ok=True)
     _lookup: Dict[str, str] = {
         "infernet_ml": "INFERNET_ML_DOCS_ID",
+        "infernet_cli": "INFERNET_CLI_DOCS_ID",
         "infernet_client": "INFERNET_CLIENT_DOCS_ID",
         "ritual_arweave": "RITUAL_ARWEAVE_DOCS_ID",
     }

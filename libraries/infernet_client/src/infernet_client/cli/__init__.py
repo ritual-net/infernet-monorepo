@@ -269,7 +269,7 @@ def get_results(
 
 @click.option(
     "--status",
-    type=click.Choice(["pending", "completed", "all"]),
+    type=click.Choice(["pending", "completed", "all"], case_sensitive=False),
     default="all",
     help="Only job IDs with the specified status. Default is all.",
 )

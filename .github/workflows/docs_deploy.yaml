@@ -34,6 +34,7 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          INFERNET_CLI_DOCS_ID: ${{ secrets.INFERNET_CLI_DOCS_ID }}
           INFERNET_CLIENT_DOCS_ID: ${{ secrets.INFERNET_CLIENT_DOCS_ID }}
           INFERNET_ML_DOCS_ID: ${{ secrets.INFERNET_ML_DOCS_ID }}
           RITUAL_ARWEAVE_DOCS_ID: ${{ secrets.RITUAL_ARWEAVE_DOCS_ID }}
@@ -41,5 +42,6 @@ jobs:
         run: |
           make deploy-library-docs library=infernet_ml
           make deploy-library-docs library=ritual_arweave
+          make deploy-library-docs library=infernet_cli
           make deploy-library-docs library=infernet_client
           make deploy-services-docs

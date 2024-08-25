@@ -18,6 +18,7 @@ def deploy_to_vercel(project_name: str, prod: bool) -> None:
     """
     _lookup: Dict[str, str] = {
         "infernet_ml": "INFERNET_ML_DOCS_ID",
+        "infernet_cli": "INFERNET_CLI_DOCS_ID",
         "infernet_client": "INFERNET_CLIENT_DOCS_ID",
         "ritual_arweave": "RITUAL_ARWEAVE_DOCS_ID",
         "infernet_services": "INFERNET_SERVICES_DOCS_ID",

@@ -8,9 +8,9 @@ The `infernet-ml` library comes with two classes of workflows:
 ## Inference Workflows
 
 Inference workflows all subclass
-the [`BaseInferenceWorkflow`](../reference/infernet_ml/workflows/inference/base_inference_workflow/)
+the [`BaseInferenceWorkflow`](../reference/infernet_ml/workflows/inference/base_inference_workflow.md)
 class.
-Just like we did in our [Quickstart](../quickstart) section earlier,
+Just like we did in our [Quickstart](../quickstart.md) section earlier,
 to run an inference workflow, you need to:
 
 1. Instantiate the workflow class
