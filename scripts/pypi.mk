@@ -21,6 +21,7 @@ set-version:
 	$(SED) -i 's/version = .*/version = "$(version)"/' libraries/$(library)/pyproject.toml
 
 build-library:
+	rm `find dist | grep $(library)`; \
 	rye build --pyproject libraries/$(library)/pyproject.toml
 
 repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/
@@ -33,7 +34,7 @@ show-token:
 
 # explicit install command to test uv installation
 uv-install:
-	uv venv; \
+	uv venv -p 3.11; \
 	source .venv/bin/activate; \
 	uv pip install --index-url https://pypi.org/simple --extra-index-url $(index_url) $(library)
 
@@ -43,20 +44,25 @@ pip-install:
 
 # utility to create, install & activate an environment
 setup-env:
-	uv venv && source .venv/bin/activate && uv pip install -r libraries/$(library)/requirements.lock
+	uv venv -p 3.11 && source .venv/bin/activate && uv pip install -r libraries/$(library)/requirements.lock
 
 # updates the python lockfile of the specific library
 update-lockfile:
-	make -C libraries/$(library) update-lockfile
+	make -C libraries/$(library) update-lockfile index_url=`make get-index-url`
 
 publish-library:
+	make build-library library=$(library); \
+	token=`gcloud auth print-access-token`; \
 	rye publish --repository ritual-pypi \
 		--repository-url $(repository_url) \
 		--username $(username) \
-		--token $(token) \
+		--token $$token \
 		--yes \
 		--verbose \
 	 	dist/$$(ls dist | grep "$(library).*.tar.gz")
+
+print-install-command:
+	@echo "uv pip install --index-url https://pypi.org/simple --extra-index-url `make get-index-url` ritual-arweave==1.0.0.1"
 
 publish-pypi:
 	$(MAKE) clean build-library
@@ -78,13 +84,23 @@ gcp-setup: activate-service-account get_index_url
 export_prefix ?= "export "
 
 get-index-url:
-	@gcloud auth activate-service-account --key-file=pypi-deployer-key.json; \
-	echo "https://_token:`gcloud auth print-access-token`@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple"
+	@current_account=`gcloud config get account`; \
+	gcloud auth activate-service-account --key-file=pypi-deployer-key.json > /dev/null 2>&1; \
+	if [ -z "$(gcp_project)" ] || [ -z "$(artifact_location)" ] || [ -z "$(artifact_repo)" ]; then \
+		echo "Please set the gcp_project, artifact_location & artifact_repo variables in the gcp.env file"; \
+		exit 1; \
+	fi; \
+	echo "https://_token:`gcloud auth print-access-token`@$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/simple"; \
+	gcloud config set account $$current_account > /dev/null 2>&1 || true
+
 
 generate-uv-env-file:
 	index_url=`make get-index-url`; \
 	echo "index url: $$index_url"; \
 	echo "$(export_prefix)UV_EXTRA_INDEX_URL=$$index_url" > uv.env
+
+show-pip-command:
+	@echo "uv pip install --extra-index-url `make get-index-url` $(library)"
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc

@@ -12,6 +12,7 @@ GCP_PROJECT := private-pypi-418615
 
 init-repo:
 	@echo "🚀 initializing repo";
+	@echo "ℹ️ If this command fails, please make sure you have authenticated with gcloud by running 'gcloud auth login'";
 	@if [ -z "$$CI" ]; then \
 		gcloud config set project $(GCP_PROJECT); \
 	fi; \

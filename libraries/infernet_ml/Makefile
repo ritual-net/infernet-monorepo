@@ -1,5 +1,5 @@
 update-lockfile:
-	uv venv && source .venv/bin/activate && \
+	uv venv -p 3.11 && source .venv/bin/activate && \
 	uv pip install -U -r pyproject.toml && \
 	uv pip install -e ".[development]" -r pyproject.toml && \
 	uv pip install -e ".[torch_inference]" -r pyproject.toml && \
