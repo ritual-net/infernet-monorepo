@@ -19,7 +19,7 @@ jobs:
       - name: Install UV & setup python env
         run: |
           python -m pip install uv
-          uv venv
+          uv venv -p 3.11
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
           uv pip install -r pyproject.toml
