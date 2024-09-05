@@ -89,7 +89,7 @@ jobs:
       # Can't install from uv with the --system flag much like what we do in our
       # dockerfiles, because we'd have to run it as root.
       - name: Create virtual environment
-        run: uv venv
+        run: uv venv -p 3.11
 
       - name: Activate virtual environment
         run: |
@@ -100,7 +100,7 @@ jobs:
         run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: uv pip install -r infernet_services/requirements-e2e-tests.lock
+        run: uv pip install --extra-index-url `make get-index-url` -r infernet_services/requirements-e2e-tests.lock
 
       - name: Run tests
         env:

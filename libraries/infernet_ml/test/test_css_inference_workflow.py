@@ -20,13 +20,13 @@ from infernet_ml.utils.css_mux import (
 from infernet_ml.workflows.exceptions import APIKeyMissingException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 
+load_dotenv()
+
 api_keys: ApiKeys = {
     Provider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
     Provider.OPENAI: os.getenv("OPENAI_API_KEY"),
     Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
 }
-
-load_dotenv()
 
 
 @pytest.mark.parametrize(

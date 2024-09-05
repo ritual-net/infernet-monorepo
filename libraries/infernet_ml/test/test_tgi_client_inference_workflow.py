@@ -5,10 +5,14 @@ simple test for a TGI Client Inference Workflow
 import logging
 import os
 
+from dotenv import load_dotenv
+
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
     TgiInferenceRequest,
 )
+
+load_dotenv()
 
 server_url = (
     "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
@@ -18,9 +22,10 @@ workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
     timeout=10,
     headers={"Authorization": f"Bearer {os.environ['HF_TOKEN']}"},
 )
-workflow.setup()
 
 log = logging.getLogger(__name__)
+
+workflow.setup()
 
 
 def test_inference() -> None:

@@ -67,6 +67,7 @@ packages
 # gcp secret files
 *-key.json
 *-key.json.b64
+devnet-bq-sa.json
 
 playground
 
@@ -88,3 +89,7 @@ vercel.json
 infernet_services/deploy/config.json
 
 **/test_lib_0/**
+
+# temp directories
+tmp
+temp
