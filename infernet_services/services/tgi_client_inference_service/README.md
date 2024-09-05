@@ -58,7 +58,6 @@ in `config.json`.
 
 - **Description**: The cookies to pass to the TGI service.
 
-
 ### retry_params
 - **Description**: The retry parameters for the inference workflow. (optional)
 
