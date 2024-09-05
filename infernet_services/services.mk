@@ -4,7 +4,6 @@ deploy_dir ?= $(toplevel_dir)/deploy
 
 build-service:
 	@index_url=`make get-index-url`; \
-	echo "index url: $$index_url"; \
 	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
 
 publish-service:
@@ -82,7 +81,7 @@ dev: build-service stop-node deploy-node
 	$(MAKE) deploy-contract
 
 update-lock:
-	uv venv && source .venv/bin/activate && \
+	uv venv -p 3.11 && source .venv/bin/activate && \
 	uv pip install -r $(toplevel_dir)/$(req_file).txt && \
 	uv pip freeze > $(toplevel_dir)/$(req_file).lock
 
