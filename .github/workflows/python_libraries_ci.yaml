@@ -36,9 +36,7 @@ jobs:
         run: sudo $(which bun) i -g arlocal
 
       # pull submodules manually since some are private
-      - run: |
-          git submodule sync --recursive
-          git -c protocol.version=2 submodule update --init --force --depth=1 --recursive
+      - run: make get-submodules
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -75,6 +73,11 @@ jobs:
         run: |
           uv pip install --extra-index-url `make get-index-url` -r libraries/${{ matrix.library }}/requirements.lock
           uv pip install --extra-index-url `make get-index-url` -r pyproject.toml
+
+      # useful for debugging CI
+#      - name: Setup upterm session
+#        if: matrix.library == 'ritual_arweave'
+#        uses: lhotari/action-upterm@v1
 
       - name: Run pre-commit hooks
         env:
