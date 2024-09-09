@@ -1,11 +1,13 @@
 import logging
 import shlex
 import subprocess
+from pathlib import Path
 from typing import Any, List, Optional
 
 import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
 from reretry import retry  # type: ignore
+
 from test_library.config_creator import ServiceConfig, ServiceEnvVars, get_service_port
 from test_library.constants import DEFAULT_NODE_URL, DEFAULT_TIMEOUT
 
@@ -24,9 +26,7 @@ async def await_services(
             running.
     """
     for service in services:
-        log.info(
-            f"waiting up to {service_wait_timeout}s for {service.name} to be ready"
-        )
+        log.info(f"1.1.0.36 {service_wait_timeout}s for {service.name} to be ready")
         await await_service(get_service_port(service.name), service_wait_timeout)
         log.info(f"✅ {service.name} is ready")
 
@@ -49,13 +49,23 @@ async def await_service(
     )  # type: ignore
     async def _wait():
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"http://127.0.0.1:{service_port}/",
-            ) as response:
+            url = f"http://127.0.0.1:{service_port}/"
+            log.info("Checking service at: %s", url)
+            async with session.get(url) as response:
                 assert response.status == 200
                 await response.json()
 
     return await _wait()
+
+
+def run_make_cmd(cmd: str, dir: Path=Path(".")) -> None:
+    """
+    Run a make command
+    """
+    cmd = f"make -C {dir.absolute()} {cmd}"
+    log.info(f"Running command: {cmd}")
+
+    subprocess.check_call(shlex.split(cmd))
 
 
 async def await_node(timeout: int = DEFAULT_TIMEOUT) -> Any:

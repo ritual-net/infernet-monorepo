@@ -1,4 +1,3 @@
-import os
 from typing import cast
 
 from eth_typing import ChecksumAddress
@@ -55,16 +54,7 @@ MAX_GAS_PRICE = int(20e9)
 MAX_GAS_LIMIT = 1_000_000
 NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"
 
-
-def hf_model_id(model_id: str) -> str:
-    return f"Ritual-Net/{model_id}"
-
-
-def arweave_model_id(model_id: str) -> str:
-    return f"{os.environ['MODEL_OWNER']}/{model_id}"
-
-
-skip_deploying = False
-skip_contract = False
-skip_teardown = False
-suppress_logs = False
+skip_deploying = True
+skip_contract = True
+skip_teardown = True
+suppress_logs = True

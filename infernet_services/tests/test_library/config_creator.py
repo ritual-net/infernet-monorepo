@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from eth_typing import ChecksumAddress
 from pydantic import BaseModel
+
 from test_library.constants import (
     DEFAULT_INFERNET_RPC_URL,
     DEFAULT_NODE_PAYMENT_WALLET,
@@ -12,6 +13,8 @@ from test_library.constants import (
     DEFAULT_REGISTRY_ADDRESS,
     ZERO_ADDRESS,
 )
+from test_library.file_utils import monorepo_dir
+from test_library.test_config import default_network_config
 
 base_config = {
     "log_path": "infernet_node.log",
@@ -52,13 +55,16 @@ class ServiceConfig(BaseModel):
         name: The name of the service
         image_id: The image ID of the service
         env_vars: A dictionary of environment variables
-        accepted_payments: A dictionary of accepted payments
         port: The port on which the service will run
+        volumes: A list of volumes to mount
+        accepted_payments: A dictionary of accepted payments
+        generates_proofs: Whether the service generates proofs, defaults to False
     """
 
     name: str
     image_id: str
     port: int
+    volumes: List[str]
     env_vars: ServiceEnvVars = {}
     accepted_payments: Dict[ChecksumAddress, int]
     generates_proofs: bool = False
@@ -69,6 +75,7 @@ class ServiceConfig(BaseModel):
         name: str,
         image_id: str = "",
         port: int = 3000,
+        volumes: Optional[List[str]] = None,
         env_vars: Optional[ServiceEnvVars] = None,
         accepted_payments: Optional[Dict[ChecksumAddress, int]] = None,
         generates_proofs: bool = False,
@@ -91,6 +98,7 @@ class ServiceConfig(BaseModel):
             name=name,
             image_id=image_id or f"ritualnetwork/{name}",
             port=port,
+            volumes=volumes or [],
             env_vars=env_vars if env_vars else {},
             accepted_payments=accepted_payments or {ZERO_ADDRESS: 0},
             generates_proofs=generates_proofs,
@@ -103,6 +111,7 @@ class ServiceConfig(BaseModel):
             "image": self.image_id,
             "env": self.env_vars,
             "port": self.port,
+            "volumes": self.volumes,
             "allowed_delegate_addresses": [],
             "allowed_addresses": [],
             "allowed_ips": [],
@@ -113,6 +122,19 @@ class ServiceConfig(BaseModel):
         }
 
 
+def create_default_config_file(
+    services: List[ServiceConfig],
+):
+    config = default_network_config
+    create_config_file(
+        services,
+        config.node_private_key,
+        config.registry_address,
+        config.node_payment_wallet,
+        config.infernet_rpc_url,
+    )
+
+
 def create_config_file(
     services: List[ServiceConfig],
     private_key: str = DEFAULT_NODE_PRIVATE_KEY,
@@ -121,7 +143,7 @@ def create_config_file(
     rpc_url: str = DEFAULT_INFERNET_RPC_URL,
     config_gen_hook: Callable[[Dict[str, Any]], Dict[str, Any]] = lambda x: x,
 ) -> None:
-    log.info(f"Creating config file for services {services}")
+    log.info(f"Creating config file for services {list(s.name for s in services)}")
     cfg = get_config(
         services,
         private_key=private_key,
@@ -178,26 +200,19 @@ def get_config(
 
     cfg: Dict[str, Any] = base_config.copy()
     cfg["containers"] = []
+    existing_ports = set()
     for service in services:
+        if service.port in existing_ports:
+            log.info(f"Port {service.port} already in use, incrementing")
+            while service.port in existing_ports:
+                service.port += 1
         cfg["containers"].append(service.serialized)
+        existing_ports.add(service.port)
     cfg["chain"]["wallet"]["private_key"] = private_key
     cfg["chain"]["wallet"]["payment_address"] = payment_address
     cfg["chain"]["registry_address"] = registry_address
     cfg["chain"]["rpc_url"] = rpc_url
     return cfg
-
-
-def monorepo_dir() -> str:
-    """
-    Get the top level directory of the infernet monorepo.
-
-    Returns:
-        The path to the top level directory
-    """
-    top_level_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    while "infernet-monorepo" not in os.path.basename(top_level_dir):
-        top_level_dir = os.path.dirname(top_level_dir)
-    return top_level_dir
 
 
 def infernet_services_dir() -> str:

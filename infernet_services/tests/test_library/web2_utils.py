@@ -1,16 +1,16 @@
 import random
 from time import time
-from typing import Any, Callable, Dict, Optional, cast
+from typing import Any, Dict, Optional, cast
 
-from aiohttp import ServerDisconnectedError
+from aiohttp import ServerDisconnectedError, ClientSession
+from pydantic import BaseModel, ValidationError
+from reretry import retry  # type: ignore
+
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.subscription import Subscription
 from infernet_client.node import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
-from infernet_ml.utils.codec.vector import DataType
-from infernet_ml.utils.model_loader import LoadArgs, ModelSource
-from pydantic import BaseModel, ValidationError
-from reretry import retry  # type: ignore
+from infernet_ml.services.types import InfernetInput, JobLocation
 from test_library.config_creator import get_service_port
 from test_library.constants import DEFAULT_CONTRACT, DEFAULT_NODE_URL, ZERO_ADDRESS
 from test_library.infernet_fixture import log
@@ -46,11 +46,16 @@ def get_service_url(service_name: str) -> str:
     return f"http://127.0.0.1:{get_service_port(service_name)}"
 
 
+class DebugContainer(BaseModel):
+    port: int
+
+
 async def request_job(
     service_name: str,
     data: Dict[str, Any],
     requires_proof: Optional[bool] = None,
     timeout: int = 3,
+    debug: Optional[DebugContainer] = None,
 ) -> JobID:
     @retry(
         exceptions=(AssertionError, ServerDisconnectedError),
@@ -58,6 +63,21 @@ async def request_job(
         delay=1,
     )  # type: ignore
     async def _post() -> JobID:
+        if debug:
+            async with ClientSession() as session:
+                async with session.post(
+                    f"http://localhost:{debug.port}/service_output",
+                    json=InfernetInput(
+                        source=JobLocation.OFFCHAIN,
+                        destination=JobLocation.OFFCHAIN,
+                        data=data,
+                        requires_proof=requires_proof,
+                    ).model_dump(),
+                    timeout=timeout,
+                ) as response:
+                    body = await response.json()
+                    return body
+
         return await NodeClient(DEFAULT_NODE_URL).request_job(
             JobRequest(
                 containers=[service_name],
@@ -98,7 +118,7 @@ async def request_delegated_subscription(
 
         await client.request_delegated_subscription(
             subscription=sub,
-            rpc=RPC(global_config.rpc_url),
+            rpc=RPC(global_config.rpcs),
             coordinator_address=global_config.coordinator_address,
             expiry=int(time() + 10),
             nonce=nonce,
@@ -130,33 +150,3 @@ async def request_streaming_job(
 
 class JobFailed(Exception):
     pass
-
-
-VectorReqBuilderFn = Callable[
-    [
-        ModelSource,
-        LoadArgs,
-        DataType,
-        Any,
-        tuple[int, ...],
-    ],
-    Dict[str, Any],
-]
-
-
-def torch_req_builder_fn(
-    model_source: ModelSource,
-    load_args: LoadArgs,
-    dtype: DataType,
-    values: Any,
-    shape: tuple[int, ...],
-) -> Dict[str, Any]:
-    return {
-        "model_source": model_source,
-        "load_args": load_args,
-        "input": {
-            "values": values,
-            "shape": shape,
-            "dtype": dtype.name,
-        },
-    }

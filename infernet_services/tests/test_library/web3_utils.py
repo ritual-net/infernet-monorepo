@@ -11,7 +11,7 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from infernet_client.chain.rpc import RPC
-from infernet_ml.utils.codec.vector import DataType, decode_vector
+from infernet_ml.utils.codec.vector import DataType, RitualVector
 from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
@@ -194,7 +194,7 @@ async def assert_generic_callback_consumer_output(
 
 def get_account_address(_private_key: Optional[str] = None) -> ChecksumAddress:
     private_key = _private_key or global_config.tester_private_key
-    w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
+    w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpcs))
     account = w3.eth.account.from_key(private_key)
     return AsyncWeb3.to_checksum_address(account.address)
 
@@ -337,11 +337,17 @@ def california_housing_web3_assertions(
 
 def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
     assert output != b""
+
     raw, processed = decode(["bytes", "bytes"], output)
-    dtype, shape, values = decode_vector(raw)
-    assert dtype == DataType.float
-    assert shape == (1, 3)
-    assert values.argmax() == 2
+    v = RitualVector.from_web3(raw)
+    assert v.shape == (1, 3)
+    assert v.numpy.argmax() == 2
+    assert v.dtype == DataType.float32
+
+    # dtype, shape, values = decode_vector(raw)
+    # assert dtype == DataType.float
+    # assert shape == (1, 3)
+    # assert values.argmax() == 2
 
 
 def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
@@ -356,7 +362,7 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
         filename=f"{contract_name}.sol",
         consumer_contract=contract_name,
         sender=global_config.tester_private_key,
-        rpc_url=global_config.rpc_url,
+        rpc_url=global_config.rpcs,
         registry=DEFAULT_REGISTRY_ADDRESS,
         extra_params={"signer": get_account_address()},
     )
@@ -377,7 +383,7 @@ def echo_output(_in: str) -> bytes:
 
 
 async def get_rpc() -> RPC:
-    return await RPC(global_config.rpc_url).initialize_with_private_key(
+    return await RPC(global_config.rpcs).initialize_with_private_key(
         global_config.tester_private_key
     )
 
