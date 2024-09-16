@@ -8,6 +8,7 @@ from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
+from infernet_ml.utils.css_utils import RetryParams
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
@@ -49,9 +50,11 @@ def create_app() -> Quart:
     )
 
     # create workflow instance from class, using specified arguments
+    retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
     workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
-        *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
+        *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS, retry_params=retry_params if retry_params else None
     )
+
 
     # setup workflow
     workflow.setup()
