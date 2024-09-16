@@ -30,7 +30,7 @@ def create_app() -> Quart:
 
     Raises:
         ImportError: thrown if error loading the workflow
-        PydValError: thrown if error duing input validation
+        PydValError: thrown if error during input validation
 
     Returns:
         Quart: Quart App instance
@@ -51,11 +51,12 @@ def create_app() -> Quart:
 
     # create workflow instance from class, using specified arguments
     retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
+
     workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
-        *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS, retry_params=retry_params if retry_params else None
+        *LLM_WORKFLOW_POSITIONAL_ARGS,
+        **LLM_WORKFLOW_KW_ARGS,
+        retry_params=retry_params if retry_params else None,  # type: ignore
     )
-
-
     # setup workflow
     workflow.setup()
 
@@ -106,7 +107,7 @@ def create_app() -> Quart:
                         inf_request = TgiInferenceRequest(text=text)
                     case _:
                         raise BadRequest(
-                            f"Invalid InferentInput source: {inf_input.source}"
+                            f"Invalid InfernetInput source: {inf_input.source}"
                         )
 
                 match inf_input:
@@ -121,7 +122,7 @@ def create_app() -> Quart:
                         return stream_generator()
 
                 result = await run_sync(workflow.inference)(input_data=inf_request)
-                logging.info("recieved result from workflow: %s", result)
+                logging.info("received result from workflow: %s", result)
 
                 match inf_input:
                     case InfernetInput(
@@ -143,7 +144,7 @@ def create_app() -> Quart:
                         return onchain_output
 
                     case _:
-                        raise PydValError("Invalid InferentInput type")  # noqa: E501
+                        raise PydValError("Invalid InfernetInput type")  # noqa: E501
             except ServiceException as e:
                 abort(500, e)
             except PydValError as e:
