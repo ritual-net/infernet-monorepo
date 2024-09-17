@@ -1,6 +1,7 @@
 """
 This service serves proofs via the EZKL proving library.
 """
+
 import json
 import logging
 import tempfile
@@ -13,7 +14,7 @@ from infernet_ml.utils.codec.ezkl_codec import (
     extract_proof_request,
     extract_visibilities,
 )
-from infernet_ml.utils.ezkl_models import EZKLProofRequest, EZKLProvingArtifactsConfig #type: ignore
+from infernet_ml.utils.ezkl_models import EZKLProofRequest, EZKLProvingArtifactsConfig  # type: ignore
 from infernet_ml.utils.ezkl_utils import load_proving_artifacts
 from infernet_ml.utils.model_loader import ModelSource
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
