@@ -1,5 +1,5 @@
 DOCKER_ORG := ritualnetwork
-SERVICE_NAME := ezkl_proof_service_internal
+SERVICE_NAME := ezkl_proof_service
 TAG := $(DOCKER_ORG)/$(SERVICE_NAME):1.0.0
 
 build: # force AMD because ezkl only supports musllinux for AARCH64, which doesnt support Torch.
