@@ -72,7 +72,7 @@ async def test_hf_inference_client_service_token_classification() -> None:
         },
     )
     result = (await get_job(task)).get("output")
-    assert result[0].get("entity_group") == "MISC"
+    assert result[0].get("entity_group") == "ORG"
     assert result[0].get("score") > 0.8
 
 
@@ -166,7 +166,7 @@ async def assert_web3_token_classification_output(
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (raw, _) = decode(["bytes", "bytes"], output, strict=False)
         (groups, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
-        assert groups[0] == "MISC"
+        assert groups[0] == "ORG"
         assert (scores[0] / 1e6) > 0.8
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
