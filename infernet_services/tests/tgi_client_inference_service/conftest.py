@@ -1,4 +1,3 @@
-
 import json
 import os
 from typing import Generator
@@ -24,23 +23,18 @@ def lifecycle() -> Generator[None, None, None]:
     url = "https://api-inference.huggingface.co/models"
     model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     hf_token = os.environ["HF_TOKEN"]
-    
     args = f'["{url}/{model}", 30, {{"Authorization": "Bearer {hf_token}"}}]'
-    kw_args = json.dumps(
-            {
-                "retry_params": {
-                    "tries": 3,
-                    "delay": 3,
-                    "backoff": 2,
-                }
-            }
-        )
+    kw_args = '{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}'
+
     yield from handle_lifecycle(
         [
             ServiceConfig.build(
                 SERVICE_NAME,
                 image_id=SERVICE_DOCKER_IMAGE,
-                env_vars={"TGI_INF_WORKFLOW_POSITIONAL_ARGS": args, "TGI_INF_WORKFLOW_KW_ARGS": kw_args},
+                env_vars={
+                    "TGI_INF_WORKFLOW_POSITIONAL_ARGS": args,
+                    "TGI_INF_WORKFLOW_KW_ARGS": kw_args,
+                },
             ),
             ServiceConfig.build(
                 TGI_WITH_PROOFS,

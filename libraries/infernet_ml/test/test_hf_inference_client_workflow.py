@@ -42,7 +42,7 @@ def test_token_classification(
             text="Ritual makes AI x crypto a great combination!"
         )
     )
-    assert output_data["output"][0].get("entity_group") == "MISC"
+    assert output_data["output"][0].get("entity_group") == "ORG"
     assert output_data["output"][0].get("score") > 0.8
 
 
