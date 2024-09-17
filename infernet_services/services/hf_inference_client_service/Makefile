@@ -1,5 +1,5 @@
 DOCKER_ORG := ritualnetwork
-SERVICE_NAME := hf_inference_client_service
+SERVICE_NAME := hf_inference_client_service_internal
 TAG := $(DOCKER_ORG)/$(SERVICE_NAME):1.0.0
 
 build:
