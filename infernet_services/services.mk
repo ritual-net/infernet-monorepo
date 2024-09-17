@@ -33,6 +33,8 @@ build-base:
 		index_url=`make get-index-url`; \
 	fi; \
 	$(MAKE) build-base -C $(service_dir)/$$service index_url=$$index_url
+	@index_url=`make get-index-url`; \
+	$(MAKE) build -C $(service_dir)/$(service)
 
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)

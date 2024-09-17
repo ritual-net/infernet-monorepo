@@ -8,6 +8,7 @@ ENV PIP_NO_CACHE_DIR 1
 ENV RUNTIME docker
 ENV PYTHONPATH src
 ARG index_url
+ENV UV_HTTP_TIMEOUT 500
 ENV UV_EXTRA_INDEX_URL ${index_url}
 
 RUN apt-get update

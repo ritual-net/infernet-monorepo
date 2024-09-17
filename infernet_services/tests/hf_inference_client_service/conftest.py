@@ -9,7 +9,7 @@ from test_library.infernet_fixture import handle_lifecycle
 from test_library.test_config import default_network_config
 
 load_dotenv()
-SERVICE_NAME = "hf_inference_client_service_internal"
+SERVICE_NAME = "hf_inference_client_service"
 SERVICE_VERSION = "1.0.0"
 HF_WITH_PROOFS = "hf_with_proofs"
 

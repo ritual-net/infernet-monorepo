@@ -8,6 +8,8 @@ ENV PIP_NO_CACHE_DIR 1
 ENV RUNTIME docker
 ENV PYTHONPATH src
 
+ENV UV_HTTP_TIMEOUT 600
+
 RUN apt-get update
 RUN apt-get install -y git curl
 
