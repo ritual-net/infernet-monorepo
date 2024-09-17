@@ -23,7 +23,7 @@ def lifecycle() -> Generator[None, None, None]:
     model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
     hf_token = os.environ["HF_TOKEN"]
     args = f'["{url}/{model}", 30, {{"Authorization": "Bearer {hf_token}"}}]'
-    kw_args = '{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}'
+    kw_args = '{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}, "temperature": 0.5}'
 
     yield from handle_lifecycle(
         [
