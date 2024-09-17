@@ -16,7 +16,7 @@ ONNX_SERVICE_NOT_PRELOADED = "onnx_inference_service_not_preloaded"
 ONNX_WITH_PROOFS = "onnx_inference_service_with_proofs"
 
 SERVICE_VERSION = "1.0.0"
-ONNX_SERVICE_NAME = "onnx_inference_service"
+ONNX_SERVICE_NAME = "onnx_inference_service_internal"
 ONNX_SERVICE_DOCKER_IMG = f"ritualnetwork/{ONNX_SERVICE_NAME}:{SERVICE_VERSION}"
 
 log = logging.getLogger(__name__)

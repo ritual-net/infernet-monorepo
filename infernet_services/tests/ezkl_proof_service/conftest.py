@@ -34,7 +34,7 @@ def lifecycle() -> Generator[None, None, None]:
         [
             ServiceConfig.build(
                 SERVICE_NAME,
-                image_id=f"ritualnetwork/{SERVICE_NAME}:{VERSION}",
+                image_id=f"ritualnetwork/{SERVICE_NAME}_internal:{VERSION}",
                 env_vars=env_vars,
             ),
         ],
