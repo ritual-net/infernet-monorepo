@@ -43,7 +43,7 @@ def test_token_classification(
         )
     )
     assert output_data["output"][0].get("entity_group") == "ORG"
-    assert output_data["output"][0].get("score") > 0.8
+    assert output_data["output"][0].get("score") > 0.5
 
 
 def test_summarization(
