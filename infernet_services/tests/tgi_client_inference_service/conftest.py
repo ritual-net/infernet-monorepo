@@ -11,7 +11,9 @@ load_dotenv()
 
 SERVICE_NAME = "tgi_client_inference_service"
 SERVICE_VERSION = "1.0.0"
-SERVICE_DOCKER_IMAGE = f"ritualnetwork/tgi_client_inference_service:{SERVICE_VERSION}"
+SERVICE_DOCKER_IMAGE = (
+    f"ritualnetwork/tgi_client_inference_service_internal:{SERVICE_VERSION}"
+)
 TGI_WITH_PROOFS = "tgi_client_inference_service_with_proofs"
 
 
