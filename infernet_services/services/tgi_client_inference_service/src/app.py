@@ -49,13 +49,13 @@ def create_app() -> Quart:
         LLM_WORKFLOW_KW_ARGS,
     )
 
-    workflow: TGIClientInferenceWorkflow 
+    workflow: TGIClientInferenceWorkflow
     # create workflow instance from class, using specified arguments
     retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
-    if (len(LLM_WORKFLOW_POSITIONAL_ARGS)>4):
+    if len(LLM_WORKFLOW_POSITIONAL_ARGS) > 4:
         workflow = TGIClientInferenceWorkflow(
             *LLM_WORKFLOW_POSITIONAL_ARGS,
-            **LLM_WORKFLOW_KW_ARGS, 
+            **LLM_WORKFLOW_KW_ARGS,
         )
     else:
         workflow = TGIClientInferenceWorkflow(
