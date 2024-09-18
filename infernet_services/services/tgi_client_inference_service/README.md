@@ -28,13 +28,8 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{}",
-                "TGI_REQUEST_TRIES": "3",
-                "TGI_REQUEST_DELAY": "3",
-                "TGI_REQUEST_MAX_DELAY": "10",
-                "TGI_REQUEST_BACKOFF": "2",
-                "TGI_REQUEST_JITTER": "[0.5, 1.5]"
+                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30, {\"Authorization\": \"Bearer: xxxxxxxxxxxxx \"}, {\"cookies\": {\"sessionid\": \"abcd1234\"}}, {\"retry_params\": {\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}}]",
+                "TGI_INF_WORKFLOW_KW_ARGS": "{\"temperature\": 0.5, \"top_k\": 10}"
             }
         }
     ]
@@ -45,40 +40,58 @@ in `config.json`.
 
 ### TGI_INF_WORKFLOW_POSITIONAL_ARGS
 
-- **Description**: The first argument is the TGI service URL, and the second argument is
-  the connection timeout.
-- **Default**: `["http://FILL_HOSTNAME_HERE", 30]`
+- **Description**: Arguments passed to the TGI workflow applied positionally.
 
-### TGI_INF_WORKFLOW_KW_ARGS
+#### server_url
 
-- **Description**: Any argument passed here will be defaulted when sending to the TGI
-  service.
-- **Default**: `{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}}`
+- **Description**: The TGI service URL.
 
-### TGI_REQUEST_TRIES
+#### connection_timeout
 
-- **Description**: The number of retries for the TGI inference workflow.
+- **Description**: The connection timeout.
+
+#### headers
+
+- **Description**: The headers to pass to the TGI service.
+
+#### cookies
+
+- **Description**: The cookies to pass to the TGI service.
+
+### retry_params
+- **Description**: The retry parameters for the inference workflow. (optional)
+
+#### tries
+
+- **Description**: The number of retries for the inference workflow.
 - **Default**: `3`
 
-### TGI_REQUEST_DELAY
+#### delay
 
 - **Description**: The delay (in seconds) between retries.
 - **Default**: `3`
 
-### TGI_REQUEST_MAX_DELAY
+#### max_delay
 
 - **Description**: The maximum delay (in seconds) between retries.
-- **Default**: `10`
+- **Default**: `null`
 
-### TGI_REQUEST_BACKOFF
+#### backoff
 
 - **Description**: The backoff (in seconds) between retries.
 - **Default**: `2`
 
-### TGI_REQUEST_JITTER
+#### jitter
 
 - **Description**: The jitter (in seconds) to add to requests.
 - **Default**: `[0.5, 1.5]`
+
+### TGI_INF_WORKFLOW_KW_ARGS
+
+- **Description**: Any argument passed here will passed in as a keyword argument to the TGI workflow. Used to set the TGI inference parameters.
+
+Refer to the [TGI documentation](https://huggingface.github.io/text-generation-inference/#/Text%20Generation%20Inference/generate) for a full list of available parameters.
+
 
 ## Usage
 
