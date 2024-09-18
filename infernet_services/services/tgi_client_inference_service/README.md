@@ -28,8 +28,8 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30, {\"Authorization\": \"Bearer: xxxxxxxxxxxxx \"}, {\"cookies\": {\"sessionid\": \"abcd1234\"}}, {\"retry_params\": {\"tries\": 3, \"delay\": 3, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}}]",
-                "TGI_INF_WORKFLOW_KW_ARGS": "{\"temperature\": 0.5, \"top_k\": 10}"
+                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30, {\"Authorization\": \"Bearer: xxxxxxxxxxxxx \"}]",
+                "TGI_INF_WORKFLOW_KW_ARGS": "{\"retry_params\": {\"tries\": 3, \"delay\": 1, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}, \"max_new_tokens\": 30, \"temperature\": 0.01}"
             }
         }
     ]
@@ -58,6 +58,14 @@ in `config.json`.
 
 - **Description**: The cookies to pass to the TGI service.
 
+
+
+### TGI_INF_WORKFLOW_KW_ARGS
+
+- **Description**: Any argument passed here will passed in as a keyword argument to the TGI workflow. Used to set the TGI inference parameters.
+
+Refer to the [TGI documentation](https://huggingface.github.io/text-generation-inference/#/Text%20Generation%20Inference/generate) for a full list of available parameters.
+
 ### retry_params
 - **Description**: The retry parameters for the inference workflow. (optional)
 
@@ -85,13 +93,6 @@ in `config.json`.
 
 - **Description**: The jitter (in seconds) to add to requests.
 - **Default**: `[0.5, 1.5]`
-
-### TGI_INF_WORKFLOW_KW_ARGS
-
-- **Description**: Any argument passed here will passed in as a keyword argument to the TGI workflow. Used to set the TGI inference parameters.
-
-Refer to the [TGI documentation](https://huggingface.github.io/text-generation-inference/#/Text%20Generation%20Inference/generate) for a full list of available parameters.
-
 
 ## Usage
 
