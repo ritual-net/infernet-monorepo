@@ -8,6 +8,7 @@ from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
+from infernet_ml.utils.css_utils import RetryParams
 from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
@@ -29,7 +30,7 @@ def create_app() -> Quart:
 
     Raises:
         ImportError: thrown if error loading the workflow
-        PydValError: thrown if error duing input validation
+        PydValError: thrown if error during input validation
 
     Returns:
         Quart: Quart App instance
@@ -48,11 +49,20 @@ def create_app() -> Quart:
         LLM_WORKFLOW_KW_ARGS,
     )
 
+    workflow: TGIClientInferenceWorkflow
     # create workflow instance from class, using specified arguments
-    workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
-        *LLM_WORKFLOW_POSITIONAL_ARGS, **LLM_WORKFLOW_KW_ARGS
-    )
-
+    retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
+    if len(LLM_WORKFLOW_POSITIONAL_ARGS) > 4:
+        workflow = TGIClientInferenceWorkflow(
+            *LLM_WORKFLOW_POSITIONAL_ARGS,
+            **LLM_WORKFLOW_KW_ARGS,
+        )
+    else:
+        workflow = TGIClientInferenceWorkflow(
+            *LLM_WORKFLOW_POSITIONAL_ARGS,
+            **LLM_WORKFLOW_KW_ARGS,
+            retry_params=retry_params if retry_params else None,  # type: ignore
+        )
     # setup workflow
     workflow.setup()
 
@@ -103,7 +113,7 @@ def create_app() -> Quart:
                         inf_request = TgiInferenceRequest(text=text)
                     case _:
                         raise BadRequest(
-                            f"Invalid InferentInput source: {inf_input.source}"
+                            f"Invalid InfernetInput source: {inf_input.source}"
                         )
 
                 match inf_input:
@@ -118,7 +128,7 @@ def create_app() -> Quart:
                         return stream_generator()
 
                 result = await run_sync(workflow.inference)(input_data=inf_request)
-                logging.info("recieved result from workflow: %s", result)
+                logging.info("received result from workflow: %s", result)
 
                 match inf_input:
                     case InfernetInput(
@@ -140,7 +150,7 @@ def create_app() -> Quart:
                         return onchain_output
 
                     case _:
-                        raise PydValError("Invalid InferentInput type")  # noqa: E501
+                        raise PydValError("Invalid InfernetInput type")  # noqa: E501
             except ServiceException as e:
                 abort(500, e)
             except PydValError as e:
