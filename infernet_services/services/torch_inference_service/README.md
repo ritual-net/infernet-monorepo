@@ -8,7 +8,7 @@ flexible platform for building and deploying machine learning models. This servi
 you to deploy and run PyTorch models for various inference tasks, such as image
 classification, object detection, or natural language processing.
 
-## Infernet Configuraton
+## Infernet Configuration
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`.

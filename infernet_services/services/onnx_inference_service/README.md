@@ -8,7 +8,7 @@ enables interoperability between different frameworks and hardware platforms. Th
 service allows you to deploy and run ONNX models for various inference tasks, such as
 image classification, object detection, or natural language processing.
 
-## Infernet Configuraton
+## Infernet Configuration
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`.

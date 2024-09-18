@@ -3,7 +3,7 @@
 This service serves models via a `HFInferenceClientWorkflow` object, encapsulating the
 backend, preprocessing, and postprocessing logic.
 
-## Infernet Configuraton
+## Infernet Configuration
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`.

@@ -4,7 +4,7 @@ This service serves closed source models via
 a [`CSSInferenceWorkflow`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/workflows/inference/css_inference_workflow/)
 object, encapsulating the backend, preprocessing, and postprocessing logic
 
-## Infernet Configuraton
+## Infernet Configuration
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`. For documentation on the overall configuration,

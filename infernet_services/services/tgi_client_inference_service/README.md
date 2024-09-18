@@ -8,7 +8,7 @@ is a toolkit from HuggingFace for deploying and serving Large Language Models (L
 enables high-performance text generation for the most popular open-source LLMs, including
 Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and T5.
 
-## Infernet Configuraton
+## Infernet Configuration
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`.
