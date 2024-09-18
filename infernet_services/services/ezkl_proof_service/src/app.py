@@ -14,7 +14,7 @@ from infernet_ml.utils.codec.ezkl_codec import (
     extract_proof_request,
     extract_visibilities,
 )
-from infernet_ml.utils.ezkl_models import (  # type: ignore
+from infernet_ml.utils.ezkl_models import (
     EZKLProofRequest,
     EZKLProvingArtifactsConfig,
 )
