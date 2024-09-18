@@ -87,7 +87,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         logger.info("received request")
         # input should look like {"input_data": [...], "output_data": [...]}
         data = await req.get_json()
-        logger.debug("recieved data: %s", data)
+        logger.debug("received data: %s", data)
         try:
             infernet_input = InfernetInput(**data)
             proof_request: EZKLProofRequest = extract_proof_request(infernet_input)

@@ -4,9 +4,17 @@ A service that generates zero knowledge proofs of inference for a given model ba
 
 Generating proofs is a 3 step lifecycle:
 #### setup
-prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
+prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input. 
+
+Make sure that the ezkl version used for generating the artifacts is the same as the one in requirements.txt.
+
+For local artifacts(EZKL_PROOF_MODEL_SOURCE=1), once you generate them through ezkl command line, you can place them inside /src to be mounted on the Docker image. 
+
+For remote download(recommended, Arweave or HuggingFace) this is not needed. See also the configuration below.
+
 #### prove
 a proof is generated based on the provided artifacts that allows for verification given the verification keys. **The EZKL Proof Service is mainly concerned with this stage of the lifecycle.**
+
 #### verify
 the proof output can be independently verified at this stage.
 
@@ -204,7 +212,7 @@ locally on port `4000`.
                 "input_dtype": 0,
                 "output_data": [ 1.0 ],
                 "output_shape": [ 1, 1 ],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
         },
     )
@@ -228,7 +236,7 @@ locally on port `4000`.
                 "input_dtype": 0,
                 "output_data": [ 1.0 ],
                 "output_shape": [ 1, 1 ],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
         }
     ```
@@ -364,12 +372,12 @@ on port `4000`.
         private_key="0x...",
         data= {
             "witness_data": {
-                "input_data": [ 1.0, 2.0, 3.0 ],
+                "input_data": [[ 1.0, 2.0, 3.0 ]],
                 "input_shape": [ 1, 3 ],
                 "input_dtype": 0,
-                "output_data": [ 1.0 ],
+                "output_data": [[ 1.0 ]],
                 "output_shape": [ 1, 1 ],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
         },
     )
@@ -378,7 +386,7 @@ on port `4000`.
 === "CLI"
 
     ```bash
-    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+    infernet-client sub --rpc-url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
         --params params.json --input input.json
     # Success: Subscription created.
     ```
@@ -402,12 +410,12 @@ on port `4000`.
     ```json
      {
             "witness_data": {
-                "input_data": [ 1.0, 2.0, 3.0 ],
+                "input_data": [[ 1.0, 2.0, 3.0 ]],
                 "input_shape": [ 1, 3 ],
                 "input_dtype": 0,
-                "output_data": [ 1.0 ],
+                "output_data": [[ 1.0 ]],
                 "output_shape": [ 1, 1 ],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
     }
     ```
@@ -440,7 +448,7 @@ An Example offchain request:
                     ]
                 ],
                 "output_shape": [1, 1],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
         },
 }
@@ -502,7 +510,7 @@ curl -X POST http://localhost:4000/api/jobs \
                     ]
                 ],
                 "output_shape": [1, 1],
-                "output_dtype": 0,
+                "output_dtype": 0
             }
         },
 }'

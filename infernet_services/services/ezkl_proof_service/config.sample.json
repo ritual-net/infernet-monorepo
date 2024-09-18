@@ -43,7 +43,10 @@
       "allowed_addresses": [],
       "allowed_ips": [],
       "command": "--bind=0.0.0.0:3000 --workers=2",
-      "env": {},
+      "env": {
+        "EZKL_PROOF_MODEL_SOURCE": 2,
+        "EZKL_PROOF_REPO_ID": "your_hugging_repo/your_id"
+      },
       "volumes": [],
       "accepted_payments": {
         "0x0000000000000000000000000000000000000000": 1000000000000000000,

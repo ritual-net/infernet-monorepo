@@ -2,7 +2,7 @@
 
 ## Installation
 
-Install `infernet-ml from your terminal:
+Install `infernet-ml` from your terminal:
 
 === "uv"
 

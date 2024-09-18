@@ -56,7 +56,7 @@ class EZKLProvingArtifactsConfig(BaseModel):
         COMPILED_MODEL_VERSION: Defaults to `None`. Version of the compiled model.
         COMPILED_MODEL_FORCE_DOWNLOAD: Defaults to `False`. Whether or not the compiled model should be force downloaded even if it already
         exists in the cache. Not relevant for local artifacts.
-        SETTINGS_FILE_NAME: Defults to `"settings.json"`. File name or path for settings artifact.
+        SETTINGS_FILE_NAME: Defaults to `"settings.json"`. File name or path for settings artifact.
         SETTINGS_VERSION: Defaults to `None`. Version of settings artifact.
         SETTINGS_FORCE_DOWNLOAD: Defaults to `False`. Whether or not the settings artifact should be force downloaded even if it already exists in the cache. Not relevant for local artifacts.
         PK_FILE_NAME: Defaults to `"proving.key"`. File name or path for the pk artifact.
