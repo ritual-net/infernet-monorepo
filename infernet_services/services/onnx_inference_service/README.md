@@ -71,7 +71,7 @@ class CommonLoadArgs(BaseModel):
     filename: str
 ```
 
-Model source and load args can be passed either as environment variables or directly in the request body.
+Model source and load args can be passed either as environment variables or directly as input data.
 
 ## Environment Variables
 

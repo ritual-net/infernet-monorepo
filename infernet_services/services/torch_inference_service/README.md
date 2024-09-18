@@ -19,8 +19,8 @@ in `config.json`.
     //...... contents abbreviated
     "containers": [
         {
-            "id": "css_inference_service",
-            "image": "your_org/css_inference_service:latest",
+            "id": "torch_inference_service",
+            "image": "your_org/torch_inference_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -40,7 +40,7 @@ in `config.json`.
 
 ## Supported Model Sources
 
-The ONNX inference service supports the following model sources:
+The Torch inference service supports the following model sources:
 
 ```python
 class ModelSource(IntEnum):
@@ -68,6 +68,8 @@ class CommonLoadArgs(BaseModel):
     repo_id: str
     filename: str
 ```
+
+Model source and load args can be passed either as environment variables or directly as input data.
 
 ## Environment Variables
 
@@ -150,7 +152,6 @@ on port 4000.
     ```python
     from infernet_client.node import NodeClient
     california_housing_vector_params = {
-        "dtype": 1, # double
         "shape": (1, 8),
         "values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
     }
@@ -181,15 +182,32 @@ on port 4000.
     ```
     where `input.json` looks like this:
     ```json
-    {
-        "model_source": 1,
-        "load_args": {
-            "repo_id": "your_org/model",
-            "filename": "california_housing.torch",
-            "version": "v1"
-        },
-        "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}
-    }
+ {
+    "model_source": 2,
+    "load_args": {
+        "repo_id": "Ritual-Net/california-housing",
+        "filename": "california_housing.torch"
+    },
+
+        "input": {
+            "values": [
+                [
+                    8.3252,
+                    41.0,
+                    6.984127,
+                    1.02381,
+                    322.0,
+                    2.555556,
+                    37.88,
+                    -122.23
+                ]
+            ],
+            "shape": [1, 8],
+            "dtype": "double"
+        }
+    
+}
+
     ```
 
 === "cURL"
@@ -197,7 +215,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch", "version": "v1"}, "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "Ritual-Net/california-housing", "filename": "california_housing.torch", "version": "v1"}, "input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}}'
     ```
 
 ### Web3 Request (onchain subscription)
