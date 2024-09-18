@@ -167,15 +167,17 @@ locally on port `4000`.
             "params": {
                 "endpoint": "completions",
                 "messages": [
-                    {"role": "user", "content": "give me an essay about cats"}
-                ],
+                    {
+                        "role": "user",
+                        "content": "give me an essay about cats"
+                    }
+                ]
             },
-            # note the ability to add extra_args to the request.
             "extra_args": {
                 "max_tokens": 10,
-                "temperature": 0.5,
-            },
-        },
+                "temperature": 0.5
+            }
+        }
     )
 
     result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
@@ -197,13 +199,16 @@ locally on port `4000`.
         "params": {
             "endpoint": "completions",
             "messages": [
-                {"role": "user", "content": "give me an essay about cats"}
-            ],
+                {
+                    "role": "user",
+                    "content": "give me an essay about cats"
+                }
+            ]
         },
         "extra_args": {
             "max_tokens": 10,
-            "temperature": 0.5,
-        },
+            "temperature": 0.5
+        }
     }
     ```
 
@@ -212,7 +217,8 @@ locally on port `4000`.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "endpoint": "completions", "provider": "OPENAI", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}}'
+
     ```
 
 ### Web3 Request (Onchain Subscription)
@@ -319,9 +325,16 @@ on port `4000`.
             "params": {
                 "endpoint": "completions",
                 "messages": [
-                    {"role": "user", "content": "give me an essay about cats"}
-                ],
+                    {
+                        "role": "user",
+                        "content": "give me an essay about cats"
+                    }
+                ]
             },
+            "extra_args": {
+                "max_tokens": 10,
+                "temperature": 0.5
+            }
         },
     )
     ```
