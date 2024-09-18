@@ -4,11 +4,11 @@ A service that generates zero knowledge proofs of inference for a given model ba
 
 Generating proofs is a 3 step lifecycle:
 #### setup
-prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input. 
+prepare artifacts necessary for proof generation. This includes fixed artifacts such as the compiled model circuit and cryptographic keys, as well as dynamic artifacts such as the witness that is generated based on the model input.
 
 Make sure that the ezkl version used for generating the artifacts is the same as the one in requirements.txt.
 
-For local artifacts(EZKL_PROOF_MODEL_SOURCE=1), once you generate them through ezkl command line, you can place them inside /src to be mounted on the Docker image. 
+For local artifacts(EZKL_PROOF_MODEL_SOURCE=1), once you generate them through ezkl command line, you can place them inside /src to be mounted on the Docker image.
 
 For remote download(recommended, Arweave or HuggingFace) this is not needed. See also the configuration below.
 

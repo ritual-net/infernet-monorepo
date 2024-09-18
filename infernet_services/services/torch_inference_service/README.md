@@ -205,7 +205,7 @@ on port 4000.
             "shape": [1, 8],
             "dtype": "double"
         }
-    
+
 }
 
     ```
