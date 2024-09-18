@@ -154,7 +154,7 @@ generate-uv-env-file:
 	echo "$(export_prefix)UV_EXTRA_INDEX_URL=$$index_url" > uv.env
 
 show-pip-command:
-	@echo "uv pip install  $(library)"
+	@echo "uv pip install --extra-index-url `make get-index-url` $(library)"
 
 ifeq ($(findstring zsh,$(shell echo $$SHELL)),zsh)
 rc_file = ~/.zshrc
