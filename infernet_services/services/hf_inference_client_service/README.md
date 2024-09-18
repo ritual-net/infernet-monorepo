@@ -15,7 +15,7 @@ in `config.json`.
     "containers": [
         {
             "id": "hf_inference_client_service",
-            "image": "ritualnetwork/hf_inference_client_service:latest",
+            "image": "your_org/hf_inference_client_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
