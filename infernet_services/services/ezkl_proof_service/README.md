@@ -10,7 +10,7 @@ Make sure that the ezkl version used for generating the artifacts is the same as
 
 For local artifacts(EZKL_PROOF_MODEL_SOURCE=1), once you generate them through ezkl command line, you can place them inside /src to be mounted on the Docker image.
 
-For remote download(recommended, Arweave or HuggingFace) this is not needed. See also the configuration below.
+For remote download (recommended, Arweave or HuggingFace) this is not needed. See also the configuration below.
 
 #### prove
 a proof is generated based on the provided artifacts that allows for verification given the verification keys. **The EZKL Proof Service is mainly concerned with this stage of the lifecycle.**
