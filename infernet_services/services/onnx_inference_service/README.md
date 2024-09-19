@@ -28,8 +28,8 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "MODEL_SOURCE": "2", // huggingface hub
-                "LOAD_ARGS": {"repo_id": "your_org/model", "filename": "model_name.onnx"}
+                "MODEL_SOURCE": 2, // huggingface hub
+                "LOAD_ARGS": "{\"repo_id\": \"your_org/model\", \"filename\": \"model_name.onnx\"}"
             }
         }
     ]
