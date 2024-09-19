@@ -215,7 +215,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "Ritual-Net/california-housing", "filename": "california_housing.torch", "version": "v1"}, "input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}}'
+        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 2, "load_args": {"repo_id": "Ritual-Net/california-housing", "filename": "california_housing.torch"}, "input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}}'
     ```
 
 ### Web3 Request (onchain subscription)
@@ -350,7 +350,7 @@ on port 4000.
         private_key="0x...",
         data={
             "model_source": 1,
-            "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch", "version": "v1"},
+            "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch"},
             "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}
         },
     )
