@@ -72,7 +72,7 @@ deploy-node:
 	if [ "`lsof -i :8545`" ]; then \
 		kill `lsof -i :8545 | grep anvil | awk '{print $$2}'`; \
 	fi; \
-	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.1.0"} \
+	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.3.0"} \
 	docker compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 start-infernet-anvil:
