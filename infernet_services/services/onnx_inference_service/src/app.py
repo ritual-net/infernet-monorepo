@@ -2,54 +2,39 @@
 this module serves as the driver for the tgi inference service.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import os
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, Dict, Optional, cast, List
 
-import numpy as np
-from eth_abi.abi import decode
-from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
-from infernet_ml.utils.common_types import TensorInput
-from infernet_ml.utils.model_loader import (
-    ArweaveLoadArgs,
-    HFLoadArgs,
-    LoadArgs,
-    ModelSource,
-    parse_load_args,
-)
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
-from infernet_ml.workflows.exceptions import ServiceException
-from infernet_ml.workflows.inference.onnx_inference_workflow import (
-    ONNXInferenceInput,
-    ONNXInferenceResult,
-    ONNXInferenceWorkflow,
-    TensorOutput,
-)
 from pydantic import ValidationError as PydValError
 from quart import Quart, abort
 from quart import request as req
-from quart.json.provider import DefaultJSONProvider
 from quart.utils import run_sync
 from werkzeug.exceptions import BadRequest, HTTPException
 
+from infernet_ml.resource.artifact_manager import BroadcastedArtifact
+from infernet_ml.services.onnx import (
+    ONNX_SERVICE_PREFIX,
+    ONNXServiceConfig,
+    ONNXInferenceRequest,
+)
+from infernet_ml.services.types import InfernetInput, JobLocation
+from infernet_ml.utils.spec import (
+    ritual_service_specs,
+    MLComputeCapability,
+    ServiceResources,
+    postfix_query_handler,
+)
+from infernet_ml.workflows.exceptions import ServiceException
+from infernet_ml.workflows.inference.onnx_inference_workflow import (
+    ONNXInferenceResult,
+    ONNXInferenceWorkflow,
+)
 
-class NumpyJsonEncodingProvider(DefaultJSONProvider):
-    @staticmethod
-    def default(obj: Any) -> Any:
-        if isinstance(obj, np.ndarray):
-            # Convert NumPy arrays to list
-            return obj.tolist()
-
-        if isinstance(obj, TensorOutput):
-            # Convert TensorOutput to dict, values are pytorch tensors
-            return {
-                "values": obj.values.tolist(),
-                "dtype": obj.dtype,
-                "shape": obj.shape,
-            }
-        # fallback to default JSON encoding
-        return DefaultJSONProvider.default(obj)
+log = logging.getLogger(__name__)
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
@@ -62,77 +47,41 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     Returns:
         Quart: Quart App instance
     """
-    Quart.json_provider_class = NumpyJsonEncodingProvider
     app: Quart = Quart(__name__)
-    app.config.from_mapping()
+
+    if test_config is None:
+        # load the instance config, if it exists, when not testing
+        app.config.from_prefixed_env(prefix=ONNX_SERVICE_PREFIX)
+    else:
+        log.warning(f"using test config {test_config.keys()}")
+        # load the test config if passed in
+        app.config.update(test_config)
+
+    service_config = ONNXServiceConfig(**cast(dict[str, Any], app.config))
 
     logging.info(
-        "setting up ONNX inference",
+        f"setting up ONNX inference: {service_config}",
     )
 
-    load_args_env = os.getenv("LOAD_ARGS")
+    workflow = ONNXInferenceWorkflow(
+        model=service_config.DEFAULT_MODEL_ID,
+        cache_dir=service_config.CACHE_DIR,
+    ).setup()
 
-    model_source_env = os.getenv("MODEL_SOURCE")
-
-    default_model_source: Optional[ModelSource] = (
-        None if model_source_env is None else ModelSource(int(model_source_env))
-    )
-
-    default_load_args: Optional[LoadArgs] = (
-        None
-        if load_args_env is None
-        else parse_load_args(
-            cast(ModelSource, default_model_source),
-            json.loads(load_args_env.strip('"').strip("'")),
-        )
-    )
-
-    app_config = test_config or {
-        "kwargs": {
-            "model_source": default_model_source,
-            "load_args": default_load_args,
-        }
-    }
-
-    kwargs = app_config["kwargs"]
-
-    workflow = ONNXInferenceWorkflow(**kwargs).setup()
-
-    def _extract_model_load_args(
-        hex_input: str,
-    ) -> Tuple[Optional[ModelSource], Optional[LoadArgs]]:
-        """
-        Extracts the load args from the hex input.
-        """
-        (
-            source,
-            repo_id,
-            filename,
-            version,
-        ) = decode(
-            ["uint8", "string", "string", "string"],
-            bytes.fromhex(hex_input),
+    def resource_generator() -> dict[str, Any]:
+        cached_models: List[BroadcastedArtifact] = (
+            workflow.model_manager.get_cached_models()
         )
 
-        if version == "":
-            version = None
+        return json.loads(
+            ServiceResources.initialize(
+                "onnx-inference-service",
+                [MLComputeCapability.onnx_compute(cached_models=cached_models)],
+            ).model_dump_json(serialize_as_any=True)
+        )
 
-        if repo_id == "" and filename == "" and version is None:
-            return cast(ModelSource, default_model_source), None
-        else:
-            load_args: LoadArgs
-            match source:
-                case ModelSource.HUGGINGFACE_HUB:
-                    load_args = HFLoadArgs(
-                        repo_id=repo_id, filename=filename, version=version
-                    )
-                case ModelSource.ARWEAVE:
-                    load_args = ArweaveLoadArgs(
-                        repo_id=repo_id, filename=filename, version=version
-                    )
-                case _:
-                    abort(400, f"Invalid ModelSource: {source}")
-            return ModelSource(source), cast(LoadArgs, load_args)
+    # Defines /service-resources
+    ritual_service_specs(app, resource_generator, postfix_query_handler(".onnx"))
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -156,42 +105,18 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                     case InfernetInput(requires_proof=True):
                         raise BadRequest("Proofs are not supported for ONNX Inference")
                     case InfernetInput(source=JobLocation.ONCHAIN, data=_in):
-                        hex_input = cast(str, _in)
-                        (_, _, _, _, vector) = decode(
-                            ["uint8", "string", "string", "string", "bytes"],
-                            bytes.fromhex(hex_input),
-                        )
-                        dtype, shape, values = decode_vector(vector)
-                        _input = TensorInput(
-                            dtype=dtype.name, shape=shape, values=values.tolist()
-                        )
-                        model_source, load_args = _extract_model_load_args(hex_input)
-
-                        session = workflow.get_session(
-                            cast(ModelSource, model_source or workflow.model_source),
-                            cast(LoadArgs, load_args or workflow.model_load_args),
-                        )
-
-                        inference_input = ONNXInferenceInput(
-                            inputs={session.get_inputs()[0].name: _input},
-                            model_source=model_source,
-                            load_args=load_args,
-                        )
-
+                        inf_req = ONNXInferenceRequest.from_web3(cast(str, _in))
                     case InfernetInput(source=JobLocation.OFFCHAIN, data=data):
                         logging.info("received Offchain Request: %s", data)
-                        inference_input = ONNXInferenceInput(
-                            **cast(Dict[str, Any], data)
-                        )
-                        dtype = DataType[list(inference_input.inputs.values())[0].dtype]
+                        inf_req = ONNXInferenceRequest(**cast(Dict[str, Any], data))
                     case _:
                         raise HTTPException(
                             f"Invalid infernet input source: {inf_input.source}"
                         )
 
-                logging.info(f"inference_input: {inference_input}")
+                logging.info(f"inference_input: {inf_req}")
                 result: ONNXInferenceResult = await run_sync(workflow.inference)(
-                    inference_input
+                    inf_req.workflow_input
                 )
 
                 logging.info("received result from workflow: %s", result)
@@ -199,17 +124,15 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                 match inf_input:
                     case InfernetInput(destination=JobLocation.OFFCHAIN):
                         return {
-                            "result": result,
+                            "result": [r.model_dump() for r in result],
                         }
                     case InfernetInput(destination=JobLocation.ONCHAIN):
                         first = result[0]
                         return {
                             "raw_input": hex_input,
                             "processed_input": "",
-                            "raw_output": encode_vector(
-                                dtype,
-                                first.shape,
-                                first.values,
+                            "raw_output": first.to_web3(
+                                inf_req.output_arithmetic, inf_req.output_num_decimals
                             ).hex(),
                             "processed_output": "",
                             "proof": "",
@@ -251,15 +174,15 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
 
 if __name__ == "__main__":
-    app = create_app(
-        {
-            "kwargs": {
-                "model_source": ModelSource.HUGGINGFACE_HUB,
-                "load_args": HFLoadArgs(
-                    repo_id="Ritual-Net/iris-classification",
-                    filename="iris.onnx",
-                ),
-            }
-        }
-    )
-    app.run(port=3000, debug=True)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            from test_library.artifact_utils import ar_model_id
+
+            sample_config = ONNXServiceConfig(
+                DEFAULT_MODEL_ID=ar_model_id("iris-classification", "iris.onnx")
+            )
+            app = create_app(sample_config.model_dump())
+            app.run(port=3002, debug=True)

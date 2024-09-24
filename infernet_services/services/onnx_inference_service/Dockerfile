@@ -7,15 +7,17 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PIP_NO_CACHE_DIR 1
 ENV RUNTIME docker
 ENV PYTHONPATH src
-ARG index_url
-ENV UV_EXTRA_INDEX_URL ${index_url}
 
 RUN apt-get update
 RUN apt-get install -y git curl
 
 # install uv
-RUN curl -LsSf https://astral.sh/uv/0.2.1/install.sh | sh
+RUN curl -LsSf https://astral.sh/uv/0.2.33/install.sh | sh
 COPY requirements.txt .
+
+
+ARG index_url
+ENV UV_EXTRA_INDEX_URL ${index_url}
 
 # Using docker's ssh-forwarding to install private packages from github. Refer to the
 # following links for more information:
@@ -25,5 +27,4 @@ RUN --mount=type=ssh /root/.cargo/bin/uv pip install --system --no-cache -r requ
 
 COPY src src
 
-ENTRYPOINT ["hypercorn", "app:create_app()"]
-CMD ["-b", "0.0.0.0:3000"]
+ENTRYPOINT ["python", "src/app.py"]

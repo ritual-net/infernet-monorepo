@@ -2,9 +2,37 @@ toplevel_dir ?= infernet_services
 service_dir ?= $(toplevel_dir)/services
 deploy_dir ?= $(toplevel_dir)/deploy
 
+define find_service
+if [ -z "$(service)" ]; then \
+	service=`ls $(service_dir) | fzf`; \
+else \
+	service=$(service); \
+fi;
+endef
+
+export find_service
+
 build-service:
-	@index_url=`make get-index-url`; \
-	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
+	@eval "$$find_service"; \
+	if [ -n "$(reuse_index)" ]; then \
+		echo "Reusing index"; \
+		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
+	else \
+		echo "Getting Index"; \
+		index_url=`make get-index-url`; \
+	fi; \
+	$(MAKE) build -C $(service_dir)/$$service index_url=$$index_url
+
+build-base:
+	@eval "$$find_service"; \
+	if [ -n "$(reuse_index)" ]; then \
+		echo "Reusing index"; \
+		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
+	else \
+		echo "Getting Index"; \
+		index_url=`make get-index-url`; \
+	fi; \
+	$(MAKE) build-base -C $(service_dir)/$$service index_url=$$index_url
 
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
@@ -34,11 +62,17 @@ save-image:
 
 env ?= '{"HF_INF_TASK": "text_generation", "HF_INF_MODEL": "HuggingFaceH4/zephyr-7b-beta"}'
 
-deploy-node:
-	[ -n "$$create_config" ] && \
+generate-service-config:
 	jq '.containers[0].env = $(shell echo $(env))' \
 	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json || true
-	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.0.0"} \
+
+deploy-node:
+	[ -n "$$create_config" ] && jq '.containers[0].env = $(shell echo $(env))' \
+	$(service_dir)/$(service)/config.json > $(deploy_dir)/config.json; \
+	if [ "`lsof -i :8545`" ]; then \
+		kill `lsof -i :8545 | grep anvil | awk '{print $$2}'`; \
+	fi; \
+	INFERNET_NODE_TAG=$${INFERNET_NODE_TAG:-"1.1.0"} \
 	docker compose -f $(deploy_dir)/docker-compose.yaml up -d
 
 start-infernet-anvil:
@@ -72,15 +106,15 @@ stop-node:
 filter ?= ""
 
 test-service: stop-node
-	# kill anything running on 3000
-	kill $(lsof -i :3000 | tail -n 1  | awk '{print $2}') || true
-	pytest -vvv -s $(toplevel_dir)/tests/$(service)
+	@eval "$$find_service"; \
+	kill $(lsof -i :3000 | tail -n 1  | awk '{print $2}') || true; \
+	pytest -vvv -s $(toplevel_dir)/tests/$$service
 
 dev: build-service stop-node deploy-node
 	sleep 5
 	$(MAKE) deploy-contract
 
-update-lock:
+update-services-lockfile:
 	uv venv -p 3.11 && source .venv/bin/activate && \
 	uv pip install -r $(toplevel_dir)/$(req_file).txt && \
 	uv pip freeze > $(toplevel_dir)/$(req_file).lock
@@ -90,6 +124,10 @@ open-terminal:
 
 solc_version?=0.8.17
 
+# NOTE: on macos you might get a CERTIFICATE_VERIFY_FAILED error.
+# Solc uses the system python under the hood to pull files & therefore certificates
+# need to be separately installed.
+# To fix this, follow here: https://github.com/crytic/solc-select/issues/114#issuecomment-1212475592
 set-solc:
 	solc-select use $(solc_version) --always-install
 
