@@ -71,7 +71,7 @@ pre-commit-service:
 	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
 	source .venv/bin/activate && \
 	uv pip install -r requirements.lock; \
-	uv pip install mypy isort; \
+	uv pip install mypy isort pre-commit; \
 	pre-commit run --files `git ls-files`
 
 test-library:
