@@ -16,9 +16,9 @@ RUN apt-get install -y git curl
 # install uv
 RUN curl -LsSf https://astral.sh/uv/0.2.1/install.sh | sh
 
-COPY requirements.txt .
+COPY requirements.lock .
 
-RUN /root/.cargo/bin/uv pip install --system --no-cache -r requirements.txt
+RUN /root/.cargo/bin/uv pip install --system --no-cache -r requirements.lock
 
 COPY src src
 

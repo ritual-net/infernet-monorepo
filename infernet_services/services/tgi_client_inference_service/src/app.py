@@ -8,8 +8,8 @@ from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
+from infernet_ml.services.types import InfernetInput, JobLocation
 from infernet_ml.utils.css_utils import RetryParams
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
