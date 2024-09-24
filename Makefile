@@ -70,7 +70,7 @@ pre-commit-service:
 	cd infernet_services/services/$$service; \
 	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
 	source .venv/bin/activate && \
-	uv pip install -r requirements.txt; \
+	uv pip install -r requirements.lock; \
 	uv pip install mypy isort; \
 	pre-commit run --files `git ls-files`
 

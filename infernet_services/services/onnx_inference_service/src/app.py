@@ -16,7 +16,6 @@ from infernet_ml.services.onnx import (
     ONNXServiceConfig,
 )
 from infernet_ml.services.types import InfernetInput, JobLocation
-from infernet_ml.utils.codec.vector import RitualVector
 from infernet_ml.utils.spec import (
     MLComputeCapability,
     ServiceResources,
@@ -25,8 +24,8 @@ from infernet_ml.utils.spec import (
 )
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
-    ONNXInferenceWorkflow,
     ONNXInferenceResult,
+    ONNXInferenceWorkflow,
 )
 from pydantic import ValidationError as PydValError
 from quart import Quart, abort

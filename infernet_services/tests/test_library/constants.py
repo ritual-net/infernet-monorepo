@@ -37,6 +37,7 @@ DEFAULT_REGISTRY_ADDRESS: ChecksumAddress = cast(
 
 # rpc url that the infernet-node uses to talk to the chain
 DEFAULT_INFERNET_RPC_URL = "http://host.docker.internal:8545"
+# DEFAULT_INFERNET_RPC_URL = "http://172.17.0.1:8545"
 
 # rpc url that is used in testing when sending transactions/deploying contracts
 DEFAULT_TESTING_RPC_URL = "http://127.0.0.1:8545"
