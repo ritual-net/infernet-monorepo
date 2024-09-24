@@ -123,7 +123,7 @@ class ServiceConfig(BaseModel):
 
 def create_default_config_file(
     services: List[ServiceConfig],
-):
+) -> None:
     config = default_network_config
     create_config_file(
         services,

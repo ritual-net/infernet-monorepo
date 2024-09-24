@@ -8,6 +8,7 @@ import os
 from typing import Any, Dict, Union, cast
 
 from eth_abi.abi import decode, encode
+from infernet_ml.services.types import InfernetInput, JobLocation
 from infernet_ml.utils.hf_types import (
     HFClassificationInferenceInput,
     HFInferenceClientInput,
@@ -18,7 +19,6 @@ from infernet_ml.utils.hf_types import (
     HFTokenClassificationInferenceInput,
     parse_hf_inference_input_from_dict,
 )
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.hf_inference_client_workflow import (
     HFInferenceClientWorkflow,

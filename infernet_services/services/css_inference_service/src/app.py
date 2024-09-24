@@ -9,14 +9,19 @@ from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
 from eth_abi.abi import encode
+from infernet_ml.services.types import InfernetInput, JobLocation
 from infernet_ml.utils.codec.css import (
     CSSEndpoint,
     decode_css_completion_request,
     decode_css_request,
 )
-from infernet_ml.utils.css_mux import ApiKeys, CSSCompletionParams, CSSRequest, Provider
+from infernet_ml.utils.css_mux import (
+    ApiKeys,
+    CSSCompletionParams,
+    CSSProvider,
+    CSSRequest,
+)
 from infernet_ml.utils.css_utils import RetryParams
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 from pydantic import ValidationError as PydValError
@@ -50,7 +55,7 @@ def decode_onchain_css_request(hex_input: str) -> CSSRequest:
             model, messages = decode_css_completion_request(input_data_bytes)
 
             css_request = CSSRequest(
-                provider=Provider(provider.name),
+                provider=CSSProvider(provider.name),
                 model=model,
                 endpoint=endpoint.name,
                 params=CSSCompletionParams(messages=messages),
@@ -79,9 +84,9 @@ def create_app() -> Quart:
     app: Quart = Quart(__name__)
 
     api_keys: ApiKeys = {
-        Provider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
-        Provider.OPENAI: os.getenv("OPENAI_API_KEY"),
-        Provider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
+        CSSProvider.GOOSEAI: os.getenv("GOOSEAI_API_KEY"),
+        CSSProvider.OPENAI: os.getenv("OPENAI_API_KEY"),
+        CSSProvider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
     }
 
     _retry_params = os.getenv("RETRY_PARAMS")
@@ -203,5 +208,10 @@ def create_app() -> Quart:
 
 
 if __name__ == "__main__":
-    app = create_app()
-    app.run(port=3000, debug=True)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            app = create_app()
+            app.run(port=3000, debug=True)

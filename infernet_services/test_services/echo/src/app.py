@@ -2,7 +2,7 @@ from typing import Any, Dict, cast
 
 from eth_abi.abi import decode, encode
 from flask import Flask, request
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
+from infernet_ml.services.types import InfernetInput, JobLocation
 from pydantic import ValidationError
 
 
