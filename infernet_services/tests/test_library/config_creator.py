@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Optional
 
 from eth_typing import ChecksumAddress
 from pydantic import BaseModel
-
 from test_library.constants import (
     DEFAULT_INFERNET_RPC_URL,
     DEFAULT_NODE_PAYMENT_WALLET,

@@ -41,9 +41,7 @@ def deploy_to_vercel(project_name: str, prod: bool) -> None:
     ).wait()
 
     subprocess.Popen(
-        shlex.split(
-            f"{vercel} deploy {prod_cmd} --prebuilt --token {vercel_token}"
-        ),
+        shlex.split(f"{vercel} deploy {prod_cmd} --prebuilt --token {vercel_token}"),
         env=env,
     ).wait()
 

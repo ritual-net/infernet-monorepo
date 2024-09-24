@@ -1,9 +1,8 @@
 from typing import Any, Dict
 
-from web3 import AsyncHTTPProvider, AsyncWeb3
-
 from infernet_ml.utils.codec.vector import DataType, RitualVector
 from test_library.constants import ANVIL_NODE
+from web3 import AsyncHTTPProvider, AsyncWeb3
 
 w3 = AsyncWeb3(AsyncHTTPProvider(ANVIL_NODE))
 

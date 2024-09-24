@@ -2,8 +2,6 @@ import logging
 
 import pytest
 from eth_abi.abi import encode
-from infernet_ml.utils.codec.vector import encode_vector
-from infernet_ml.utils.model_loader import ModelSource
 from test_library.constants import arweave_model_id
 from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
@@ -19,6 +17,9 @@ from torch_inference_service.conftest import (
     TORCH_SERVICE_NOT_PRELOADED,
     TORCH_WITH_PROOFS,
 )
+
+from infernet_ml.utils.codec.vector import encode_vector
+from infernet_ml.utils.model_loader import ModelSource
 
 log = logging.getLogger(__name__)
 

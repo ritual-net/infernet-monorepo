@@ -1,10 +1,7 @@
 import pytest
 from dotenv import load_dotenv
-
 from infernet_ml.services.onnx import ONNXInferenceRequest
-from onnx_inference_service.common import (
-    iris_classification_web2_assertions_fn,
-)
+from onnx_inference_service.common import iris_classification_web2_assertions_fn
 from onnx_inference_service.conftest import ONNX_HF_PRELOADED
 from onnx_inference_service.test_onnx_service_not_preloaded import iris_inputs
 from test_library.web2_utils import get_job, request_job

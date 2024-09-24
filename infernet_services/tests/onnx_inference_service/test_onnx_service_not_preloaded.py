@@ -3,19 +3,12 @@ import logging
 import numpy as np
 import pytest
 from dotenv import load_dotenv
-
 from infernet_ml.services.onnx import ONNXInferenceRequest
 from infernet_ml.utils.codec.vector import RitualVector
-from onnx_inference_service.common import (
-    iris_classification_web2_assertions_fn,
-)
+from onnx_inference_service.common import iris_classification_web2_assertions_fn
 from onnx_inference_service.conftest import ONNX_SERVICE_NOT_PRELOADED, ONNX_WITH_PROOFS
-from test_library.artifact_utils import hf_model_id, ar_model_id
-from test_library.web2_utils import (
-    get_job,
-    request_delegated_subscription,
-    request_job,
-)
+from test_library.artifact_utils import ar_model_id, hf_model_id
+from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
     iris_web3_assertions,
@@ -97,7 +90,9 @@ def test_request_encoding_decoding() -> None:
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_arweave() -> None:
-    sub_id = await request_web3_compute(ONNX_SERVICE_NOT_PRELOADED, ar_request.to_web3())
+    sub_id = await request_web3_compute(
+        ONNX_SERVICE_NOT_PRELOADED, ar_request.to_web3()
+    )
 
     await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
 
@@ -113,7 +108,9 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 
 @pytest.mark.asyncio
 async def test_basic_web3_inference_from_hf_hub() -> None:
-    sub_id = await request_web3_compute(ONNX_SERVICE_NOT_PRELOADED, hf_request.to_web3())
+    sub_id = await request_web3_compute(
+        ONNX_SERVICE_NOT_PRELOADED, hf_request.to_web3()
+    )
 
     await assert_generic_callback_consumer_output(sub_id, iris_web3_assertions)
 

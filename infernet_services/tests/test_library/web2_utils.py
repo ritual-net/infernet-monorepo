@@ -2,15 +2,14 @@ import random
 from time import time
 from typing import Any, Dict, Optional, cast
 
-from aiohttp import ServerDisconnectedError, ClientSession
-from pydantic import BaseModel, ValidationError
-from reretry import retry  # type: ignore
-
+from aiohttp import ClientSession, ServerDisconnectedError
 from infernet_client.chain.rpc import RPC
 from infernet_client.chain.subscription import Subscription
 from infernet_client.node import NodeClient
 from infernet_client.types import ContainerResult, JobID, JobRequest
 from infernet_ml.services.types import InfernetInput, JobLocation
+from pydantic import BaseModel, ValidationError
+from reretry import retry  # type: ignore
 from test_library.config_creator import get_service_port
 from test_library.constants import DEFAULT_CONTRACT, DEFAULT_NODE_URL, ZERO_ADDRESS
 from test_library.infernet_fixture import log
@@ -118,7 +117,7 @@ async def request_delegated_subscription(
 
         await client.request_delegated_subscription(
             subscription=sub,
-            rpc=RPC(global_config.rpcs),
+            rpc=RPC(global_config.rpc_url),
             coordinator_address=global_config.coordinator_address,
             expiry=int(time() + 10),
             nonce=nonce,

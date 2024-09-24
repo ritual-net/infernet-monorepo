@@ -3,16 +3,12 @@ import os
 from typing import Generator
 
 import pytest
+from test_library.artifact_utils import ar_model_id, hf_model_id
+from test_library.config_creator import ServiceConfig, create_default_config_file
+from test_library.constants import skip_contract, skip_deploying, skip_teardown
+from test_library.infernet_fixture import handle_lifecycle
 
 from infernet_ml.services.onnx import ONNXServiceConfig
-from test_library.artifact_utils import hf_model_id, ar_model_id
-from test_library.config_creator import ServiceConfig, create_default_config_file
-from test_library.constants import (
-    skip_contract,
-    skip_deploying,
-    skip_teardown,
-)
-from test_library.infernet_fixture import handle_lifecycle
 
 ONNX_ARWEAVE_PRELOADED = "onnx_inference_service_preloaded_arweave"
 ONNX_HF_PRELOADED = "onnx_inference_service_preloaded_hf"

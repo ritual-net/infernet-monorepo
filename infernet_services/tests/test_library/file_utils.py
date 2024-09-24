@@ -49,4 +49,3 @@ def find_file_in_monorepo(pattern: str) -> Path:
     raise FileNotFoundError(
         f"Could not find file matching pattern {pattern} in monorepo"
     )
-

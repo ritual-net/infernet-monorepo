@@ -1,5 +1,5 @@
 quart==0.19.4
-infernet-ml==2.0.0.28
-infernet-ml[onnx_inference]==2.0.0.28
+infernet-ml==2.0.0.32
+infernet-ml[onnx_inference]==2.0.0.32
 click==8.1.7
 eth-abi==5.1.0

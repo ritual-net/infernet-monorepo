@@ -11,7 +11,6 @@ from eth_abi.exceptions import InsufficientDataBytes
 from eth_typing import ChecksumAddress
 from hexbytes import HexBytes
 from infernet_client.chain.rpc import RPC
-from infernet_ml.utils.codec.vector import DataType, RitualVector
 from reretry import retry  # type: ignore
 from test_library.config_creator import infernet_services_dir
 from test_library.constants import (
@@ -27,6 +26,8 @@ from web3 import AsyncHTTPProvider, AsyncWeb3
 from web3.contract import AsyncContract  # type: ignore
 from web3.exceptions import ContractLogicError
 from web3.types import ABI, LogReceipt, TxReceipt
+
+from infernet_ml.utils.codec.vector import DataType, RitualVector
 
 log = logging.getLogger(__name__)
 
@@ -194,7 +195,7 @@ async def assert_generic_callback_consumer_output(
 
 def get_account_address(_private_key: Optional[str] = None) -> ChecksumAddress:
     private_key = _private_key or global_config.tester_private_key
-    w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpcs))
+    w3 = AsyncWeb3(AsyncHTTPProvider(global_config.rpc_url))
     account = w3.eth.account.from_key(private_key)
     return AsyncWeb3.to_checksum_address(account.address)
 
@@ -329,7 +330,7 @@ def california_housing_web3_assertions(
 ) -> None:
     assert output != b""
     raw, processed = decode(["bytes", "bytes"], output)
-    dtype, shape, values = decode_vector(raw)
+    dtype, shape, values = None, None, None
     assert dtype == DataType.double
     assert shape == (1,)
     assert abs(values[0] - 4.151943055154582) < 1e-6
@@ -362,7 +363,7 @@ def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:
         filename=f"{contract_name}.sol",
         consumer_contract=contract_name,
         sender=global_config.tester_private_key,
-        rpc_url=global_config.rpcs,
+        rpc_url=global_config.rpc_url,
         registry=DEFAULT_REGISTRY_ADDRESS,
         extra_params={"signer": get_account_address()},
     )
@@ -383,7 +384,7 @@ def echo_output(_in: str) -> bytes:
 
 
 async def get_rpc() -> RPC:
-    return await RPC(global_config.rpcs).initialize_with_private_key(
+    return await RPC(global_config.rpc_url).initialize_with_private_key(
         global_config.tester_private_key
     )
 

@@ -21,8 +21,15 @@ set-version:
 	$(SED) -i 's/version = .*/version = "$(version)"/' libraries/$(library)/pyproject.toml
 
 build-library:
-	rm `find dist | grep $(library)`; \
+	rm `find dist | grep $(library)` || true; \
 	rye build --pyproject libraries/$(library)/pyproject.toml
+
+build-pyo3-library:
+	if ! command -v maturin; then \
+		uv pip install maturin; \
+	fi; \
+	rm `find dist | grep $(library)` || true; \
+	make -C libraries/$(library) build
 
 repository_url := https://$(artifact_location)-python.pkg.dev/$(gcp_project)/$(artifact_repo)/
 
@@ -46,7 +53,7 @@ define get_library
 if [ -z "$(library)" ]; then \
 	library=`ls libraries | grep -v pycache | fzf`; \
 else \
-	library="$(library)"; \
+	library=`ls libraries | grep -v pycache | grep $(library) | head -n 1`; \
 fi;
 endef
 export get_library
@@ -77,8 +84,28 @@ update-library-lockfile:
 	rm -rf temp_lock; \
 	echo "✅ Updated lockfile for $$library"
 
+
+bump-lib-version:
+	@eval "$$get_library"; \
+	current_version=`grep "version = " libraries/$$library/pyproject.toml | awk '{print $$3}' | tr -d '"'`; \
+	incremented=`python -c "cv='$$current_version'.split('.'); cv[-1]=str(int(cv[-1])+1); print('.'.join(cv))"`; \
+	$(SED) -i "s/version = .*/version = \"$$incremented\"/" libraries/$$library/pyproject.toml; \
+	echo "Bumped version from $$current_version to $$incremented";
+
 publish-library:
+	@eval "$$get_library"; \
+	if [ -z "$(skip_bump)" ]; then \
+		make bump-lib-version library=$$library; \
+	fi; \
+	is_pyo3=`grep "pyo3" libraries/$$library/pyproject.toml`; \
+	if [ -z "$$is_pyo3" ]; then \
+		make clean build-library library=$$library; \
+	else \
+		make clean build-pyo3-library library=$$library; \
+	fi; \
+	echo "getting access token"; \
 	token=`make get-access-token`; \
+	echo "publishing"; \
 	rye publish --repository ritual-pypi \
 		--repository-url $(repository_url) \
 		--username $(username) \

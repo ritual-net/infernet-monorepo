@@ -9,8 +9,6 @@ import numpy as np
 import pytest
 from dotenv import load_dotenv
 from eth_abi import decode  # type: ignore
-from infernet_ml.utils.codec.ezkl_codec import encode_proof_request
-from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 from solcx import compile_standard
 from test_library.test_config import global_config
 from test_library.web3_utils import (
@@ -21,6 +19,9 @@ from test_library.web3_utils import (
 from torch import Tensor
 from web3 import Web3
 from web3.contract import AsyncContract  # type: ignore
+
+from infernet_ml.utils.codec.ezkl_codec import encode_proof_request
+from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
 
 TEST_INPUT = [
     0.052521463483572006,

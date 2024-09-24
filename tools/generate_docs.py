@@ -23,7 +23,7 @@ theme:
   - content.code.copy
   - search.highlight
   - search.suggest
-  
+
 plugins:
 - search
 - mkdocstrings:
@@ -31,7 +31,7 @@ plugins:
       python:
         rendering:
           show_source: true
-          
+
 markdown_extensions:
 - meta
 - pymdownx.highlight:
@@ -129,9 +129,9 @@ def generate_docs(
                     md_file.write(f"::: {module_path.strip('.')}\n")
 
                 # Add entry to the current directory's list in the navigation structure
-                current_dir_list[f"{module_name}.md"] = (
-                    "reference/" + doc_relative_path.replace(os.sep, "/")
-                )
+                current_dir_list[
+                    f"{module_name}.md"
+                ] = "reference/" + doc_relative_path.replace(os.sep, "/")
 
     def write_nav_entries(nav_entries: Dict[str, str]) -> list[Dict[str, Any]]:
         """

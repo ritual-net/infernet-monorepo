@@ -4,7 +4,6 @@ import shutil
 
 import yaml
 from dotenv import load_dotenv
-
 from generate_docs import add_common_config  # type: ignore
 
 load_dotenv()

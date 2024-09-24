@@ -7,7 +7,6 @@ from typing import Any, List, Optional
 import aiohttp
 from aiohttp import ClientOSError, ServerDisconnectedError
 from reretry import retry  # type: ignore
-
 from test_library.config_creator import ServiceConfig, ServiceEnvVars, get_service_port
 from test_library.constants import DEFAULT_NODE_URL, DEFAULT_TIMEOUT
 
@@ -58,7 +57,7 @@ async def await_service(
     return await _wait()
 
 
-def run_make_cmd(cmd: str, dir: Path=Path(".")) -> None:
+def run_make_cmd(cmd: str, dir: Path = Path(".")) -> None:
     """
     Run a make command
     """

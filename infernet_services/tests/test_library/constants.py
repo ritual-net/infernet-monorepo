@@ -54,7 +54,7 @@ MAX_GAS_PRICE = int(20e9)
 MAX_GAS_LIMIT = 1_000_000
 NODE_LOG_CMD = "docker logs -n 0 -f infernet-node"
 
-skip_deploying = True
-skip_contract = True
-skip_teardown = True
-suppress_logs = True
+skip_deploying = False
+skip_contract = False
+skip_teardown = False
+suppress_logs = False

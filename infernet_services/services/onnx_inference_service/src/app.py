@@ -7,32 +7,31 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Dict, Optional, cast, List
+from typing import Any, Dict, List, Optional, cast
 
+from infernet_ml.resource.artifact_manager import BroadcastedArtifact
+from infernet_ml.services.onnx import (
+    ONNX_SERVICE_PREFIX,
+    ONNXInferenceRequest,
+    ONNXServiceConfig,
+)
+from infernet_ml.services.types import InfernetInput, JobLocation
+from infernet_ml.utils.codec.vector import RitualVector
+from infernet_ml.utils.spec import (
+    MLComputeCapability,
+    ServiceResources,
+    postfix_query_handler,
+    ritual_service_specs,
+)
+from infernet_ml.workflows.exceptions import ServiceException
+from infernet_ml.workflows.inference.onnx_inference_workflow import (
+    ONNXInferenceWorkflow,
+)
 from pydantic import ValidationError as PydValError
 from quart import Quart, abort
 from quart import request as req
 from quart.utils import run_sync
 from werkzeug.exceptions import BadRequest, HTTPException
-
-from infernet_ml.resource.artifact_manager import BroadcastedArtifact
-from infernet_ml.services.onnx import (
-    ONNX_SERVICE_PREFIX,
-    ONNXServiceConfig,
-    ONNXInferenceRequest,
-)
-from infernet_ml.services.types import InfernetInput, JobLocation
-from infernet_ml.utils.spec import (
-    ritual_service_specs,
-    MLComputeCapability,
-    ServiceResources,
-    postfix_query_handler,
-)
-from infernet_ml.workflows.exceptions import ServiceException
-from infernet_ml.workflows.inference.onnx_inference_workflow import (
-    ONNXInferenceResult,
-    ONNXInferenceWorkflow,
-)
 
 log = logging.getLogger(__name__)
 
@@ -69,16 +68,17 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     ).setup()
 
     def resource_generator() -> dict[str, Any]:
-        cached_models: List[BroadcastedArtifact] = (
-            workflow.model_manager.get_cached_models()
-        )
-
-        return json.loads(
+        cached_models: List[
+            BroadcastedArtifact
+        ] = workflow.model_manager.get_cached_models()
+        loaded = json.loads(
             ServiceResources.initialize(
                 "onnx-inference-service",
                 [MLComputeCapability.onnx_compute(cached_models=cached_models)],
             ).model_dump_json(serialize_as_any=True)
         )
+
+        return cast(dict[str, Any], loaded)
 
     # Defines /service-resources
     ritual_service_specs(app, resource_generator, postfix_query_handler(".onnx"))
@@ -115,7 +115,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
                         )
 
                 logging.info(f"inference_input: {inf_req}")
-                result: ONNXInferenceResult = await run_sync(workflow.inference)(
+                result: List[RitualVector] = await run_sync(workflow.inference)(
                     inf_req.workflow_input
                 )
 

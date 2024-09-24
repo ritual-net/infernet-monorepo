@@ -92,6 +92,9 @@ jobs:
       - name: Install dependencies
         run: uv pip install --extra-index-url `make get-index-url` -r infernet_services/requirements-e2e-tests.lock
 
+      - name: Run pre-commits
+        run: make pre-commit-service service=${{ matrix.service }}
+
       - name: Run tests
         env:
           # We need to list the env vars here again for them to get filtered out in logs
