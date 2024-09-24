@@ -39,8 +39,7 @@ def test_token_classification(
 ) -> None:
     output_data = workflow.inference(
         HFTokenClassificationInferenceInput(
-            text="Ritual makes AI x crypto a great combination!",
-            model="FacebookAI/xlm-roberta-large-finetuned-conll03-english",
+            text="Ritual makes AI x crypto a great combination!"
         )
     )
     assert output_data["output"][0].get("entity_group") == "ORG"

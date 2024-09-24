@@ -210,15 +210,13 @@ class RitualArtifactManager(BaseModel, Generic[ArtifactType]):
         repo_manager_kwargs = repo_manager_kwargs or {}
         if wallet_path:
             repo_manager_kwargs["wallet_path"] = wallet_path
-        return cast(
-            UploadArweaveRepoResult,
-            self.to_repo(
-                repo_id=RitualRepoId.from_arweave_repo_id(repo_name),
-                wallet_path=wallet_path,
-                repo_manager_kwargs=repo_manager_kwargs,
-                upload_kwargs=upload_kwargs,
-            ),
+        r = self.to_repo(
+            repo_id=RitualRepoId.from_arweave_repo_id(repo_name),
+            wallet_path=wallet_path,
+            repo_manager_kwargs=repo_manager_kwargs,
+            upload_kwargs=upload_kwargs,
         )
+        return cast(UploadArweaveRepoResult, r)
 
     def to_huggingface_hub(
         self,

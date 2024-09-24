@@ -48,14 +48,16 @@ iris_input = {
 }
 
 
-def _assert_iris_output(r: ONNXInferenceResult) -> None:
+def _assert_iris_output(res: ONNXInferenceResult) -> None:
+    r = res.output
     assert len(r) == 1
     assert r[0].dtype == "float32"
     assert r[0].shape == (1, 3)
     assert r[0].values.argmax() == 2
 
 
-def _assert_linreg_output(r: ONNXInferenceResult) -> None:
+def _assert_linreg_output(res: ONNXInferenceResult) -> None:
+    r = res.output
     assert len(r) == 1
     assert r[0].dtype == "float32"
     assert r[0].shape == (1, 1)
@@ -116,18 +118,19 @@ def test_inference_in_memory_cache(model_kwargs: dict[str, Any], mocker: Any) ->
     )
 
     # The model should be loaded by this point
-    load_mock.assert_called_once()
+    # should be called twice, once by the analyzer & once by the workflow
+    assert 2 == load_mock.call_count
 
     # Call the inference again, this time the model should be loaded from cache
-    r = wf.inference(
+    res = wf.inference(
         ONNXInferenceInput(
             inputs=iris_input,
             **model_kwargs,
         )
     )
-    _assert_iris_output(r)
+    _assert_iris_output(res)
 
-    load_mock.assert_called_once()
+    assert 2 == load_mock.call_count
 
 
 def test_inference_on_the_fly_should_not_change_default_model() -> None:
