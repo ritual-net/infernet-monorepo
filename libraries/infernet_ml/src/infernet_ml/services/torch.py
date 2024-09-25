@@ -18,7 +18,7 @@ class TorchServiceConfig(BaseModel):
     CACHE_DIR: Optional[str] = f'{Path("~/.cache/ritual").expanduser().absolute()}'
     USE_JIT: bool = False
 
-    def to_env_dict(self) -> dict[str, str | None]:
+    def to_env_dict(self) -> dict[str, str | bool | None]:
         return {
             "TORCH_DEFAULT_MODEL_ID": self.DEFAULT_MODEL_ID,
             "TORCH_CACHE_DIR": self.CACHE_DIR,
@@ -69,5 +69,5 @@ class TorchInferenceRequest(BaseModel):
     def workflow_input(self) -> TorchInferenceInput:
         return TorchInferenceInput(
             ml_model=self.ml_model,
-            inputs=self.inputs,
+            input=self.inputs,
         )
