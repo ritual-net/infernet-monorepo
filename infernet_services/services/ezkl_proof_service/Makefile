@@ -1,12 +1,12 @@
 DOCKER_ORG := ritualnetwork
-SERVICE_NAME := ezkl_proof_service_internal
-TAG := $(DOCKER_ORG)/$(SERVICE_NAME):1.0.0
+service_name := ezkl_proof_service_internal
+TAG := $(DOCKER_ORG)/$(service_name):1.0.0
 
 build: # force AMD because ezkl only supports musllinux for AARCH64, which doesnt support Torch.
 	@docker build -t $(TAG) --platform linux/amd64 --build-arg index_url=$(index_url) .
 
 run:
-	docker run --rm --env-file .env --name $(SERVICE_NAME) -p 3000:3000 $(TAG)
+	docker run --rm --env-file .env --name $(service_name) -p 3000:3000 $(TAG)
 
 push:
 	docker push $(TAG)
