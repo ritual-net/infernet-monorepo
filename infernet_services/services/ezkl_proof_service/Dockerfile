@@ -18,7 +18,7 @@ COPY requirements.lock .
 ARG index_url
 ENV UV_EXTRA_INDEX_URL ${index_url}
 
-RUN /root/.cargo/bin/uv pip install --system --no-cache -r requirements.txt
+RUN /root/.cargo/bin/uv pip install --system --no-cache -r requirements.lock
 
 COPY src src
 

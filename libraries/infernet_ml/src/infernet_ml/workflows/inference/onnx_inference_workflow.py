@@ -158,8 +158,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
     ) -> None:
         """
         Args:
-            model_source: Optional[ModelSource]: Source of the model to be loaded
-            load_args: Optional[LoadArgs]: Arguments to be passed to the model loader
+            model: Optional[MlModelId | str]: Model to be loaded
             *args: Any: Positional arguments
             **kwargs: Any: Keyword arguments
         """
@@ -230,22 +229,21 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         return self
 
     def get_session(
-        self, model_source: MlModelId
+        self, model: MlModelId
     ) -> Tuple[InferenceSession, ModelProto, float]:
         """
         Load the model and start the inference session.
 
         Args:
-            model_source: ModelSource: Source of the model to be loaded
-            load_args: LoadArgs: Arguments to be passed to the model loader
+            model (MlModelId): Model to be loaded
 
         Returns:
             Tuple[InferenceSession, ModelProto, float]: Tuple containing the
-            inference session, the model proto and the FLOPs of the model
+                inference session, the model proto and the FLOPs of the model
         """
 
         # load & check the model (uses lru_cache)
-        return self.load_model_and_start_session(model_source.unique_id)
+        return self.load_model_and_start_session(model.unique_id)
 
     def do_preprocessing(
         self, input_data: ONNXInferenceInput

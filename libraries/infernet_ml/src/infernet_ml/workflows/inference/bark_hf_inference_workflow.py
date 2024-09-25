@@ -6,7 +6,7 @@ text-to-speech [Bark](https://huggingface.co/docs/transformers/en/model_doc/bark
 
 ## Constructor Arguments
 
-- `model_source (Optional[str])`: The source of the model. This can be either `suno/bark` or `suno/bark-small`. Default
+- `model_name (Optional[str])`: The source of the model. This can be either `suno/bark` or `suno/bark-small`. Default
   is `suno/bark`.
 - `default_voice_preset (Optional[str])`: The default voice preset to be used. See [list](https://github.com/suno-ai/bark?tab=readme-ov-file#-voice-presets) of supported presets.
 
@@ -65,7 +65,7 @@ from infernet_ml.workflows.inference.bark_hf_inference_workflow import (
     BarkWorkflowInput,
 )
 
-workflow = BarkHFInferenceWorkflow(model_source="suno/bark-small", default_voice_preset="v2/en_speaker_0")
+workflow = BarkHFInferenceWorkflow(model_name="suno/bark-small", default_voice_preset="v2/en_speaker_0")
 
 workflow.setup()
 

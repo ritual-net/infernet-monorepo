@@ -223,6 +223,28 @@ class MLComputeCapability(BaseModel):
             inference_engine_version=version,
         )
 
+    @classmethod
+    def torch_compute(
+        cls,
+        models: Optional[List[BroadcastedArtifact]] = None,
+        cached_models: Optional[List[BroadcastedArtifact]] = None,
+    ) -> MLComputeCapability:
+        """
+        Utility function to generate a Torch compute capability.
+
+        Args:
+            models: Optional[List[MlModel]] - The list of models that can be supported
+            cached_models: Optional[List[MlModel]] - The list of cached models
+        """
+        models = models or []
+        cached_models = cached_models or []
+        return cls(
+            type=MLType.TORCH,
+            task=[],
+            models=models,
+            cached_models=cached_models,
+        )
+
 
 class ZKComputeCapability(BaseModel):
     """

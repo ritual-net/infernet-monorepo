@@ -5,49 +5,34 @@ This module serves as the driver for torch infernet_ml inference service.
 import json
 import logging
 import os
-from typing import Any, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
-import numpy as np
-from eth_abi.abi import decode
-from infernet_ml.utils.codec.vector import DataType, decode_vector, encode_vector
-from infernet_ml.utils.common_types import TensorInput
-from infernet_ml.utils.model_loader import (
-    ArweaveLoadArgs,
-    HFLoadArgs,
-    LoadArgs,
-    ModelSource,
-    parse_load_args,
+from infernet_ml.resource.artifact_manager import BroadcastedArtifact
+from infernet_ml.services.torch import (
+    TORCH_SERVICE_PREFIX,
+    TorchInferenceRequest,
+    TorchServiceConfig,
 )
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
+from infernet_ml.services.types import InfernetInput, JobLocation
+from infernet_ml.utils.spec import (
+    MLComputeCapability,
+    ServiceResources,
+    postfix_query_handler,
+    ritual_service_specs,
+)
 from infernet_ml.workflows.inference.torch_inference_workflow import (
-    TorchInferenceInput,
+    TorchInferenceResult,
     TorchInferenceWorkflow,
 )
 from quart import Quart, abort
 from quart import request as req
-from quart.json.provider import DefaultJSONProvider
-from torch import Tensor
+from quart.utils import run_sync
 from werkzeug.exceptions import BadRequest, HTTPException
 
 log = logging.getLogger(__name__)
 
 
 SERVICE_PREFIX = "TORCH_INF"
-
-
-class NumpyJsonEncodingProvider(DefaultJSONProvider):
-    @staticmethod
-    def default(obj: Any) -> Any:
-        if isinstance(obj, np.ndarray):
-            # Convert NumPy arrays to list
-            return obj.tolist()
-
-        if isinstance(obj, Tensor):
-            # Convert PyTorch tensors to list
-            return obj.tolist()
-
-        # fallback to default JSON encoding
-        return DefaultJSONProvider.default(obj)
 
 
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
@@ -62,80 +47,38 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         Quart: Quart App
     """
     app: Quart = Quart(__name__)
-    app.config.from_mapping()
 
-    log.info(
-        "setting up ONNX inference",
-    )
+    if test_config is None:
+        # load the instance config, if it exists, when not testing
+        app.config.from_prefixed_env(prefix=TORCH_SERVICE_PREFIX)
+    else:
+        log.warning(f"using test config {test_config.keys()}")
+        # load the test config if passed in
+        app.config.update(test_config)
 
-    model_source_env = os.getenv("MODEL_SOURCE")
+    service_config = TorchServiceConfig(**cast(dict[str, Any], app.config))
 
-    default_model_source: Optional[ModelSource] = (
-        None if model_source_env is None else ModelSource(int(model_source_env))
-    )
+    workflow = TorchInferenceWorkflow(
+        model=service_config.DEFAULT_MODEL_ID,
+        use_jit=service_config.USE_JIT,
+        cache_dir=service_config.CACHE_DIR,
+    ).setup()
 
-    load_args_env = os.getenv("LOAD_ARGS")
-
-    default_load_args: Optional[LoadArgs] = (
-        None
-        if load_args_env is None
-        else parse_load_args(
-            cast(ModelSource, default_model_source),
-            json.loads(load_args_env.strip('"').strip("'")),
-        )
-    )
-
-    use_jit_env = os.getenv("USE_JIT")
-
-    default_use_jit = False if use_jit_env is None else use_jit_env.lower() == "true"
-
-    app_config = test_config or {
-        "kwargs": {
-            "model_source": default_model_source,
-            "load_args": default_load_args,
-            "use_jit": default_use_jit,
-        }
-    }
-
-    kwargs = app_config["kwargs"]
-
-    WORKFLOW = TorchInferenceWorkflow(**kwargs).setup()
-
-    def _extract_model_load_args(
-        hex_input: str,
-    ) -> Tuple[Optional[ModelSource], Optional[LoadArgs]]:
-        """
-        Extracts the load args from the hex input.
-        """
-        (
-            source,
-            repo_id,
-            filename,
-            version,
-        ) = decode(
-            ["uint8", "string", "string", "string"],
-            bytes.fromhex(hex_input),
+    def resource_generator() -> dict[str, Any]:
+        cached_models: List[
+            BroadcastedArtifact
+        ] = workflow.model_manager.get_cached_models()
+        loaded = json.loads(
+            ServiceResources.initialize(
+                "torch-inference-service",
+                [MLComputeCapability.torch_compute(cached_models=cached_models)],
+            ).model_dump_json(serialize_as_any=True)
         )
 
-        if version == "":
-            version = None
+        return cast(dict[str, Any], loaded)
 
-        if repo_id == "" and filename == "" and version is None:
-            return cast(ModelSource, default_model_source), None
-        else:
-            load_args: LoadArgs
-            match source:
-                case ModelSource.HUGGINGFACE_HUB:
-                    load_args = HFLoadArgs(
-                        repo_id=repo_id, filename=filename, version=version
-                    )
-                case ModelSource.ARWEAVE:
-                    load_args = ArweaveLoadArgs(
-                        repo_id=repo_id, filename=filename, version=version
-                    )
-                case _:
-                    abort(400, f"Invalid ModelSource: {source}")
-            return ModelSource(source), cast(LoadArgs, load_args)
+    # Defines /service-resources
+    ritual_service_specs(app, resource_generator, postfix_query_handler(".torch"))
 
     @app.route("/")
     def index() -> dict[str, str]:
@@ -167,43 +110,28 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             case InfernetInput(requires_proof=True):
                 raise BadRequest("Proofs are not supported for Torch Inference Service")
             case InfernetInput(source=JobLocation.ONCHAIN):
-                hex_input = cast(str, input.data)
-                (_, _, _, _, vector) = decode(
-                    ["uint8", "string", "string", "string", "bytes"],
-                    bytes.fromhex(hex_input),
-                )
-                dtype, shape, values = decode_vector(vector)
-                _input = TensorInput(
-                    dtype=dtype.name, shape=shape, values=values.tolist()
-                )
-                model_source, load_args = _extract_model_load_args(hex_input)
-                inference_input = TorchInferenceInput(
-                    input=_input, model_source=model_source, load_args=load_args
-                )
+                inf_req = TorchInferenceRequest.from_web3(cast(str, input.data))
             case InfernetInput(source=JobLocation.OFFCHAIN):
                 log.info("received Offchain Request: %s", data)
-                inference_input = TorchInferenceInput(**data)
-                dtype = DataType[data["input"]["dtype"]]
+                inf_req = TorchInferenceRequest(**cast(Dict[str, Any], data))
             case _:
                 raise BadRequest(f"Invalid infernet source: {input.source}")
 
-        result = WORKFLOW.inference(inference_input)
+        logging.debug(f"inference_input: {inf_req}")
+        res: TorchInferenceResult = await run_sync(workflow.inference)(
+            inf_req.workflow_input
+        )
+        result = res.output
 
         match input:
             case InfernetInput(destination=JobLocation.OFFCHAIN):
-                return {
-                    "dtype": dtype.name,
-                    "shape": result.shape,
-                    "values": result.outputs.tolist(),
-                }
+                return result.model_dump()
             case InfernetInput(destination=JobLocation.ONCHAIN):
                 return {
                     "raw_input": hex_input,
                     "processed_input": "",
-                    "raw_output": encode_vector(
-                        dtype,
-                        result.shape,
-                        result.outputs,
+                    "raw_output": result.to_web3(
+                        inf_req.output_arithmetic, inf_req.output_num_decimals
                     ).hex(),
                     "processed_output": "",
                     "proof": "",
@@ -240,15 +168,10 @@ if __name__ == "__main__":
             app = create_app()
             app.run(host="0.0.0.0", port=3000)
         case _:
-            app = create_app(
-                {
-                    "kwargs": {
-                        "model_source": ModelSource.HUGGINGFACE_HUB,
-                        "load_args": HFLoadArgs(
-                            repo_id="Ritual-Net/california-housing",
-                            filename="california_housing.torch",
-                        ),
-                    }
-                }
+            from test_library.artifact_utils import ar_model_id
+
+            sample_config = TorchServiceConfig(
+                DEFAULT_MODEL_ID=ar_model_id("iris-classification", "iris.torch")
             )
+            app = create_app(sample_config.model_dump())
             app.run(port=3000, debug=True)

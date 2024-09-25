@@ -1,6 +1,7 @@
 toplevel_dir ?= infernet_services
 service_dir ?= $(toplevel_dir)/services
 deploy_dir ?= $(toplevel_dir)/deploy
+req_file ?= requirements
 
 define find_service
 if [ -z "$(service)" ]; then \

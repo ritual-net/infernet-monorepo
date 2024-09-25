@@ -1,18 +1,10 @@
-import json
 import os
 from typing import Generator
 
 import pytest
 from dotenv import load_dotenv
-from infernet_ml.utils.model_loader import ModelSource
 from test_library.config_creator import ServiceConfig
-from test_library.constants import (
-    arweave_model_id,
-    hf_model_id,
-    skip_contract,
-    skip_deploying,
-    skip_teardown,
-)
+from test_library.constants import skip_contract, skip_deploying, skip_teardown
 from test_library.infernet_fixture import handle_lifecycle
 
 load_dotenv()
@@ -35,29 +27,13 @@ def torch_setup() -> Generator[None, None, None]:
                 TORCH_ARWEAVE_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3000,
-                env_vars={
-                    "MODEL_SOURCE": ModelSource.ARWEAVE.value,
-                    "LOAD_ARGS": json.dumps(
-                        {
-                            "repo_id": arweave_model_id("california-housing"),
-                            "filename": "california_housing.torch",
-                        }
-                    ),
-                },
+                env_vars={},
             ),
             ServiceConfig.build(
                 TORCH_HF_PRELOADED,
                 image_id=TORCH_SERVICE_DOCKER_IMG,
                 port=3001,
-                env_vars={
-                    "MODEL_SOURCE": ModelSource.HUGGINGFACE_HUB.value,
-                    "LOAD_ARGS": json.dumps(
-                        {
-                            "repo_id": hf_model_id("california-housing"),
-                            "filename": "california_housing.torch",
-                        }
-                    ),
-                },
+                env_vars={},
             ),
             ServiceConfig.build(
                 TORCH_SERVICE_NOT_PRELOADED,
