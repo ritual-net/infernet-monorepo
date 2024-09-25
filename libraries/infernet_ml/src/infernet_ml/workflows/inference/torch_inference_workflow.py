@@ -110,12 +110,11 @@ class TorchInferenceInput(BaseModel):
 
     ### Input Format
     Input format is a dictionary of input tensors. Each key corresponds to the name of
-    the input nodes defined in the Torch model. The values are of type `TensorInput`.
+    the input nodes defined in the Torch model.
 
     Args:
-        input: TensorInput: Input tensor
-        model_source: Optional[ModelSource]: Source of the model to be loaded
-        load_args: Optional[LoadArgs]: Arguments to be passed to the model loader
+        input: RitualVector | np.ndarray | torch.Tensor: Input data for the model
+        ml_model: Optional[MlModelId | str]: Model source to be loaded at boot
     """
 
     input: TensorInput

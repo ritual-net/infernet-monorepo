@@ -110,12 +110,11 @@ class ONNXInferenceInput(BaseModel):
 
     ### Input Format
     Input format is a dictionary of input tensors. Each key corresponds to the name of
-    the input nodes defined in the onnx model. The values are of type `TensorInput`.
+    the input nodes defined in the onnx model. The values are of type `RitualVector`.
 
     Args:
-        inputs: Dict[str, TensorInput]: Each key corresponds to an input tensor name.
-        model_source: Optional[ModelSource]: Source of the model to be loaded
-        load_args: Optional[LoadArgs]: Arguments to be passed to the model loader
+        inputs: Dict[str, RitualVector]: Each key corresponds to an input tensor name.
+        ml_model: Optional[MlModelId | str]: Model to be loaded at boot.
     """
 
     inputs: Dict[str, RitualVector]
