@@ -4,6 +4,7 @@ this module serves as the driver for the llm inference service.
 
 import json
 import logging
+import os
 from typing import Any, AsyncGenerator, cast
 
 from dotenv import load_dotenv
@@ -181,6 +182,11 @@ def create_app() -> Quart:
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    app = create_app()
-    app.run(port=3000, debug=True)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            load_dotenv()
+            app = create_app()
+            app.run(port=3000, debug=True)

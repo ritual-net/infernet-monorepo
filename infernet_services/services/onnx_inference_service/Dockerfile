@@ -17,7 +17,6 @@ RUN apt-get install -y git curl
 RUN curl -LsSf https://astral.sh/uv/0.2.33/install.sh | sh
 COPY requirements.lock .
 
-
 ARG index_url
 ENV UV_EXTRA_INDEX_URL ${index_url}
 

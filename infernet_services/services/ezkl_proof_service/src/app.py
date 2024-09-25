@@ -4,10 +4,12 @@ This service serves proofs via the EZKL proving library.
 
 import json
 import logging
+import os
 import tempfile
 from typing import Any, Optional, cast
 
 import ezkl  # type: ignore
+from infernet_ml.services.types import InfernetInput, JobLocation
 from infernet_ml.utils.codec.ezkl_codec import (
     encode_onchain_payload,
     extract_processed_input_output,
@@ -17,7 +19,6 @@ from infernet_ml.utils.codec.ezkl_codec import (
 from infernet_ml.utils.ezkl_models import EZKLProofRequest, EZKLProvingArtifactsConfig
 from infernet_ml.utils.ezkl_utils import load_proving_artifacts
 from infernet_ml.utils.model_loader import ModelSource
-from infernet_ml.utils.service_models import InfernetInput, JobLocation
 from pydantic import ValidationError
 from quart import Quart, abort
 from quart import request as req
@@ -187,6 +188,11 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
 
 if __name__ == "__main__":
-    # we are testing, assume local model source
-    app = create_app({"MODEL_SOURCE": ModelSource.LOCAL})
-    app.run(port=3000)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            # we are testing, assume local model source
+            app = create_app({"MODEL_SOURCE": ModelSource.LOCAL})
+            app.run(port=3000, debug=True)

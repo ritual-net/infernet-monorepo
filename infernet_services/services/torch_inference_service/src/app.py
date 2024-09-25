@@ -235,15 +235,20 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
 
 if __name__ == "__main__":
-    app = create_app(
-        {
-            "kwargs": {
-                "model_source": ModelSource.HUGGINGFACE_HUB,
-                "load_args": HFLoadArgs(
-                    repo_id="Ritual-Net/california-housing",
-                    filename="california_housing.torch",
-                ),
-            }
-        }
-    )
-    app.run(port=3000, debug=True)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            app = create_app(
+                {
+                    "kwargs": {
+                        "model_source": ModelSource.HUGGINGFACE_HUB,
+                        "load_args": HFLoadArgs(
+                            repo_id="Ritual-Net/california-housing",
+                            filename="california_housing.torch",
+                        ),
+                    }
+                }
+            )
+            app.run(port=3000, debug=True)

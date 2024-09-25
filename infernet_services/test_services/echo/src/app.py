@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, cast
 
 from eth_abi.abi import decode, encode
@@ -52,4 +53,10 @@ def create_app() -> Flask:
 
 
 if __name__ == "__main__":
-    create_app().run(port=3000, debug=True)
+    match os.getenv("RUNTIME"):
+        case "docker":
+            app = create_app()
+            app.run(host="0.0.0.0", port=3000)
+        case _:
+            app = create_app()
+            app.run(port=3000, debug=True)
