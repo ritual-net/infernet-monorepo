@@ -104,7 +104,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
         input: InfernetInput = InfernetInput(**infernet_input)
 
-        data: dict[str, Any] = cast(dict[str, Any], input.data)
         hex_input = ""
         match input:
             case InfernetInput(requires_proof=True):
@@ -112,8 +111,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
             case InfernetInput(source=JobLocation.ONCHAIN):
                 inf_req = TorchInferenceRequest.from_web3(cast(str, input.data))
             case InfernetInput(source=JobLocation.OFFCHAIN):
-                log.info("received Offchain Request: %s", data)
-                inf_req = TorchInferenceRequest(**cast(Dict[str, Any], data))
+                log.info("received Offchain Request: %s", input.data)
+                inf_req = TorchInferenceRequest(**cast(Dict[str, Any], input.data))
             case _:
                 raise BadRequest(f"Invalid infernet source: {input.source}")
 
@@ -125,7 +124,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
         match input:
             case InfernetInput(destination=JobLocation.OFFCHAIN):
-                return result.model_dump()
+                return {"result": result.model_dump()}
             case InfernetInput(destination=JobLocation.ONCHAIN):
                 return {
                     "raw_input": hex_input,

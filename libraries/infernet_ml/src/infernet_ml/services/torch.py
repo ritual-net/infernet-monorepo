@@ -28,7 +28,7 @@ class TorchServiceConfig(BaseModel):
 
 class TorchInferenceRequest(BaseModel):
     ml_model: Optional[str] = None
-    inputs: dict[str, RitualVector]
+    inputs: RitualVector
     output_arithmetic: Optional[ArithmeticType] = None
     output_num_decimals: Optional[int] = None
 
@@ -39,7 +39,7 @@ class TorchInferenceRequest(BaseModel):
 
         values: List[Any] = [
             MlModelId.from_unique_id(self.ml_model).to_web3 if self.ml_model else b"",
-            list(self.inputs.values())[0].to_web3(arithmetic, num_decimals),
+            list(self.inputs.values()).to_web3(arithmetic, num_decimals),
         ]
 
         if self.output_arithmetic:
