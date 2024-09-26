@@ -51,8 +51,19 @@ def create_app() -> Quart:
     )
 
     workflow: TGIClientInferenceWorkflow
+
+    # get the HF token from the environment
+    token = os.getenv("HF_TOKEN")
+    token_header = {"Authorization": f"Bearer {token}"} if token else {}
+
     # create workflow instance from class, using specified arguments
     retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
+
+    if "headers" not in LLM_WORKFLOW_KW_ARGS:
+        LLM_WORKFLOW_KW_ARGS["headers"] = token_header
+    else:
+        LLM_WORKFLOW_KW_ARGS["headers"].update(token_header)
+
     if len(LLM_WORKFLOW_POSITIONAL_ARGS) > 4:
         workflow = TGIClientInferenceWorkflow(
             *LLM_WORKFLOW_POSITIONAL_ARGS,

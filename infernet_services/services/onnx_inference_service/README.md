@@ -20,7 +20,7 @@ in `config.json`.
     "containers": [
         {
             "id": "onnx_inference_service",
-            "image": "your_org/onnx_inference_service:latest",
+            "image": "ritualnetwork/onnx_inference_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -28,70 +28,132 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "MODEL_SOURCE": 2, // huggingface hub
-                "LOAD_ARGS": "{\"repo_id\": \"your_org/model\", \"filename\": \"model_name.onnx\"}"
+                "ONNX_DEFAULT_MODEL_ID": "huggingface/Ritual-Net/iris-classification:iris.onnx",
+                "ONNX_CACHE_DIR": "~/.cache/ritual"
             }
         }
     ]
 }
 ```
 
-## Supported Model Sources
-
-The ONNX inference service supports the following model sources (
-See [`ModelSource`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/utils/model_loader/?h=modelsource#infernet_ml.utils.model_loader.ModelSource)
-enum):
-
-```python
-class ModelSource(IntEnum):
-    """
-    Enum for the model source
-    """
-
-    LOCAL = 0
-    ARWEAVE = 1
-    HUGGINGFACE_HUB = 2
-```
-
-and the
-following [`LOAD_ARGS`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/utils/model_loader/?h=modelsource#infernet_ml.utils.model_loader.CommonLoadArgs)
-are common across these model sources:
-
-```python
-class CommonLoadArgs(BaseModel):
-    """
-    Common arguments for loading a model
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    cache_path: Optional[str] = None
-    version: Optional[str] = None
-    repo_id: str
-    filename: str
-```
-
-Model source and load args can be passed either as environment variables or directly as input data.
-
 ## Environment Variables
 
-### MODEL_SOURCE
+### ONNX_DEFAULT_MODEL_ID
 
-- **Description**: The source of the model
+- **Description**: The [Model ID](#model-ids) of the model to pre-load
 - **Default**: None
-- **Example**: `1` (ARWEAVE)
+- **Example**: `"huggingface/Ritual-Net/iris-classification:iris.onnx"`
 
-### LOAD_ARGS
+### ONNX_CACHE_DIR
 
-- **Description**: The arguments to load with the model
+- **Description**: The local directory to store model weights and data in
 - **Default**: None
-- **Example**: `{"repo_id": "your_org/model", "filename": "model_name.onnx", "version": "v1"}`
+- **Example**: `"~/.cache/ritual"`
+
+
+## Model IDs
+
+The ONNX Inference Service supports the following model sources, defined by the `StorageId` enum (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/resource/types/#infernet_ml.resource.types.StorageId)):
+
+```python
+class StorageId(StrEnum):
+    """
+    StorageId: Enum for the different types of storage capabilities within ritual's
+        services. Models/Artifacts can be stored in different storage backends.
+    """
+
+    Local: str = "local"
+    Arweave: str = "arweave"
+    Huggingface: str = "huggingface"
+```
+
+Model repositories are defined as `RitualRepoId` instances (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/resource/repo_id/#infernet_ml.resource.repo_id.RitualRepoId)):
+
+```python
+class RitualRepoId(BaseModel):
+    """
+    A class representing a repository of files on Ritual. A repository in Ritual is
+    identified by where it is stored (storage), the owner of the repository (owner),
+    and the name of the repository (name).
+
+    Each repository has a unique id which is of the format:
+
+        {storage}/{owner}/{name}[/{version}]
+
+    Attributes:
+        storage (StorageId): The storage where the repository is stored.
+        owner (str): The owner of the repository.
+        name (str): The name of the repository.
+        version (str): The version of the repository.
+    """
+
+    storage: StorageId
+    owner: str
+    name: str
+    version: Optional[str] = None
+
+```
+
+Model IDs are defined as `MlModelId` instances (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/utils/specs/ml_model_id/#infernet_ml.utils.specs.ml_model_id.MlModelId)):
+
+
+```python
+class MlModelId(BaseModel):
+    """
+    ModelId: Base class for all models within Ritual's services.
+
+    Each model has a unique id which is of the format: {repo_id}/
+
+    Attributes:
+        ml_type: MLType - The type of machine learning model
+        repo_id: RitualRepoId - The repository id of the model
+        files: List[str] - The list of files that make up the model
+    """
+
+    repo_id: RitualRepoId
+    files: List[str] = []
+    ml_type: Optional[MLType] = None
+```
+
+**Therefore, we recommend formatting model IDs as follows**:
+```python
+from infernet_ml.resource.repo_id import RitualRepoId
+from infernet_ml.resource.types import StorageId
+from infernet_ml.utils.specs.ml_model_id import MlModelId
+
+# HuggingFace
+repo_id = RitualRepoId(
+    owner="Ritual-Net", storage=StorageId.Huggingface, name="iris-classification"
+)
+
+model_id = MlModelId(repo_id=repo_id, files=["iris.onnx"]).unique_id
+
+print("HuggingFace:")
+print(model_id)
+
+# Arweave
+repo_id = RitualRepoId(
+    owner="your-arweave-address", storage=StorageId.Arweave, name="iris-classification"
+)
+
+model_id = MlModelId(repo_id=repo_id, files=["iris.onnx"]).unique_id
+
+print("Arweave:")
+print(model_id)
+```
+
+**Expected Output**:
+```bash
+# HuggingFace:
+# huggingface/Ritual-Net/iris-classification:iris.onnx
+
+# Arweave:
+# arweave/your-arweave-address/iris-classification:iris.onnx
+```
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
-or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with
-HTTP requests against the infernet node directly (using a client like `cURL`).
+Offchain requests to the service can be initiated with `python` or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with HTTP requests against the Infernet Node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -138,37 +200,45 @@ class ContainerOutput(TypedDict):
 
     container: str
     output: Any
-
 ```
 
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: the examples below assume that you have an infernet node running locally on port `4000`.
 
 === "Python"
 
     ```python
-    from infernet_client.node import NodeClient
+    from infernet_client.node import JobRequest, NodeClient
+    from infernet_ml.services.onnx import ONNXInferenceRequest
+    from infernet_ml.utils.codec.vector import DataType, RitualVector
 
     client = NodeClient("http://127.0.0.1:4000")
-    iris_input_vector_params = {
-        "values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-        "shape": (1, 4)
-    }
-    job_id = await client.request_job(
-        "SERVICE_NAME",
-        {
-            "model_source": 1,  # ARWEAVE
-            "load_args": {
-                "repo_id": "Ritual-Net/iris-classification",
-                "filename": "iris.onnx",
-                "version": "v1"
-            },
-            "inputs": {"input": {**iris_input_vector_params, "dtype": "float"}}
-        },
+
+    # Define inputs
+    inputs = RitualVector(
+        dtype=DataType.float32,
+        shape=(1, 4),
+        values=[1.0380048, 0.5586108, 1.1037828, 1.712096],
     )
 
+    onnx_request = ONNXInferenceRequest(
+        ml_model="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+        inputs={
+            "input": inputs.model_dump()
+        }
+    )
+
+    # Define request
+    job_request = JobRequest(
+        containers=["onnx_inference_service"],
+        data=onnx_request.model_dump()
+    )
+
+    # Request the job
+    job_id = await client.request_job(job_request)
+
+    # Fetch results
     result = (await client.get_job_result_sync(job_id))["result"]
     ```
 
@@ -177,36 +247,27 @@ on port 4000.
     ```bash
     # Note that the sync flag is optional and will wait for the job to complete.
     # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-    infernet - client
-    job - c
-    SERVICE_NAME - i
-    input.json - -sync
+    infernet-client job -c onnx_inference_service -i input.json --sync
     ```
 
     where `input.json` looks like this:
 
     ```json
     {
-        "model_source": 2,
-        "load_args": {
-            "repo_id": "Ritual-Net/iris-classification",
-            "filename": "iris.onnx"
-        },
+        "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
         "inputs": {
             "input": {
-                "values": [
-                    [
-                        1.0380048,
-                        0.5586108,
-                        1.1037828,
-                        1.712096
-                    ]
+                "values":[
+                    1.0380048,
+                    0.5586108,
+                    1.1037828,
+                    1.712096
                 ],
                 "shape": [
                     1,
                     4
                 ],
-                "dtype": "float"
+                "dtype": 1
             }
         }
     }
@@ -217,7 +278,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 1, "load_args": {"repo_id": "your_org/model", "filename": "iris.onnx", "version": "v1"}, "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]], "shape": [1,4], "dtype": "float"}}}}'
+        -d '{"containers": ["onnx_inference_service"], "data": {"ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx", "inputs": {"input": {"values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1}}}}'
     ```
 
 ### Web3 Request (Onchain Subscription)
@@ -232,25 +293,26 @@ Input requests should be passed in as an encoded byte string. Here is an example
 to generate this for an `onnx` inference request:
 
 ```python
-from infernet_ml.utils.codec.vector import encode_vector
-from infernet_ml.utils.model_loader import ModelSource
+from infernet_ml.services.onnx import ONNXInferenceRequest
+from infernet_ml.utils.codec.vector import RitualVector
 from infernet_ml.utils.codec.vector import DataType
-from eth_abi.abi import encode
 
-input_bytes = encode(
-    ["uint8", "string", "string", "string", "bytes"],
-    [
-        ModelSource.ARWEAVE,  # model source
-        "Ritual-Net/iris-classification",  # repo_id
-        "iris.onnx",  # filename
-        "v1",  # version
-        encode_vector(
-            values=[[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-            shape=(1, 4),
-            dtype=DataType.float,
-        ),
-    ],
+# Define inputs
+inputs = RitualVector(
+    dtype=DataType.float32,
+    shape=(1, 4),
+    values=[1.0380048, 0.5586108, 1.1037828, 1.712096],
 )
+
+onnx_request = ONNXInferenceRequest(
+    ml_model="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+    inputs={
+        "input": inputs.model_dump()
+    }
+)
+
+# Convert to web3-encoded input bytes
+input_bytes = onnx_request.to_web3()
 ```
 
 Assuming your contract inherits from the `CallbackConsumer` provided by `infernet-sdk`,
@@ -262,7 +324,7 @@ pragma solidity ^0.8.0;
 contract MyOnchainSubscription {
     // Function to classify a flower
     function classifyFlower(bytes memory inputs) public returns (bytes32) {
-        string memory containerId = "my-container";
+        string memory containerId = "onnx_inference_service";
         uint16 redundancy = 1;
         address paymentToken = address(0);
         uint256 paymentAmount = 0;
@@ -324,13 +386,15 @@ on port `4000`.
     from infernet_client.node import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
 
+    client = NodeClient("http://127.0.0.1:4000")
+
     sub = Subscription(
         owner="0x...",
         active_at=int(time()),
         period=0,
         frequency=1,
         redundancy=1,
-        containers=["SERVICE_NAME"],
+        containers=["onnx_inference_service"],
         lazy=False,
         verifier=ZERO_ADDRESS,
         payment_amount=0,
@@ -338,32 +402,29 @@ on port `4000`.
         wallet=ZERO_ADDRESS,
     )
 
-    client = NodeClient("http://127.0.0.1:4000")
     nonce = random.randint(0, 2 ** 32 - 1)
     await client.request_delegated_subscription(
         sub=sub,
         rpc=RPC("http://127.0.0.1:8545")
-    coordinator_address = global_config.coordinator_address,
-    expiry = int(time() + 10),
-    nonce = nonce,
-    private_key = "0x...",
-    data = {
-        "model_source": 1,
-        "load_args": {
-            "repo_id": "your_org/model",
-            "filename": "iris.onnx",
-            "version": "v1"
-        },
-        "inputs": {"input": {"values": [[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-                             "shape": [1, 4], "dtype": "float"}}
-    },
+        coordinator_address = global_config.coordinator_address,
+        expiry = int(time() + 10),
+        nonce = nonce,
+        private_key = "0x...",
+        data = {
+            "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+            "inputs": {
+                "input": {
+                    "values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1
+                }
+            }
+        }
     )
     ```
 
 === "CLI"
 
   ```bash
-  infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+  infernet-client sub --rpc_url http://some-rpc-url.com --address 0x... --expiry 1713376164 --key key-file.txt \
       --params params.json --input input.json
   # Success: Subscription created.
   ```
@@ -383,7 +444,7 @@ where `params.json` looks like this:
     "redundancy": 2,
     // 2 nodes respond each time
     "containers": [
-        "SERVICE_NAME"
+        "onnx_inference_service"
     ],
     // comma-separated list of containers
     "lazy": false,
@@ -398,26 +459,20 @@ and where `input.json` looks like this:
 
 ```json
 {
-    "model_source": 2,
-    "load_args": {
-        "repo_id": "your_org/model",
-        "filename": "iris.onnx"
-    },
+    "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
     "inputs": {
         "input": {
-            "values": [
-                [
-                    1.0380048,
-                    0.5586108,
-                    1.1037828,
-                    1.712096
-                ]
+            "values":[
+                1.0380048,
+                0.5586108,
+                1.1037828,
+                1.712096
             ],
             "shape": [
                 1,
                 4
             ],
-            "dtype": "float"
+            "dtype": 1
         }
     }
 }

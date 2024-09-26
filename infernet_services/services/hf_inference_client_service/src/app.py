@@ -125,6 +125,7 @@ def create_app() -> Quart:
         PydValError: thrown if error during input validation
     """
     app: Quart = Quart(__name__)
+
     # Override task and model if config is set
     workflow = HFInferenceClientWorkflow(
         token=os.getenv("HF_TOKEN"),

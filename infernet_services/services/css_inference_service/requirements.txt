@@ -1,6 +1,6 @@
 eth-abi>=5.1.0,<6.0.0
-infernet-ml>=2.0.0.41,<3.0.0
-infernet-ml[css_inference]>=2.0.0.41,<3.0.0
+infernet-ml>=2.0.0.42,<3.0.0
+infernet-ml[css_inference]>=2.0.0.42,<3.0.0
 quart>=0.19.4,<1.0.0
 python-dotenv>=1.0.1,<2.0.0
 pydantic>=2.5.3,<3.0.0

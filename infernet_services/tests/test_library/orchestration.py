@@ -107,7 +107,7 @@ def deploy_node(
     deploy_env_vars: Optional[ServiceEnvVars] = None,
 ) -> None:
     """
-    Deploy an infernet node, along with the service.
+    Deploy an Infernet Node, along with the service.
 
     Args:
         deploy_env_vars (Optional[ServiceEnvVars]): The environment variables for the

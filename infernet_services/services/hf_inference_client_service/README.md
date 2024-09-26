@@ -15,7 +15,7 @@ in `config.json`.
     "containers": [
         {
             "id": "hf_inference_client_service",
-            "image": "your_org/hf_inference_client_service:latest",
+            "image": "ritualnetwork/hf_inference_client_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -51,9 +51,9 @@ class HFTaskId(IntEnum):
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
+Offchain requests to the service can be initiated with `python`
 or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with
-HTTP requests against the infernet node directly (using a client like `cURL`).
+HTTP requests against the Infernet Node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -105,8 +105,7 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -115,7 +114,7 @@ on port 4000.
 
     client = NodeClient("http://127.0.0.1:4000")
     job_id = await client.request_job(
-        "SERVICE_NAME",
+        "hf_inference_client_service",
         {
             # HFTaskId.TEXT_GENERATION
             "task_id": 1,
@@ -124,7 +123,7 @@ on port 4000.
     )
 
     # result should be "4"
-    result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
+    result: str = (await client.get_job_result_sync(job_id))["result"]["output"]
     ```
 
 === "CLI"
@@ -132,9 +131,11 @@ on port 4000.
     ```bash
     # Note that the sync flag is optional and will wait for the job to complete.
     # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-    infernet-client job -c SERVICE_NAME -i input.json --sync
+    infernet-client job -c hf_inference_client_service -i input.json --sync
     ```
+
     where `input.json` looks like this:
+
     ```json
     {
         "task_id": 1,
@@ -147,7 +148,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
+        -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
     ```
 
 ### Web3 Request (Onchain Subscription)
@@ -235,8 +236,7 @@ contract MyContract {
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -250,7 +250,7 @@ on port 4000.
         period=0,
         frequency=1,
         redundancy=1,
-        containers=["SERVICE_NAME"],
+        containers=["hf_inference_client_service"],
         lazy=False,
         verifier=ZERO_ADDRESS,
         payment_amount=0,
@@ -277,11 +277,13 @@ on port 4000.
 === "CLI"
 
     ```bash
-    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x... --expiry 1713376164 --key key-file.txt \
         --params params.json --input input.json
     # Success: Subscription created.
     ```
+
     where `params.json` looks like this:
+
     ```json
     {
         "owner": "0x00Bd138aBD7....................", // Subscription Owner
@@ -289,7 +291,7 @@ on port 4000.
         "period": 3, // 3 seconds between intervals
         "frequency": 2, // Process 2 times
         "redundancy": 2, // 2 nodes respond each time
-        "containers": ["SERVICE_NAME"], // comma-separated list of containers
+        "containers": ["hf_inference_client_service"], // comma-separated list of containers
         "lazy": false,
         "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,
@@ -297,7 +299,9 @@ on port 4000.
         "wallet": "0x0000000000000000000000000000000000000000",
     }
     ```
+
     and where `input.json` looks like this:
+
     ```json
     {
     "task_id": 1,

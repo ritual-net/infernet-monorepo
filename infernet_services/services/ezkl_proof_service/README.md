@@ -28,7 +28,7 @@ For onchain job targets, a 5 element dictionary containing the `raw input`, `pro
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`. For documentation on the overall configuration,
-consult [the infernet node documentation](https://docs.ritual.net/infernet/node/configuration)
+consult [the Infernet Node documentation](https://docs.ritual.net/infernet/node/configuration)
 
 ```json
 {
@@ -131,9 +131,9 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
+Offchain requests to the service can be initiated with `python`
 or `cli` by utilizing the [`infernet_client`](https://infernet-client.docs.ritual.net/)
-library, as well as with HTTP requests against the infernet node directly (using a client
+library, as well as with HTTP requests against the Infernet Node directly (using a client
 like `cURL`).
 
 The schema format of
@@ -193,7 +193,7 @@ The address vk field is not required by default and is mostly necessary for onch
 
 The shape of the witness input data and output data is dependent on the proving artifacts (i.e. the model input and output and proof settings). We use the infernet-ml library for encoding and decoding vectors, which requires the specification of a shape, DataType, and flattened array of data for each vector.
 
-**Please Note**: The examples below assume that you have an infernet node running
+**Please Note**: The examples below assume that you have an Infernet Node running
 locally on port `4000`.
 
 === "Python"
@@ -338,7 +338,7 @@ tx_hash = contract.functions.getProofData.call(encoded).transact()
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
+**Please note**: the examples below assume that you have an Infernet Node running locally
 on port `4000`.
 
 === "Python"

@@ -20,7 +20,7 @@ in `config.json`.
     "containers": [
         {
             "id": "tgi_client_inference_service",
-            "image": "your_org/tgi_client_inference_service:latest",
+            "image": "ritualnetwork/tgi_client_inference_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -28,7 +28,7 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30, {\"Authorization\": \"Bearer: xxxxxxxxxxxxx \"}]",
+                "TGI_INF_WORKFLOW_POSITIONAL_ARGS": "[\"http://FILL_HOSTNAME_HERE\", 30]",
                 "TGI_INF_WORKFLOW_KW_ARGS": "{\"retry_params\": {\"tries\": 3, \"delay\": 1, \"backoff\": 2, \"max_delay\": 10, \"jitter\": [0.5, 1.5]}, \"max_new_tokens\": 30, \"temperature\": 0.01}"
             }
         }
@@ -50,14 +50,13 @@ in `config.json`.
 
 - **Description**: The connection timeout.
 
-#### headers
+#### headers (optional)
 
-- **Description**: The headers to pass to the TGI service.
+- **Description**: Additional headers to pass to the TGI service.
 
-#### cookies
+#### cookies (optional)
 
 - **Description**: The cookies to pass to the TGI service.
-
 
 
 ### TGI_INF_WORKFLOW_KW_ARGS
@@ -96,9 +95,9 @@ Refer to the [TGI documentation](https://huggingface.github.io/text-generation-i
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
+Offchain requests to the service can be initiated with `python`
 or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with
-HTTP requests against the infernet node directly (using a client like `cURL`).
+HTTP requests against the Infernet Node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -150,8 +149,7 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -160,7 +158,7 @@ on port 4000.
 
     client = NodeClient("http://127.0.0.1:4000")
     job_id = await client.request_job(
-        "SERVICE_NAME",
+        "tgi_client_inference_service",
         {
             "text": "Can shrimp actually fry rice fr?",
         },
@@ -174,9 +172,10 @@ on port 4000.
     ```bash
     # Note that the sync flag is optional and will wait for the job to complete.
     # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-    infernet-client job -c SERVICE_NAME -i input.json --sync
+    infernet-client job -c tgi_client_inference_service -i input.json --sync
     ```
     where `input.json` looks like this:
+
     ```json
     {
         "text": "Can shrimp actually fry rice fr?"
@@ -188,7 +187,7 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"text": "Can shrimp actually fry rice fr?"}}'
+        -d '{"containers": ["tgi_client_inference_service"], "data": {"text": "Can shrimp actually fry rice fr?"}}'
     ```
 
 ### Web3 Request (On-chain Subscription)
@@ -274,7 +273,7 @@ tx_hash = contract.functions.chatWithLLM(input_bytes).transact()
 
 ### Delegated Subscription Request
 
-**Please Note**: the examples below assume that you have an infernet node running locally
+**Please Note**: the examples below assume that you have an Infernet Node running locally
 on port `4000`.
 
 === "Python"
@@ -289,7 +288,7 @@ on port `4000`.
         period=0,
         frequency=1,
         redundancy=1,
-        containers=["SERVICE_NAME"],
+        containers=["tgi_client_inference_service"],
         lazy=False,
         verifier=ZERO_ADDRESS,
         payment_amount=0,
@@ -315,11 +314,13 @@ on port `4000`.
 === "CLI"
 
     ```bash
-    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x.. --expiry 1713376164 --key key-file.txt \
         --params params.json --input input.json
     # Success: Subscription created.
     ```
+
     where `params.json` looks like this:
+
     ```json
     {
         "owner": "0x00Bd138aBD7....................", // Subscription Owner
@@ -327,7 +328,7 @@ on port `4000`.
         "period": 3, // 3 seconds between intervals
         "frequency": 2, // Process 2 times
         "redundancy": 2, // 2 nodes respond each time
-        "containers": ["SERVICE_NAME"], // comma-separated list of containers
+        "containers": ["tgi_client_inference_service"], // comma-separated list of containers
         "lazy": false,
         "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,
@@ -335,7 +336,9 @@ on port `4000`.
         "wallet": "0x0000000000000000000000000000000000000000",
     }
     ```
+
     and where `input.json` looks like this:
+
     ```json
     {
         "text": "Can shrimp actually fry rice fr?"

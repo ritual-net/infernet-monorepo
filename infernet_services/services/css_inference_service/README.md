@@ -8,7 +8,7 @@ object, encapsulating the backend, preprocessing, and postprocessing logic
 
 The service can be configured as part of the overall Infernet configuration
 in `config.json`. For documentation on the overall configuration,
-consult [the infernet node documentation](https://docs.ritual.net/infernet/node/configuration)
+consult [the Infernet Node documentation](https://docs.ritual.net/infernet/node/configuration)
 
 ```json
 {
@@ -17,7 +17,7 @@ consult [the infernet node documentation](https://docs.ritual.net/infernet/node/
     "containers": [
         {
             "id": "css_inference_service",
-            "image": "your_org/css_inference_service:latest",
+            "image": "ritualnetwork/css_inference_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -90,9 +90,9 @@ environment variable:
 
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
+Offchain requests to the service can be initiated with `python`
 or `cli` by utilizing the [`infernet_client`](https://infernet-client.docs.ritual.net/)
-library, as well as with HTTP requests against the infernet node directly (using a client
+library, as well as with HTTP requests against the Infernet Node directly (using a client
 like `cURL`).
 
 The schema format of
@@ -149,7 +149,7 @@ class ContainerOutput(TypedDict):
 
 ### Web2 Request
 
-**Please Note**: The examples below assume that you have an infernet node running
+**Please Note**: The examples below assume that you have an Infernet Node running
 locally on port `4000`.
 
 === "Python"
@@ -159,7 +159,7 @@ locally on port `4000`.
 
     client = NodeClient("http://127.0.0.1:4000")
     job_id = await client.request_job(
-        "SERVICE_NAME",
+        "css_inference_service",
         {
             "provider": "OPENAI",
             "endpoint": "completions",
@@ -180,7 +180,7 @@ locally on port `4000`.
         }
     )
 
-    result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
+    result: str = (await client.get_job_result_sync(job_id))["result"]["output"]
     ```
 
 === "CLI"
@@ -188,9 +188,11 @@ locally on port `4000`.
     ```bash
     # Note that the sync flag is optional and will wait for the job to complete.
     # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-    infernet-client job -c SERVICE_NAME -i input.json --sync
+    infernet-client job -c css_inference_service -i input.json --sync
     ```
+
     where `input.json` looks like this:
+
     ```json
     {
         "provider": "OPENAI",
@@ -217,7 +219,7 @@ locally on port `4000`.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model": "gpt-4", "endpoint": "completions", "provider": "OPENAI", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}}'
+        -d '{"containers": ["css_inference_service"], "data": {"model": "gpt-4", "endpoint": "completions", "provider": "OPENAI", "params": {"endpoint": "completions", "messages": [{"role": "user", "content": "give me an essay about cats"}]}}}'
 
     ```
 
@@ -286,7 +288,7 @@ tx_hash = contract.functions.getLLMResponse.call(encoded).transact()
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
+**Please note**: the examples below assume that you have an Infernet Node running locally
 on port `4000`.
 
 === "Python"
@@ -301,7 +303,7 @@ on port `4000`.
         period=0,
         frequency=1,
         redundancy=1,
-        containers=["SERVICE_NAME"],
+        containers=["css_inference_service"],
         lazy=False,
         verifier=ZERO_ADDRESS,
         payment_amount=0,
@@ -346,7 +348,9 @@ on port `4000`.
         --params params.json --input input.json
     # Success: Subscription created.
     ```
+
     where `params.json` looks like this:
+
     ```json
     {
         "owner": "0x00Bd138aBD7....................", // Subscription Owner
@@ -354,7 +358,7 @@ on port `4000`.
         "period": 3, // 3 seconds between intervals
         "frequency": 2, // Process 2 times
         "redundancy": 2, // 2 nodes respond each time
-        "containers": ["SERVICE_NAME"], // comma-separated list of containers
+        "containers": ["css_inference_service"], // comma-separated list of containers
         "lazy": false,
         "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,

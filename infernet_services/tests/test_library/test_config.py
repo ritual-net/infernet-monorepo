@@ -33,7 +33,7 @@ class NetworkConfig:
         The URL of the infernet-node to run the tests against.
 
     infernet_rpc_url: str
-        The RPC URL that the infernet node will use to connect to the chain.
+        The RPC URL that the Infernet Node will use to connect to the chain.
         This is usually the same as the rpc_url, unless we're using an anvil node
         for testing.
 

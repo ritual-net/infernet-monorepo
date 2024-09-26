@@ -24,7 +24,7 @@ You can either install `infernet-client` via [`uv` (Recommended)](https://astral
 
 ## Quickstart
 
-With your infernet node running, you can interact with it using either the CLI tool or the python library.
+With your Infernet Node running, you can interact with it using either the CLI tool or the python library.
 
 Here's how you can check the [server's health](https://docs.ritual.net/infernet/node/api#healthinfo):
 
