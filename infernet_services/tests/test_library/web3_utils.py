@@ -330,10 +330,10 @@ def california_housing_web3_assertions(
 ) -> None:
     assert output != b""
     raw, processed = decode(["bytes", "bytes"], output)
-    dtype, shape, values = None, None, None
-    assert dtype == DataType.float64
-    assert shape == (1,)
-    assert abs(values[0] - 4.151943055154582) < 1e-6
+    v = RitualVector.from_web3(raw)
+    assert v.dtype == DataType.float64
+    assert v.shape == (1,)
+    assert abs(v.values[0] - 4.151943055154582) < 1e-6
 
 
 def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
@@ -344,11 +344,6 @@ def iris_web3_assertions(input: bytes, output: bytes, proof: bytes) -> None:
     assert v.shape == (1, 3)
     assert v.numpy.argmax() == 2
     assert v.dtype == DataType.float32
-
-    # dtype, shape, values = decode_vector(raw)
-    # assert dtype == DataType.float
-    # assert shape == (1, 3)
-    # assert values.argmax() == 2
 
 
 def deploy_smart_contract_with_sane_defaults(contract_name: str) -> None:

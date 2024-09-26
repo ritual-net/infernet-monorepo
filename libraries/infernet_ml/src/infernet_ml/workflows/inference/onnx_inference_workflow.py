@@ -6,12 +6,10 @@ This class is responsible for loading & running an onnx model.
 Models can be loaded in two ways:
 
 1. Preloading: The model is loaded & session is started in the setup method. This happens
-    in the `setup()` method if model source and load args are provided when the class is
-    instantiated.
+    in the `setup()` method if model ID is provided when the class is instantiated.
 
-2. On-demand: The model is loaded with an inference request. This happens if model source
-    and load args are provided with the input (see the optional fields in the
-    `ONNXInferenceInput` class).
+2. On-demand: The model is loaded with an inference request. This happens if mode ID is
+    provided with the input (see the optional fields in the `ONNXInferenceInput` class).
 
 Loaded models are cached in-memory using an LRU cache. The cache size can be configured
 using the `ONNX_MODEL_LRU_CACHE_SIZE` environment variable.
@@ -104,9 +102,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class ONNXInferenceInput(BaseModel):
     """
-    Input data for ONNX inference workflows. If model source and load args are provided,
-    the model is loaded & session is started. Otherwise, if the class is instantiated
-    with a model source and load args, the model is preloaded in the setup method.
+    Input data for ONNX inference workflows. If model ID is provided, the model is
+    loaded & session is started. Otherwise, if the class is instantiated with a model
+    ID, the model is preloaded in the setup method.
 
     ### Input Format
     Input format is a dictionary of input tensors. Each key corresponds to the name of
@@ -217,7 +215,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
 
     def do_setup(self) -> ONNXInferenceWorkflow:
         """
-        If model source and load args are provided, preloads the model & starts the
+        If model ID is provided, preloads the model & starts the
         session. Otherwise, does nothing & model is loaded with an inference request.
         """
         if not self.ml_model:

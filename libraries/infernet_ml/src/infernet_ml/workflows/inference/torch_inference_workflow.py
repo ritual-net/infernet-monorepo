@@ -8,10 +8,9 @@ This class is responsible for loading & running a Torch model.
 Models can be loaded in two ways:
 
 1. Preloading: The model is loaded in the setup method. This happens in the `setup()`
-    method if model source and load args are provided when the class is instantiated.
-2. On-demand: The model is loaded with an inference request. This happens if model source
-    and load args are provided with the input (see the optional fields in the
-    `TorchInferenceInput` class).
+    method if model ID is provided when the class is instantiated.
+2. On-demand: The model is loaded with an inference request. This happens if model ID is
+    provided with the input (see optional field in the `TorchInferenceInput` class).
 
 Loaded models are cached in-memory using an LRU cache. The cache size can be configured
 using the `TORCH_MODEL_LRU_CACHE_SIZE` environment variable.
@@ -105,9 +104,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class TorchInferenceInput(BaseModel):
     """
-    Input data for Torch inference workflows. If model source and load args are provided,
-    the model is loaded. Otherwise, if the class is instantiated with a model source and
-    load args, the model is preloaded in the setup method.
+    Input data for Torch inference workflows. If model ID is provided, the model is
+    loaded. Otherwise, if the class is instantiated with a model ID, the model is
+    preloaded in the setup method.
 
     ### Input Format
     Input format is a dictionary of input tensors. Each key corresponds to the name of
@@ -214,14 +213,12 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
     def do_setup(self) -> "TorchInferenceWorkflow":
         """
-        If model source and load args are provided, preloads the model & starts the
-        session. Otherwise, does nothing & model is loaded with an inference request.
+        If model ID is provided, preloads the model & starts the session. Otherwise,
+        does nothing & model is loaded with an inference request.
         """
 
         if self.ml_model is None:
-            logging.info(
-                "Model source or load args not provided, not preloading any models."
-            )
+            logging.info("Model ID not provided, not preloading any models.")
             return self
 
         self.model = self._load_model(self.ml_model)
@@ -229,7 +226,7 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
     def _load_model(self, ml_model: MlModelId) -> torch.nn.Module:
         """
-        Loads the model from the model source and load args provided in the input.
+        Loads the model from the model ID provided in the input.
         Uses an LRU cache to store the loaded models.
 
         Args:

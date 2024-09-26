@@ -8,8 +8,8 @@ from test_library.web3_utils import (
     request_web3_compute,
 )
 from torch_inference_service.common import (
+    ar_request,
     california_housing_web2_assertions,
-    hf_request,
 )
 from torch_inference_service.conftest import (
     TORCH_SERVICE_NOT_PRELOADED,
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 async def test_basic_web2_inference_doesnt_provide_proof() -> None:
     task_id = await request_job(
         TORCH_WITH_PROOFS,
-        hf_request.model_dump(),
+        ar_request.model_dump(),
         requires_proof=True,
     )
     r = await get_job(task_id)
@@ -38,7 +38,7 @@ async def test_basic_web2_inference_doesnt_provide_proof() -> None:
 async def test_basic_web2_inference_from_hf_hub() -> None:
     task = await request_job(
         TORCH_SERVICE_NOT_PRELOADED,
-        hf_request.model_dump(),
+        ar_request.model_dump(),
     )
 
     job_result = await get_job(task)
@@ -50,7 +50,7 @@ async def test_basic_web2_inference_from_hf_hub() -> None:
 async def test_basic_web3_inference_from_hf_hub() -> None:
     sub_id = await request_web3_compute(
         TORCH_SERVICE_NOT_PRELOADED,
-        hf_request.to_web3(),
+        ar_request.to_web3(),
     )
 
     await assert_generic_callback_consumer_output(
@@ -62,7 +62,7 @@ async def test_basic_web3_inference_from_hf_hub() -> None:
 async def test_delegate_subscription_inference() -> None:
     await request_delegated_subscription(
         TORCH_SERVICE_NOT_PRELOADED,
-        hf_request.to_web3(),
+        ar_request.model_dump(),
     )
 
     await assert_generic_callback_consumer_output(

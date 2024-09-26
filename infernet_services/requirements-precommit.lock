@@ -47,7 +47,7 @@ hyperframe==6.0.1
 identify==2.6.1
 idna==3.10
 infernet-client==1.0.3.3
-infernet-ml==2.0.0.40
+infernet-ml==2.0.0.41
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0

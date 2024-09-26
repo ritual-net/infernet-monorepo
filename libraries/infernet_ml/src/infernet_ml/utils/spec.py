@@ -175,8 +175,10 @@ class MLComputeCapability(BaseModel):
         Utility function to generate an ONNX compute capability.
 
         Args:
-            models: Optional[List[MlModel]] - The list of models that can be supported
-            cached_models: Optional[List[MlModel]] - The list of cached models
+            models: Optional[List[BroadcastedArtifact]] - The list of models that can be
+                supported
+            cached_models: Optional[List[BroadcastedArtifact]] - The list of cached
+                models
         """
         models = models or []
         cached_models = cached_models or []
@@ -233,8 +235,10 @@ class MLComputeCapability(BaseModel):
         Utility function to generate a Torch compute capability.
 
         Args:
-            models: Optional[List[MlModel]] - The list of models that can be supported
-            cached_models: Optional[List[MlModel]] - The list of cached models
+            models: Optional[List[BroadcastedArtifact]] - The list of models that can be
+                supported
+            cached_models: Optional[List[BroadcastedArtifact]] - The list of cached
+                models
         """
         models = models or []
         cached_models = cached_models or []
