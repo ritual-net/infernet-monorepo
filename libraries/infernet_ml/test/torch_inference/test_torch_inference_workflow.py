@@ -1,92 +1,67 @@
-import os
-from typing import Any, Callable
+from typing import Callable
 from unittest.mock import MagicMock
 
 import pytest
 import torch
 from dotenv import load_dotenv
+from test_library.artifact_utils import ar_model_id, hf_model_id
 
-from infernet_ml.utils.common_types import TensorInput
-from infernet_ml.utils.model_loader import ArweaveLoadArgs, HFLoadArgs, ModelSource
+from infernet_ml.utils.codec.vector import DataType, RitualVector
 from infernet_ml.workflows.inference.torch_inference_workflow import (
     TorchInferenceInput,
     TorchInferenceResult,
     TorchInferenceWorkflow,
-    load_torch_model,
 )
 
 load_dotenv()
 
-hf_iris_model_args: Any = {
-    "model_source": ModelSource.HUGGINGFACE_HUB,
-    "load_args": HFLoadArgs(
-        repo_id="Ritual-Net/iris-classification",
-        filename="iris.torch",
-    ),
-}
+hf_iris = hf_model_id("iris-classification", "iris.torch")
+ar_iris = ar_model_id("iris-classification", "iris.torch")
+hf_california_housing = hf_model_id("california-housing", "california_housing.torch")
+ar_california_housing = ar_model_id("california-housing", "california_housing.torch")
 
-hf_california_housing_model_args: Any = {
-    "model_source": ModelSource.HUGGINGFACE_HUB,
-    "load_args": HFLoadArgs(
-        repo_id="Ritual-Net/california-housing",
-        filename="california_housing.torch",
-    ),
-}
 
-arweave_iris_model_args: Any = {
-    "model_source": ModelSource.ARWEAVE,
-    "load_args": ArweaveLoadArgs(
-        repo_id=f"{os.environ['MODEL_OWNER']}/iris-classification",
-        filename="iris.torch",
-    ),
-}
-
-arweave_california_housing_model_args: Any = {
-    "model_source": ModelSource.ARWEAVE,
-    "load_args": ArweaveLoadArgs(
-        repo_id=f"{os.environ['MODEL_OWNER']}/california-housing",
-        filename="california_housing.torch",
-    ),
-}
-
-AssertionType = Callable[[TorchInferenceResult], None]
+AssertionType = Callable[[RitualVector], None]
 
 
 def _assert_iris_inference_result(result: TorchInferenceResult) -> None:
-    assert result.dtype == "torch.float32"
-    assert result.shape == (1, 3)
-    assert result.outputs.argmax() == 2
+    r = result.output
+    assert r.dtype == DataType.float32
+    assert r.shape == (1, 3)
+    assert r.tensor.argmax() == 2
 
 
 def _assert_california_housing_inference_result(result: TorchInferenceResult) -> None:
-    assert result.dtype == "torch.float64"
-    assert result.shape == (1,)
-    assert abs(result.outputs - 4.151943055154582) < 1e-6
+    r = result.output
+    assert r.dtype == DataType.float64
+    assert r.shape == (1,)
+    assert abs(r.tensor - 4.151943055154582) < 1e-6
 
 
-iris_inference_input = TensorInput(
-    dtype="float",
-    shape=(1, 4),
-    values=[[1.0380048, 0.5586108, 1.1037828, 1.712096]],
+iris_inference_input = RitualVector.from_tensor(
+    tensor=torch.tensor(
+        [[1.0380048, 0.5586108, 1.1037828, 1.712096]], dtype=torch.float32
+    ),
 )
 
-california_housing_inference_input = TensorInput(
-    dtype="double",
-    shape=(1, 8),
-    values=[[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
+california_housing_inference_input = RitualVector.from_tensor(
+    tensor=torch.tensor(
+        [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
+        dtype=torch.float64,
+    ),
 )
 
 
 all_model_args = [
-    (hf_iris_model_args, iris_inference_input, _assert_iris_inference_result),
+    (hf_iris, iris_inference_input, _assert_iris_inference_result),
     (
-        hf_california_housing_model_args,
+        hf_california_housing,
         california_housing_inference_input,
         _assert_california_housing_inference_result,
     ),
-    (arweave_iris_model_args, iris_inference_input, _assert_iris_inference_result),
+    (ar_iris, iris_inference_input, _assert_iris_inference_result),
     (
-        arweave_california_housing_model_args,
+        ar_california_housing,
         california_housing_inference_input,
         _assert_california_housing_inference_result,
     ),
@@ -94,59 +69,54 @@ all_model_args = [
 
 
 @pytest.mark.parametrize(
-    "model_kwargs, inference_input, assertions",
+    "ml_model, inference_input, assertions",
     all_model_args,
 )
 def test_inference_preloaded_models(
-    model_kwargs: dict[str, Any],
-    inference_input: TensorInput,
+    ml_model: str,
+    inference_input: RitualVector,
     assertions: AssertionType,
 ) -> None:
-    wf = TorchInferenceWorkflow(**model_kwargs).setup()
-    r = wf.inference(
-        TorchInferenceInput(
-            input=inference_input,
-        )
-    )
+    wf = TorchInferenceWorkflow(ml_model).setup()
+    r = wf.inference(TorchInferenceInput(input=inference_input))
     assertions(r)
 
 
 @pytest.mark.parametrize(
-    "model_kwargs, inference_input, assertions",
+    "ml_model, inference_input, assertions",
     all_model_args,
 )
 def test_inference_on_the_fly(
-    model_kwargs: dict[str, Any],
-    inference_input: TensorInput,
+    ml_model: str,
+    inference_input: RitualVector,
     assertions: AssertionType,
 ) -> None:
     wf = TorchInferenceWorkflow().setup()
     r = wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            **model_kwargs,
+            ml_model=ml_model,
         )
     )
     assertions(r)
 
 
 @pytest.mark.parametrize(
-    "model_kwargs, inference_input, assertions",
+    "ml_model, inference_input, assertions",
     all_model_args,
 )
 def test_inference_in_memory_cache(
-    model_kwargs: dict[str, Any],
-    inference_input: TensorInput,
+    ml_model: str,
+    inference_input: RitualVector,
     assertions: AssertionType,
     mocker: MagicMock,
 ) -> None:
     # clear cache (the other tests in this file might have loaded the model already)
-    load_torch_model.cache_clear()
 
-    # Keep reference to the original onnx.load function
+    # Keep reference to the original torch.load function
     original_load = torch.load
 
-    # Mock onnx.load
+    # Mock torch.load
     load_mock = mocker.patch("torch.load")
 
     # Set the side effect to call the original function
@@ -160,7 +130,7 @@ def test_inference_in_memory_cache(
     wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            **model_kwargs,
+            ml_model=ml_model,
         )
     )
 
@@ -171,7 +141,7 @@ def test_inference_in_memory_cache(
     r = wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            **model_kwargs,
+            ml_model=ml_model,
         )
     )
     assertions(r)
@@ -180,7 +150,9 @@ def test_inference_in_memory_cache(
 
 
 def test_inference_on_the_fly_should_not_change_default_model() -> None:
-    wf = TorchInferenceWorkflow(**hf_iris_model_args).setup()
+    wf = TorchInferenceWorkflow(
+        ml_model=hf_iris,
+    ).setup()
     r = wf.inference(
         TorchInferenceInput(
             input=iris_inference_input,
@@ -190,8 +162,7 @@ def test_inference_on_the_fly_should_not_change_default_model() -> None:
 
     r = wf.inference(
         TorchInferenceInput(
-            input=california_housing_inference_input,
-            **hf_california_housing_model_args,
+            input=california_housing_inference_input, ml_model=hf_california_housing
         )
     )
     _assert_california_housing_inference_result(r)

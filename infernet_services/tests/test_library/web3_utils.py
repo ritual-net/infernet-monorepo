@@ -331,7 +331,7 @@ def california_housing_web3_assertions(
     assert output != b""
     raw, processed = decode(["bytes", "bytes"], output)
     dtype, shape, values = None, None, None
-    assert dtype == DataType.double
+    assert dtype == DataType.float64
     assert shape == (1,)
     assert abs(values[0] - 4.151943055154582) < 1e-6
 
