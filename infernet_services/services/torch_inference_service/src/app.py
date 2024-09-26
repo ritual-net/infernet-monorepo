@@ -93,11 +93,6 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         if req.method != "POST":
             abort(400, "only POST method supported for this endpoint")
 
-        # we will get the json from the request.
-        # Type information read from model schema
-
-        # get data as json
-
         infernet_input: Optional[dict[str, Any]] = await req.get_json()
         if not infernet_input:
             abort(400, "MIME type application/json expected")
@@ -124,7 +119,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
         match input:
             case InfernetInput(destination=JobLocation.OFFCHAIN):
-                return {"result": result.model_dump()}
+                return result.model_dump()
             case InfernetInput(destination=JobLocation.ONCHAIN):
                 return {
                     "raw_input": hex_input,

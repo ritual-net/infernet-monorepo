@@ -28,7 +28,7 @@ class TorchServiceConfig(BaseModel):
 
 class TorchInferenceRequest(BaseModel):
     ml_model: Optional[str] = None
-    inputs: RitualVector
+    input: RitualVector
     output_arithmetic: Optional[ArithmeticType] = None
     output_num_decimals: Optional[int] = None
 
@@ -39,7 +39,7 @@ class TorchInferenceRequest(BaseModel):
 
         values: List[Any] = [
             MlModelId.from_unique_id(self.ml_model).to_web3 if self.ml_model else b"",
-            list(self.inputs.values()).to_web3(arithmetic, num_decimals),
+            self.input.to_web3(arithmetic, num_decimals),
         ]
 
         if self.output_arithmetic:
@@ -62,12 +62,12 @@ class TorchInferenceRequest(BaseModel):
         )
         return cls(
             ml_model=MlModelId.from_web3(model_id).unique_id if model_id else None,
-            inputs={"input": RitualVector.from_web3(vector_hex)},
+            input=RitualVector.from_web3(vector_hex),
         )
 
     @property
     def workflow_input(self) -> TorchInferenceInput:
         return TorchInferenceInput(
             ml_model=self.ml_model,
-            input=self.inputs,
+            input=self.input,
         )
