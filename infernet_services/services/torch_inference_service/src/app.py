@@ -32,9 +32,6 @@ from werkzeug.exceptions import BadRequest, HTTPException
 log = logging.getLogger(__name__)
 
 
-SERVICE_PREFIX = "TORCH_INF"
-
-
 def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     """
     Factory function that creates and configures an instance
@@ -59,7 +56,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     service_config = TorchServiceConfig(**cast(dict[str, Any], app.config))
 
     workflow = TorchInferenceWorkflow(
-        model=service_config.DEFAULT_MODEL_ID,
+        ml_model=service_config.DEFAULT_MODEL_ID,
         use_jit=service_config.USE_JIT,
         cache_dir=service_config.CACHE_DIR,
     ).setup()

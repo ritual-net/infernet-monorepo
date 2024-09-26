@@ -48,7 +48,7 @@ services = [
     ServiceConfig.build(
         TORCH_SERVICE_NOT_PRELOADED,
         image_id=TORCH_SERVICE_DOCKER_IMG,
-        port=3000,
+        port=3002,
     ),
     ServiceConfig.build(
         TORCH_WITH_PROOFS,
