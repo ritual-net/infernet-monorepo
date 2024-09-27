@@ -1,6 +1,6 @@
 [project]
 name = "infernet-ml"
-version = "2.0.0.42"
+version = "2.0.0.47"
 description = "Lightweight library to build web3 machine learning workflows"
 authors = [
     { name = "ritual-all", email = "ritual-all@ritual.net" }
@@ -11,7 +11,7 @@ dependencies = [
     "pydantic>=2.5.3,<3.0.0",
     "huggingface-hub>=0.17.3,<1.0.0",
     "click>=8.1.7,<9.0.0",
-    "ritual-arweave>=0.2.0.8,<1.0.0",
+    "ritual-arweave>=0.1.0,<1.0.0",
     "web3>=6.16.0,<7.0.0"
 ]
 

@@ -1,8 +1,7 @@
 # CSS (Closed-Source Software) Inference Service
 
 This service serves closed source models via
-a [`CSSInferenceWorkflow`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/workflows/inference/css_inference_workflow/)
-object, encapsulating the backend, preprocessing, and postprocessing logic
+a [`CSSInferenceWorkflow`](https://infernet-ml.docs.ritual.net/reference/infernet_ml/workflows/inference/css_inference_workflow/) object, which encapsulates the backend, preprocessing, and postprocessing logic
 
 ## Infernet Configuration
 
@@ -147,7 +146,7 @@ class ContainerOutput(TypedDict):
 
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
 **Please Note**: The examples below assume that you have an Infernet Node running
 locally on port `4000`.
@@ -223,7 +222,7 @@ locally on port `4000`.
 
     ```
 
-### Web3 Request (Onchain Subscription)
+### Onchain (web3) Subscription
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
@@ -288,7 +287,7 @@ tx_hash = contract.functions.getLLMResponse.call(encoded).transact()
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an Infernet Node running locally
+**Please note**: The examples below assume that you have an Infernet Node running locally
 on port `4000`.
 
 === "Python"

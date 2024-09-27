@@ -16,6 +16,7 @@ RUN curl -LsSf https://astral.sh/uv/0.2.33/install.sh | sh
 COPY requirements.lock .
 
 ARG index_url
+ENV UV_HTTP_TIMEOUT 600
 ENV UV_EXTRA_INDEX_URL ${index_url}
 
 RUN /root/.cargo/bin/uv pip install --system --no-cache -r requirements.lock

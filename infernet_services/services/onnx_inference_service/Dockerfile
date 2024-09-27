@@ -18,6 +18,7 @@ RUN curl -LsSf https://astral.sh/uv/0.2.33/install.sh | sh
 COPY requirements.lock .
 
 ARG index_url
+ENV UV_HTTP_TIMEOUT 600
 ENV UV_EXTRA_INDEX_URL ${index_url}
 
 # Using docker's ssh-forwarding to install private packages from github. Refer to the

@@ -21,6 +21,7 @@ set-version:
 	$(SED) -i 's/version = .*/version = "$(version)"/' libraries/$(library)/pyproject.toml
 
 build-library:
+	@eval "$$get_library"; \
 	rm `find dist | grep $(library)` || true; \
 	rye build --pyproject libraries/$(library)/pyproject.toml
 
@@ -58,33 +59,6 @@ fi;
 endef
 export get_library
 
-# utility to create, install & activate an environment
-setup-env:
-	@eval "$$get_library"; \
-	uv venv -p 3.11 && source .venv/bin/activate && \
-	uv pip install -r libraries/$$library/requirements.lock && \
-	uv pip install -r pyproject.toml
-
-
-# updates the python lockfile of the specific library
-update-library-lockfile:
-	@eval "$$get_library"; \
-	echo "Updating lockfile for $$library"; \
-	index_url=`make get-index-url`; \
-	optional_deps=`sed -n '/project.optional-dependencies/,/^\[/p' libraries/$$library/pyproject.toml | grep '^[a-zA-Z]' | awk '{print $$1}'`; \
-	rm -rf temp_lock; \
-	mkdir -p temp_lock; \
-	cd temp_lock && uv venv -p 3.11 && source .venv/bin/activate && cd ..; \
-	cd libraries/$$library; \
-	for dep in $$optional_deps; do \
-		echo "Installing $$dep"; \
-		uv pip install -e ".[$$dep]" --extra-index-url $$index_url; \
-	done; \
-	uv pip freeze | grep -v "file://" > requirements.lock; \
-	rm -rf temp_lock; \
-	echo "✅ Updated lockfile for $$library"
-
-
 bump-lib-version:
 	@eval "$$get_library"; \
 	current_version=`grep "version = " libraries/$$library/pyproject.toml | awk '{print $$3}' | tr -d '"'`; \
@@ -115,7 +89,7 @@ publish-library:
 	 	dist/*
 
 print-install-command:
-	@echo "uv pip install --index-url https://pypi.org/simple --extra-index-url `make get-index-url` ritual-arweave==1.0.0.1"
+	@echo "uv pip install --index-url https://pypi.org/simple --extra-index-url `make get-index-url` ritual-arweave==0.1.0"
 
 publish-pypi:
 	$(MAKE) clean build-library

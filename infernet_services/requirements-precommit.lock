@@ -47,7 +47,7 @@ hyperframe==6.0.1
 identify==2.6.1
 idna==3.10
 infernet-client==1.0.3.3
-infernet-ml==2.0.0.42
+infernet-ml==2.0.0.47
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0
@@ -103,7 +103,7 @@ requests==2.32.3
 reretry==0.11.8
 retry2==0.9.5
 rich==13.8.1
-ritual-arweave==0.2.0.11
+ritual-arweave==0.1.0
 ritual-pyarweave==0.1.0.4
 rlp==4.0.1
 rpds-py==0.20.0

@@ -15,27 +15,44 @@ export find_service
 
 build-service:
 	@eval "$$find_service"; \
-	if [ -n "$(reuse_index)" ]; then \
-		echo "Reusing index"; \
-		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
-	else \
-		echo "Getting Index"; \
-		index_url=`make get-index-url`; \
-	fi; \
+	$(MAKE) generate-uv-env-file && source uv.env && \
 	$(MAKE) build -C $(service_dir)/$$service index_url=$$index_url
 
 build-base:
 	@eval "$$find_service"; \
-	if [ -n "$(reuse_index)" ]; then \
-		echo "Reusing index"; \
-		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
-	else \
-		echo "Getting Index"; \
-		index_url=`make get-index-url`; \
-	fi; \
+	$(MAKE) generate-uv-env-file && source uv.env && \
 	$(MAKE) build-base -C $(service_dir)/$$service index_url=$$index_url
 	@index_url=`make get-index-url`; \
 	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
+
+pre-commit-service:
+	eval "$$find_service"; \
+	$(MAKE) generate-uv-env-file && source uv.env && \
+	cd infernet_services/services/$$service; \
+	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
+	source .venv/bin/activate && \
+	uv pip install -r requirements.lock; \
+	uv pip install mypy isort pre-commit; \
+	pre-commit run --files `git ls-files`
+
+update-service-lockfile:
+	@requirements_path=`find $(service_dir) -maxdepth 4 | grep "requirements.*.txt" | fzf`; \
+	if [ -z "$$requirements_path" ]; then \
+		echo "No requirements file selected"; \
+		exit 1; \
+	fi; \
+	requirements_path=`echo $$requirements_path | xargs realpath`; \
+	rm -rf temp_lock; \
+	mkdir -p temp_lock; \
+	cp $$requirements_path temp_lock/; \
+	lockfile_path=`echo $$requirements_path | sed 's/.txt/.lock/'`; \
+	$(MAKE) generate-uv-env-file && source uv.env && \
+	cd temp_lock; \
+	uv venv -p 3.11 && source .venv/bin/activate; \
+	uv pip install -r $$requirements_path; \
+	uv pip freeze | grep -v "file://" > "$$lockfile_path"; \
+	rm -rf ../temp_lock; \
+	echo "✅ Updated lockfile at $$lockfile_path"
 
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
@@ -116,11 +133,6 @@ test-service: stop-node
 dev: build-service stop-node deploy-node
 	sleep 5
 	$(MAKE) deploy-contract
-
-update-services-lockfile:
-	uv venv -p 3.11 && source .venv/bin/activate && \
-	uv pip install -r $(toplevel_dir)/$(req_file).txt && \
-	uv pip freeze > $(toplevel_dir)/$(req_file).lock
 
 open-terminal:
 	osascript -e 'tell app "Terminal" to do script "$(command)"'

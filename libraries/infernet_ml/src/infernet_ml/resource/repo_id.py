@@ -15,8 +15,9 @@ from pathlib import Path
 from typing import Optional
 
 from eth_abi.abi import decode, encode
-from infernet_ml.resource.types import StorageId, StorageIdInt
 from pydantic import BaseModel
+
+from infernet_ml.resource.types import StorageId, StorageIdInt
 
 UNVERSIONED_MARKER = "default"
 DEFAULT_CACHE_DIR = Path("~/.cache/ritual").expanduser()

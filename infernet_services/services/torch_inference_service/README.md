@@ -1,12 +1,12 @@
 # Torch Inference Service
 
-This service serves closed source models via a `TorchInferenceWorkflow` object,
-encapsulating the backend, preprocessing, and postprocessing logic
-
 [PyTorch](https://pytorch.org/) is an open source deep learning framework that provides a
 flexible platform for building and deploying machine learning models. This service allows
 you to deploy and run PyTorch models for various inference tasks, such as image
 classification, object detection, or natural language processing.
+
+This service serves closed source models via a `TorchInferenceWorkflow` object,
+which encapsulates the backend, preprocessing, and postprocessing logic.
 
 ## Infernet Configuration
 
@@ -20,7 +20,7 @@ in `config.json`.
     "containers": [
         {
             "id": "torch_inference_service",
-            "image": "your_org/torch_inference_service:latest",
+            "image": "ritualnetwork/torch_inference_service:latest",
             "external": true,
             "port": "3000",
             "allowed_delegate_addresses": [],
@@ -28,71 +28,139 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "MODEL_SOURCE": 1,
-                // ARWEAVE
-                "LOAD_ARGS": "{\"repo_id\": \"Ritual-Net/sk2torch-example\", \"filename\": \"model.torch\"}",
-                "USE_JIT": "false"
+                "TORCH_DEFAULT_MODEL_ID": "huggingface/Ritual-Net/california-housing:california-housing.torch",
+                "TORCH_CACHE_DIR": "~/.cache/ritual",
+                "TORCH_USE_JIT": "false"
             }
         }
     ]
 }
 ```
 
-## Supported Model Sources
-
-The Torch inference service supports the following model sources:
-
-```python
-class ModelSource(IntEnum):
-    """
-    Enum for the model source
-    """
-
-    LOCAL = 0
-    ARWEAVE = 1
-    HUGGINGFACE_HUB = 2
-```
-
-and the following `LOAD_ARGS` are common across these model sources:
-
-```python
-class CommonLoadArgs(BaseModel):
-    """
-    Common arguments for loading a model
-    """
-
-    model_config = ConfigDict(frozen=True)
-
-    cache_path: Optional[str] = None
-    version: Optional[str] = None
-    repo_id: str
-    filename: str
-```
-
-Model source and load args can be passed either as environment variables or directly as input data.
-
 ## Environment Variables
 
-### MODEL_SOURCE
+### TORCH_DEFAULT_MODEL_ID
 
-- **Description**: The source of the model
+- **Description**: The [Model ID](#model-ids) of the model to pre-load
 - **Default**: None
+- **Example**: `"huggingface/Ritual-Net/california-housing:california-housing.torch"`
 
-### LOAD_ARGS
+### TORCH_CACHE_DIR
 
-- **Description**: The arguments to load with the model
+- **Description**: The local directory to store model weights and data in
 - **Default**: None
+- **Example**: `"~/.cache/ritual"`
 
-### USE_JIT
+### TORCH_USE_JIT
 
 - **Description**: Whether to use JIT compilation
 - **Default**: False
 
+## Model IDs
+
+The Torch Inference Service supports the following model sources, defined by the `StorageId` enum (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/resource/types/#infernet_ml.resource.types.StorageId)):
+
+```python
+class StorageId(StrEnum):
+    """
+    StorageId: Enum for the different types of storage capabilities within ritual's
+        services. Models/Artifacts can be stored in different storage backends.
+    """
+
+    Local: str = "local"
+    Arweave: str = "arweave"
+    Huggingface: str = "huggingface"
+```
+
+Model repositories are defined as `RitualRepoId` instances (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/resource/repo_id/#infernet_ml.resource.repo_id.RitualRepoId)):
+
+```python
+class RitualRepoId(BaseModel):
+    """
+    A class representing a repository of files on Ritual. A repository in Ritual is
+    identified by where it is stored (storage), the owner of the repository (owner),
+    and the name of the repository (name).
+
+    Each repository has a unique id which is of the format:
+
+        {storage}/{owner}/{name}[/{version}]
+
+    Attributes:
+        storage (StorageId): The storage where the repository is stored.
+        owner (str): The owner of the repository.
+        name (str): The name of the repository.
+        version (str): The version of the repository.
+    """
+
+    storage: StorageId
+    owner: str
+    name: str
+    version: Optional[str] = None
+
+```
+
+Model IDs are defined as `MlModelId` instances (see [source](https://infernet-ml.docs.ritual.net/reference/infernet_ml/utils/specs/ml_model_id/#infernet_ml.utils.specs.ml_model_id.MlModelId)):
+
+
+```python
+class MlModelId(BaseModel):
+    """
+    ModelId: Base class for all models within Ritual's services.
+
+    Each model has a unique id which is of the format: {repo_id}/
+
+    Attributes:
+        ml_type: MLType - The type of machine learning model
+        repo_id: RitualRepoId - The repository id of the model
+        files: List[str] - The list of files that make up the model
+    """
+
+    repo_id: RitualRepoId
+    files: List[str] = []
+    ml_type: Optional[MLType] = None
+```
+
+**Therefore, we recommend formatting model IDs as follows**:
+```python
+from infernet_ml.resource.repo_id import RitualRepoId
+from infernet_ml.resource.types import StorageId
+from infernet_ml.utils.specs.ml_model_id import MlModelId
+
+# HuggingFace
+repo_id = RitualRepoId(
+    owner="Ritual-Net", storage=StorageId.Huggingface, name="california-housing"
+)
+
+model_id = MlModelId(repo_id=repo_id, files=["california_housing.torch"]).unique_id
+
+print("HuggingFace:")
+print(model_id)
+
+# Arweave
+repo_id = RitualRepoId(
+    owner="your-arweave-address", storage=StorageId.Arweave, name="california-housing"
+)
+
+model_id = MlModelId(repo_id=repo_id, files=["california_housing.torch"]).unique_id
+
+print("Arweave:")
+print(model_id)
+```
+
+**Expected Output**:
+```bash
+# HuggingFace:
+# huggingface/Ritual-Net/california-housing:california_housing.torch
+
+# Arweave:
+# arweave/your-arweave-address/california-housing:california_housing.torch
+```
+
 ## Usage
 
-Inference requests to the service that orginate offchain can be initiated with `python`
+Offchain requests to the service can be initiated with `python`
 or `cli` by utilizing the [infernet_client](../infernet_client/) package, as well as with
-HTTP requests against the infernet node directly (using a client like `cURL`).
+HTTP requests against the Infernet Node directly (using a client like `cURL`).
 
 The schema format of a `infernet_client` job request looks like the following:
 
@@ -142,35 +210,42 @@ class ContainerOutput(TypedDict):
 
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
     ```python
-    from infernet_client.node import NodeClient
-    california_housing_vector_params = {
-        "shape": (1, 8),
-        "values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
-    }
+    from infernet_client.node import JobRequest, NodeClient
+    from infernet_ml.services.torch import TorchInferenceRequest
+    from infernet_ml.utils.codec.vector import DataType, RitualVector
 
     client = NodeClient("http://127.0.0.1:4000")
-    job_id = await client.request_job(
-        "SERVICE_NAME",
-        {
-        "model_source": 1, # ARWEAVE
-        "load_args": {
-            "repo_id": "your_org/model",
-            "filename": "california_housing.torch",
-            "version": "v1"
-        },
-        "inputs": {"input": {**california_housing_vector_params, "dtype": "double"}}
-        },
+
+    # Define inputs
+    inputs = RitualVector(
+        dtype=DataType.float64,
+        shape=(1, 8),
+        values=[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23],
     )
 
-    result = (await client.get_job_result_sync(job_id))["result"]["output"]
+    torch_request = TorchInferenceRequest(
+        ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+        inputs=inputs.model_dump()
+    )
+
+    # Define request
+    job_request = JobRequest(
+        containers=["torch_inference_service"],
+        data=torch_request.model_dump()
+    )
+
+    # Request the job
+    job_id = await client.request_job(job_request)
+
+    # Fetch results
+    result = (await client.get_job_result_sync(job_id))["result"]
     ```
 
 === "CLI"
@@ -178,36 +253,29 @@ on port 4000.
     ```bash
     # Note that the sync flag is optional and will wait for the job to complete.
     # If you do not pass the sync flag, the job will be submitted and you will receive a job id, which you can use to get the result later.
-    infernet-client job -c SERVICE_NAME -i input.json --sync
+    infernet-client job -c torch_inference_service -i input.json --sync
     ```
-    where `input.json` looks like this:
-    ```json
- {
-    "model_source": 2,
-    "load_args": {
-        "repo_id": "Ritual-Net/california-housing",
-        "filename": "california_housing.torch"
-    },
 
+    where `input.json` looks like this:
+
+    ```json
+    {
+        "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
         "input": {
             "values": [
-                [
-                    8.3252,
-                    41.0,
-                    6.984127,
-                    1.02381,
-                    322.0,
-                    2.555556,
-                    37.88,
-                    -122.23
-                ]
+                8.3252,
+                41.0,
+                6.984127,
+                1.02381,
+                322.0,
+                2.555556,
+                37.88,
+                -122.23
             ],
             "shape": [1, 8],
-            "dtype": "double"
+            "dtype": 2
         }
-
-}
-
+    }
     ```
 
 === "cURL"
@@ -215,38 +283,40 @@ on port 4000.
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["SERVICE_NAME"], "data": {"model_source": 2, "load_args": {"repo_id": "Ritual-Net/california-housing", "filename": "california_housing.torch"}, "input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}}'
+        -d '{"containers": ["torch_inference_service"], "data": {"ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch", "input": {"values": [8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23], "shape": [1, 8], "dtype": 2}}}'
     ```
 
-### Web3 Request (onchain subscription)
+### Onchain (web3) Subscription
 
-You will need to import the infernet-sdk in your requesting contract. In this example, we
-showcase the Callback pattern, which is an example of a one-off subscription. Please
-refer to the infernet-sdk documentation for further details.
+You will need to import the `infernet-sdk` in your requesting contract. In this example
+we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
+pattern, which is an example of a one-off subscription. Please refer to
+the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) documentation for
+further details.
 
 Input requests should be passed in as an encoded byte string. Here is an example of how
-to generate this for a Torch inference request:
+to generate this for a `Torch` inference request:
 
 ```python
-from infernet_ml.utils.codec.vector import encode_vector
-from infernet_ml.utils.model_loader import ModelSource
-from infernet_ml.utils.codec.vector import DataType
-from eth_abi.abi import encode
 
-input_bytes = encode(
-    ["uint8", "string", "string", "string", "bytes"],
-    [
-        ModelSource.ARWEAVE,  # model source
-        "your_org/model",  # repo_id
-        "california_housing.torch",  # filename
-        "v1",  # version
-        encode_vector(
-            values=[[1.0, 2.0, 3.0, 4.0]],  # example values
-            shape=(1, 4),
-            dtype=DataType.float,
-        ),
-    ],
+from infernet_ml.services.torch import TorchInferenceRequest
+from infernet_ml.utils.codec.vector import RitualVector
+from infernet_ml.utils.codec.vector import DataType
+
+# Define inputs
+inputs = RitualVector(
+    dtype=DataType.float64,
+    shape=(1, 8),
+    values=[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23],
 )
+
+torch_request = TorchInferenceRequest(
+    ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+    inputs=inputs.model_dump()
+)
+
+# Convert to web3-encoded input bytes
+input_bytes = torch_request.to_web3()
 ```
 
 Here is an example of how to implement the on-chain portion. We will define the
@@ -263,7 +333,7 @@ contract MyOnchainSubscription is CallbackConsumer {
 
     // Function to predict housing prices
     function predictHousingPrice(bytes memory inputs) public returns (bytes32) {
-        string memory containerId = "my-container";
+        string memory containerId = "torch_inference_service";
         uint16 redundancy = 1;
         address paymentToken = address(0);
         uint256 paymentAmount = 0;
@@ -316,8 +386,7 @@ tx_hash = contract.functions.predictHousingPrice(input_bytes).transact()
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an infernet node running locally
-on port 4000.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -325,13 +394,15 @@ on port 4000.
     from infernet_client.node import NodeClient
     from infernet_client.chain_utils import Subscription, RPC
 
+    client = NodeClient("http://127.0.0.1:4000")
+
     sub = Subscription(
         owner="0x...",
         active_at=int(time()),
         period=0,
         frequency=1,
         redundancy=1,
-        containers=["SERVICE_NAME"],
+        containers=["torch_inference_service"],
         lazy=False,
         verifier=ZERO_ADDRESS,
         payment_amount=0,
@@ -339,7 +410,6 @@ on port 4000.
         wallet=ZERO_ADDRESS,
     )
 
-    client = NodeClient("http://127.0.0.1:4000")
     nonce = random.randint(0, 2**32 - 1)
     await client.request_delegated_subscription(
         sub=sub,
@@ -349,21 +419,26 @@ on port 4000.
         nonce=nonce,
         private_key="0x...",
         data={
-            "model_source": 1,
-            "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch"},
-            "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}
-        },
+            "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
+            "input": {
+                "values": [8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23],
+                "shape": [1, 8],
+                "dtype": 2
+            }
+        }
     )
     ```
 
 === "CLI"
 
     ```bash
-    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x19f...xJ7 --expiry 1713376164 --key key-file.txt \
+    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x... --expiry 1713376164 --key key-file.txt \
         --params params.json --input input.json
     # Success: Subscription created.
     ```
+
     where `params.json` looks like this:
+
     ```json
     {
         "owner": "0x00Bd138aBD7....................", // Subscription Owner
@@ -371,7 +446,7 @@ on port 4000.
         "period": 3, // 3 seconds between intervals
         "frequency": 2, // Process 2 times
         "redundancy": 2, // 2 nodes respond each time
-        "containers": ["SERVICE_NAME"], // comma-separated list of containers
+        "containers": ["torch_inference_service"], // comma-separated list of containers
         "lazy": false,
         "verifier": "0x0000000000000000000000000000000000000000",
         "payment_amount": 0,
@@ -379,11 +454,25 @@ on port 4000.
         "wallet": "0x0000000000000000000000000000000000000000",
     }
     ```
-    and where `input.json` looks like this:
+
+    and `input.json` looks like this:
+
     ```json
     {
-    "model_source": 1,
-    "load_args": {"repo_id": "your_org/model", "filename": "california_housing.torch", "version": "v1"},
-    "inputs": {"input": {"values": [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]], "shape": [1, 8], "dtype": "double"}}
+        "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
+        "input": {
+            "values": [
+                8.3252,
+                41.0,
+                6.984127,
+                1.02381,
+                322.0,
+                2.555556,
+                37.88,
+                -122.23
+            ],
+            "shape": [1, 8],
+            "dtype": 2
+        }
     }
     ```

@@ -1,12 +1,12 @@
 # ONNX Inference Service
 
-This service serves closed source models via a `ONNXInferenceWorkflow` object,
-encapsulating the backend, preprocessing, and postprocessing logic.
-
 [ONNX](https://onnx.ai/) is an open format for representing machine learning models that
 enables interoperability between different frameworks and hardware platforms. This
 service allows you to deploy and run ONNX models for various inference tasks, such as
 image classification, object detection, or natural language processing.
+
+This service serves closed source models via a `ONNXInferenceWorkflow` object,
+which encapsulates the backend, preprocessing, and postprocessing logic.
 
 ## Infernet Configuration
 
@@ -49,7 +49,6 @@ in `config.json`.
 - **Description**: The local directory to store model weights and data in
 - **Default**: None
 - **Example**: `"~/.cache/ritual"`
-
 
 ## Model IDs
 
@@ -202,9 +201,9 @@ class ContainerOutput(TypedDict):
     output: Any
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
-**Please note**: the examples below assume that you have an infernet node running locally on port `4000`.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -281,7 +280,7 @@ class ContainerOutput(TypedDict):
         -d '{"containers": ["onnx_inference_service"], "data": {"ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx", "inputs": {"input": {"values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1}}}}'
     ```
 
-### Web3 Request (Onchain Subscription)
+### Onchain (web3) Subscription
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
@@ -290,7 +289,7 @@ the [`infernet-sdk`](https://docs.ritual.net/infernet/sdk/introduction) document
 further details.
 
 Input requests should be passed in as an encoded byte string. Here is an example of how
-to generate this for an `onnx` inference request:
+to generate this for an `ONNX` inference request:
 
 ```python
 from infernet_ml.services.onnx import ONNXInferenceRequest
@@ -377,8 +376,7 @@ tx_hash = contract.functions.classifyFlower(input_bytes).transact()
 
 ### Delegated Subscription Request
 
-**Please Note**: the examples below assume that you have an infernet node running locally
-on port `4000`.
+**Please Note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -414,7 +412,9 @@ on port `4000`.
             "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
             "inputs": {
                 "input": {
-                    "values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1
+                    "values": [1.0380048, 0.5586108, 1.1037828, 1.712096],
+                    "shape": [1,4],
+                    "dtype": 1
                 }
             }
         }
@@ -423,57 +423,54 @@ on port `4000`.
 
 === "CLI"
 
-  ```bash
-  infernet-client sub --rpc_url http://some-rpc-url.com --address 0x... --expiry 1713376164 --key key-file.txt \
-      --params params.json --input input.json
-  # Success: Subscription created.
-  ```
+    ```bash
+    infernet-client sub --rpc_url http://some-rpc-url.com --address 0x... --expiry 1713376164 --key key-file.txt \
+        --params params.json --input input.json
+    # Success: Subscription created.
+    ```
 
-where `params.json` looks like this:
+    where `params.json` looks like this:
 
-```json
-{
-    "owner": "0x00Bd138aBD7....................",
-    // Subscription Owner
-    "active_at": 0,
-    // Instantly active
-    "period": 3,
-    // 3 seconds between intervals
-    "frequency": 2,
-    // Process 2 times
-    "redundancy": 2,
-    // 2 nodes respond each time
-    "containers": [
-        "onnx_inference_service"
-    ],
-    // comma-separated list of containers
-    "lazy": false,
-    "verifier": "0x0000000000000000000000000000000000000000",
-    "payment_amount": 0,
-    "payment_token": "0x0000000000000000000000000000000000000000",
-    "wallet": "0x0000000000000000000000000000000000000000"
-}
-```
+    ```json
+    {
+        "owner": "0x00Bd138aBD7....................",
+        // Subscription Owner
+        "active_at": 0,
+        // Instantly active
+        "period": 3,
+        // 3 seconds between intervals
+        "frequency": 2,
+        // Process 2 times
+        "redundancy": 2,
+        // 2 nodes respond each time
+        "containers": [
+            "onnx_inference_service"
+        ],
+        // comma-separated list of containers
+        "lazy": false,
+        "verifier": "0x0000000000000000000000000000000000000000",
+        "payment_amount": 0,
+        "payment_token": "0x0000000000000000000000000000000000000000",
+        "wallet": "0x0000000000000000000000000000000000000000"
+    }
+    ```
 
-and where `input.json` looks like this:
+    and `input.json` looks like this:
 
-```json
-{
-    "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
-    "inputs": {
-        "input": {
-            "values":[
-                1.0380048,
-                0.5586108,
-                1.1037828,
-                1.712096
-            ],
-            "shape": [
-                1,
-                4
-            ],
-            "dtype": 1
+    ```json
+    {
+        "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+        "inputs": {
+            "input": {
+                "values":[
+                    1.0380048,
+                    0.5586108,
+                    1.1037828,
+                    1.712096
+                ],
+                "shape": [1, 4],
+                "dtype": 1
+            }
         }
     }
-}
-```
+    ```

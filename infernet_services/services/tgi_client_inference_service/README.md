@@ -1,12 +1,11 @@
 # TGI Inference Service
 
-This service serves models via a `TGIClientInferenceWorkflow` object, encapsulating the
-backend, preprocessing, and postprocessing logic.
-
 [Text Generation Inference (TGI)](https://huggingface.co/docs/text-generation-inference/en/index)
 is a toolkit from HuggingFace for deploying and serving Large Language Models (LLMs). TGI
 enables high-performance text generation for the most popular open-source LLMs, including
 Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and T5.
+
+This service serves models via a `TGIClientInferenceWorkflow` object, which encapsulates the backend, preprocessing, and postprocessing logic.
 
 ## Infernet Configuration
 
@@ -147,9 +146,9 @@ class ContainerOutput(TypedDict):
 
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
-**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -164,7 +163,7 @@ class ContainerOutput(TypedDict):
         },
     )
 
-    result:str = (await client.get_job_result_sync(job_id))["result"]["output"]
+    result: str = (await client.get_job_result_sync(job_id))["result"]["output"]
     ```
 
 === "CLI"
@@ -190,7 +189,7 @@ class ContainerOutput(TypedDict):
         -d '{"containers": ["tgi_client_inference_service"], "data": {"text": "Can shrimp actually fry rice fr?"}}'
     ```
 
-### Web3 Request (On-chain Subscription)
+### Onchain (web3) Subscription
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)

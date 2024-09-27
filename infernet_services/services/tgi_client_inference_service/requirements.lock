@@ -36,7 +36,7 @@ huggingface-hub==0.25.1
 hypercorn==0.17.3
 hyperframe==6.0.1
 idna==3.10
-infernet-ml==2.0.0.42
+infernet-ml==2.0.0.47
 itsdangerous==2.2.0
 jinja2==3.1.4
 jsonschema==4.23.0
@@ -69,7 +69,7 @@ requests==2.32.3
 reretry==0.11.8
 retry2==0.9.5
 rich==13.8.1
-ritual-arweave==0.2.0.8
+ritual-arweave==0.1.0
 ritual-pyarweave==0.1.0.4
 rlp==4.0.1
 rpds-py==0.20.0

@@ -103,9 +103,9 @@ class ContainerOutput(TypedDict):
 
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
-**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 
@@ -151,7 +151,7 @@ class ContainerOutput(TypedDict):
         -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
     ```
 
-### Web3 Request (Onchain Subscription)
+### Onchain (web3) Subscription
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
@@ -236,7 +236,7 @@ contract MyContract {
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an Infernet Node running locally on port `4000`.
+**Please note**: The examples below assume that you have an Infernet Node running locally on port `4000`.
 
 === "Python"
 

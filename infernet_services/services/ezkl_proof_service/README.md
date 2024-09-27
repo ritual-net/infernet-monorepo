@@ -187,7 +187,7 @@ class ContainerOutput(TypedDict):
 
 ```
 
-### Web2 Request
+### Offchain (web2) Request
 
 The address vk field is not required by default and is mostly necessary for onchain job workflows that are using a seperate verifying key contract. See [EZKL documentation](https://github.com/zkonduit/ezkl/blob/main/src/python.rs#L1493) for more info.
 
@@ -249,7 +249,7 @@ locally on port `4000`.
         -d '{"containers": ["SERVICE_NAME"], "data": {"witness_data":{"input_data":[1.0,2.0,3.0],"input_shape":[1,3],"input_dtype":0,"output_data":[1.0],"output_shape":[1,1],"output_dtype":0}}}'
     ```
 
-### Web3 Request (Onchain Subscription)
+### Onchain (web3) Subscription
 
 You will need to import the `infernet-sdk` in your requesting contract. In this example
 we showcase the [`Callback`](https://docs.ritual.net/infernet/sdk/consumers/Callback)
@@ -338,7 +338,7 @@ tx_hash = contract.functions.getProofData.call(encoded).transact()
 
 ### Delegated Subscription Request
 
-**Please note**: the examples below assume that you have an Infernet Node running locally
+**Please note**: The examples below assume that you have an Infernet Node running locally
 on port `4000`.
 
 === "Python"
