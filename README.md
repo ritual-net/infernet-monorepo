@@ -1,7 +1,6 @@
 # Infernet Monorepo
 
-This monorepo includes all of the libraries & frameworks used for building & running
-containers in Infernet Nodes.
+This monorepo includes all of the libraries & frameworks used for building & running containers in Infernet Nodes.
 
 ## Overview
 
@@ -57,7 +56,7 @@ To test [libraries](#python-libraries) and [services](#services), you will need 
 
 First, authenticate with the `gcloud` CLI. Run
 ```bash copy
-gcloud auth login 
+gcloud auth login
 ```
 and follow the steps in your browser. Then, initialize the repository:
 ```bash copy

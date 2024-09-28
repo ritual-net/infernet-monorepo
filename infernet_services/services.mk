@@ -15,12 +15,24 @@ export find_service
 
 build-service:
 	@eval "$$find_service"; \
-	$(MAKE) generate-uv-env-file && source uv.env && \
+	if [ -n "$(reuse_index)" ]; then \
+		echo "Reusing index"; \
+		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
+	else \
+		echo "Getting Index"; \
+		index_url=`make get-index-url`; \
+	fi; \
 	$(MAKE) build -C $(service_dir)/$$service index_url=$$index_url
 
 build-base:
 	@eval "$$find_service"; \
-	$(MAKE) generate-uv-env-file && source uv.env && \
+	if [ -n "$(reuse_index)" ]; then \
+		echo "Reusing index"; \
+		source uv.env && index_url=$$UV_EXTRA_INDEX_URL; \
+	else \
+		echo "Getting Index"; \
+		index_url=`make get-index-url`; \
+	fi; \
 	$(MAKE) build-base -C $(service_dir)/$$service index_url=$$index_url
 	@index_url=`make get-index-url`; \
 	$(MAKE) build -C $(service_dir)/$(service) index_url=$$index_url
