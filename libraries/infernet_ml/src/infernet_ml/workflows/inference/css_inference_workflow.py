@@ -1,8 +1,8 @@
 """
 # CSS Inference Workflow
 
-CSS (Closed-Source Software) Workflow is a utility workflow class that has support for various closed-source text-based
-models. Currently, the following APIs are supported:
+CSS (Closed-Source Software) workflow is a class for running inference on various
+closed-source text-based models. Currently, the following APIs are supported:
 
 1. OpenAI completions
 2. OpenAI embeddings
@@ -58,17 +58,25 @@ api_keys: ApiKeys = {
 
 
 def main():
-    endpoint = "completions"
-    model = "gpt-3.5-turbo-16k"
+    # Instantiate the workflow
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
+
+    # Setup the workflow
+    workflow.setup()
+
+    # Define the parameters for the completions API
     params: CSSCompletionParams = CSSCompletionParams(
         messages=[ConvoMessage(role="user", content="hi how are you")]
     )
+
+    # Define the request
     req: CSSRequest = CSSRequest(
-        provider=Provider.OPENAI, endpoint=endpoint, model=model, params=params
+        provider=Provider.OPENAI, endpoint="completions", model="gpt-3.5-turbo-16k", params=params
     )
-    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
-    workflow.setup()
+
+    # Run the model
     response = workflow.inference(req)
+
     print(response)
 
 
@@ -77,10 +85,10 @@ if __name__ == "__main__":
 ```
 
 Running the script above will make a request to the OpenAI's completions API and print
-the response.
+the response:
 
 ```bash
-Hello! I'm an AI and I don't have feelings, but I'm here to help you. How can I assist you today?
+# Hello! I'm an AI and I don't have feelings, but I'm here to help you. How can I assist you today?
 ```
 
 ## Streaming Example
@@ -110,16 +118,26 @@ api_keys: ApiKeys = {
 
 
 def main():
-    endpoint = "completions"
-    model = "gpt-3.5-turbo-16k"
+    # Instantiate the workflow
+    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
+
+    # Setup the workflow
+    workflow.setup()
+
+    # Define the parameters for the completions API
     params: CSSCompletionParams = CSSCompletionParams(
         messages=[ConvoMessage(role="user", content="hi how are you")]
     )
+
+    # Define the request
     req: CSSRequest = CSSRequest(
-        provider=Provider.OPENAI, endpoint=endpoint, model=model, params=params
+        provider=Provider.OPENAI,
+        endpoint="completions",
+        model="gpt-3.5-turbo-16k",
+        params=params
     )
-    workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
-    workflow.setup()
+
+    # Run the model and stream the response
     for response in workflow.stream(req):
         print(response)
 
@@ -132,16 +150,17 @@ if __name__ == "__main__":
 Outputs:
 
 ```bash
-Hello
-!
- I
-'m
- an
- ...
+# Hello
+# !
+#  I
+# 'm
+#  an
+# AI
+#  ...
 ```
 
 ## Other Inputs
-To explore other inputs, check out the [`inference()`](./#infernet_ml.workflows.inference.css_inference_workflow.CSSInferenceWorkflow.inference) method's arguments.
+To explore other inputs, check out the [inference()](./#infernet_ml.workflows.inference.css_inference_workflow.CSSInferenceWorkflow.inference) method's arguments.
 
 """  # noqa: E501
 
@@ -174,7 +193,8 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         retry_params: Optional[RetryParams] = None,
     ) -> None:
         """
-        constructor. Any named arguments passed to closed source LLM during inference.
+        Constructor. Any named arguments are passed to closed source LLM during
+            inference.
 
         Args:
             server_url (str): url of inference server
@@ -235,10 +255,10 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         Validate input data and return a dictionary with the provider and endpoint.
 
         Args:
-            input_data (CSSInferenceInput): input data from client
+            input_data (CSSRequest): input data from client
 
         Returns:
-            CSSInferenceInput: validated input data
+            CSSRequest: validated input data
         """
 
         # add api keys to input data, if they are not already present
@@ -266,10 +286,10 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         abstract methods.
 
         Args:
-            input_data dict (str): user input
+            preprocessed_data (CSSRequest): user input
 
         Returns:
-            Union[str, dict[str, Any]]: result of inference
+            Union[str, list[Union[float, int]]]: result of inference
         """
 
         @retry(**self.retry_params)
@@ -287,7 +307,7 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
     ) -> Union[Any, dict[str, Any]]:
         """
         Implement any postprocessing here. For example, you may need to return
-        additional data. by default, returns a dictionary with a single output key.
+        additional data. By default, returns a dictionary with a single output key.
 
         Args:
             input_data (dict[str, Any]): original input data from client
@@ -301,6 +321,6 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
 
     def do_generate_proof(self) -> Any:
         """
-        raise error by default
+        Raise error by default
         """
         raise NotImplementedError

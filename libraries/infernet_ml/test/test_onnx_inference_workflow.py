@@ -1,49 +1,38 @@
-import os
+import json
+import logging
+import tempfile
 from typing import Any
 
 import numpy as np
 import onnx
 import pytest
+from test_library.artifact_utils import (
+    ar_model_id,
+    ar_ritual_repo_id,
+    hf_model_id,
+    hf_ritual_repo_id,
+)
 
-from infernet_ml.utils.common_types import TensorInput
-from infernet_ml.utils.model_loader import ArweaveLoadArgs, HFLoadArgs, ModelSource
+from infernet_ml.utils.codec.vector import DataType, RitualVector
+from infernet_ml.utils.model_manager import ModelArtifact
 from infernet_ml.workflows.inference.onnx_inference_workflow import (
     ONNXInferenceInput,
     ONNXInferenceResult,
     ONNXInferenceWorkflow,
-    load_model_and_start_session,
 )
 
-hf_args: Any = {
-    "model_source": ModelSource.HUGGINGFACE_HUB,
-    "load_args": HFLoadArgs(
-        repo_id="Ritual-Net/iris-classification",
-        filename="iris.onnx",
-    ),
-}
+hf_model = hf_model_id("iris-classification", "iris.onnx")
+ar_model = ar_model_id("iris-classification", "iris.onnx")
 
-arweave_args: Any = {
-    "model_source": ModelSource.ARWEAVE,
-    "load_args": ArweaveLoadArgs(
-        repo_id=f"{os.environ['MODEL_OWNER']}/iris-classification",
-        filename="iris.onnx",
-    ),
-}
 
-sample_linreg_args: Any = {
-    "model_source": ModelSource.ARWEAVE,
-    "load_args": ArweaveLoadArgs(
-        repo_id=f"{os.environ['MODEL_OWNER']}/sample_linreg",
-        filename="linreg_10_features.onnx",
-    ),
-}
+linreg_model_id = hf_model_id("sample_linreg", "linreg_10_features.onnx")
 
 
 iris_input = {
-    "input": TensorInput(
-        values=[[1.0380048, 0.5586108, 1.1037828, 1.712096]],
-        shape=(1, 4),
-        dtype="float",
+    "input": RitualVector.from_numpy(
+        np.array([1.0380048, 0.5586108, 1.1037828, 1.712096])
+        .astype(np.float32)
+        .reshape(1, 4)
     )
 }
 
@@ -51,51 +40,84 @@ iris_input = {
 def _assert_iris_output(res: ONNXInferenceResult) -> None:
     r = res.output
     assert len(r) == 1
-    assert r[0].dtype == "float32"
+    assert r[0].dtype == DataType.float32
     assert r[0].shape == (1, 3)
-    assert r[0].values.argmax() == 2
+    assert r[0].numpy.argmax() == 2
 
 
 def _assert_linreg_output(res: ONNXInferenceResult) -> None:
     r = res.output
     assert len(r) == 1
-    assert r[0].dtype == "float32"
+    assert r[0].dtype == DataType.float32
     assert r[0].shape == (1, 1)
 
 
 @pytest.mark.parametrize(
-    "workflow_kwargs",
-    [hf_args, arweave_args],
+    "model_id",
+    [hf_model, ar_model],
 )
-def test_inference_preloaded_model(workflow_kwargs: dict[str, Any]) -> None:
-    wf = ONNXInferenceWorkflow(**workflow_kwargs).setup()
+def test_inference_preloaded_model(model_id: str) -> None:
+    wf = ONNXInferenceWorkflow(model_id).setup()
     r = wf.inference(ONNXInferenceInput(inputs=iris_input))
     _assert_iris_output(r)
 
 
+log = logging.getLogger(__name__)
+
+
 @pytest.mark.parametrize(
-    "model_kwargs",
-    [hf_args, arweave_args],
+    "model_id, expected_cache",
+    [
+        (
+            hf_model,
+            {
+                "repo_id": hf_ritual_repo_id("iris-classification"),
+                "manifest": {
+                    "files": ["iris.torch", "iris.onnx"],
+                    "metadata": {"description": "Iris classification model"},
+                    "artifact_type": "ModelArtifact",
+                },
+            },
+        ),
+        (
+            ar_model,
+            {
+                "repo_id": ar_ritual_repo_id("iris-classification"),
+                "manifest": {
+                    "files": ["iris.torch", "iris.onnx"],
+                    "metadata": {"description": "Iris classification model"},
+                    "artifact_type": "ModelArtifact",
+                },
+            },
+        ),
+    ],
 )
-def test_inference_load_model_on_the_fly(model_kwargs: dict[str, Any]) -> None:
-    wf = ONNXInferenceWorkflow().setup()
-    r = wf.inference(
-        ONNXInferenceInput(
-            inputs=iris_input,
-            **model_kwargs,
+def test_inference_load_model_on_the_fly(
+    model_id: str, expected_cache: dict[str, Any]
+) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        wf = ONNXInferenceWorkflow(cache_dir=tmpdir).setup()
+        r = wf.inference(ONNXInferenceInput(inputs=iris_input, model_id=model_id))
+        _assert_iris_output(r)
+
+        models = wf.model_manager.get_cached_models()
+        models_dict = [
+            json.loads(model.model_dump_json(exclude={"file_paths"}))
+            for model in models
+        ]
+        assert models_dict[0]["type"] == ModelArtifact.__name__
+        assert models_dict[0]["repo_id"] == expected_cache["repo_id"]
+        assert set(expected_cache["manifest"]["files"]).issubset(
+            models_dict[0]["manifest"]["files"]
         )
-    )
-    _assert_iris_output(r)
+        log.info(f"models: {json.dumps(models_dict, indent=2)}")
 
 
 @pytest.mark.parametrize(
-    "model_kwargs",
-    [hf_args, arweave_args],
+    "model_id",
+    [hf_model, ar_model],
 )
-def test_inference_in_memory_cache(model_kwargs: dict[str, Any], mocker: Any) -> None:
-    # clear cache (the other tests in this file might have loaded the model already)
-    load_model_and_start_session.cache_clear()
-
+def test_inference_in_memory_cache(model_id: str, mocker: Any) -> None:
     # Keep reference to the original onnx.load function
     original_load = onnx.load
 
@@ -113,7 +135,7 @@ def test_inference_in_memory_cache(model_kwargs: dict[str, Any], mocker: Any) ->
     wf.inference(
         ONNXInferenceInput(
             inputs=iris_input,
-            **model_kwargs,
+            model_id=model_id,
         )
     )
 
@@ -125,7 +147,7 @@ def test_inference_in_memory_cache(model_kwargs: dict[str, Any], mocker: Any) ->
     res = wf.inference(
         ONNXInferenceInput(
             inputs=iris_input,
-            **model_kwargs,
+            model_id=model_id,
         )
     )
     _assert_iris_output(res)
@@ -134,20 +156,18 @@ def test_inference_in_memory_cache(model_kwargs: dict[str, Any], mocker: Any) ->
 
 
 def test_inference_on_the_fly_should_not_change_default_model() -> None:
-    wf = ONNXInferenceWorkflow(**arweave_args).setup()
+    wf = ONNXInferenceWorkflow(model_id=ar_model).setup()
     r = wf.inference(ONNXInferenceInput(inputs=iris_input))
     _assert_iris_output(r)
 
     r = wf.inference(
         ONNXInferenceInput(
             inputs={
-                "float_input": TensorInput(
-                    values=np.random.rand(1, 10).tolist(),
-                    shape=(1, 10),
-                    dtype="float",
+                "float_input": RitualVector.from_numpy(
+                    np.random.rand(1, 10).astype(np.float32)
                 )
             },
-            **sample_linreg_args,
+            model_id=linreg_model_id,
         )
     )
 

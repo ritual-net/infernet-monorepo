@@ -1,16 +1,15 @@
 """
 # Torch Inference Workflow
 
-Workflow for running inference on Torch models.
-
-This class is responsible for loading & running a Torch model.
+A class for loading & running inference on Torch models.
 
 Models can be loaded in two ways:
 
-1. Preloading: The model is loaded in the setup method. This happens in the `setup()`
-    method if model ID is provided when the class is instantiated.
-2. On-demand: The model is loaded with an inference request. This happens if model ID is
-    provided with the input (see optional field in the `TorchInferenceInput` class).
+1. Preloading: The model is loaded in the `setup()` method if `model_id` is provided
+    when at class instantiation.
+2. On-demand: The model is loaded following an inference request. This happens if `model_id` is
+    provided with the input (see optional field in the `TorchInferenceInput` class) and
+    is not preloaded or cached.
 
 Loaded models are cached in-memory using an LRU cache. The cache size can be configured
 using the `TORCH_MODEL_LRU_CACHE_SIZE` environment variable.
@@ -38,10 +37,9 @@ import torch
 
 from infernet_ml.utils.codec.vector import RitualVector
 from infernet_ml.workflows.inference.torch_inference_workflow import (
-    TorchInferenceWorkflow,
     TorchInferenceInput,
+    TorchInferenceWorkflow,
 )
-
 
 def main():
     # Instantiate the workflow
@@ -50,19 +48,21 @@ def main():
     # Setup the workflow
     workflow.setup()
 
-    # Run the model
-    result = workflow.inference(
-        TorchInferenceInput(
-            input=RitualVector.from_tensor(
-                tensor=torch.tensor(
-                    [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
-                    dtype=torch.float64,
-                ),
+    # Define the input
+    input_data = TorchInferenceInput(
+        ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+        input=RitualVector.from_tensor(
+            tensor=torch.tensor(
+                [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],
+                dtype=torch.float64,
             ),
-            ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
-        )
+        ),
     )
 
+    # Run the model
+    result = workflow.inference(input_data)
+
+    # Print the result
     print(f"result: {result}")
 
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 Outputs:
 
 ```bash
-result: dtype=<DataType.float64: 2> shape=(1,) values=[4.151943055154582]
+result: RitualVector(dtype=<DataType.float64: 2> shape=(1,) values=[4.151943055154582])
 ```
 
 """  # noqa: E501
@@ -104,35 +104,35 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class TorchInferenceInput(BaseModel):
     """
-    Input data for Torch inference workflows. If model ID is provided, the model is
-    loaded. Otherwise, if the class is instantiated with a model ID, the model is
+    Input data for Torch inference workflows. If `model_id` is provided, the model is
+    loaded. Otherwise, if the class is instantiated with a `model_id`, the model is
     preloaded in the setup method.
 
     ### Input Format
-    Input format is a dictionary of input tensors. Each key corresponds to the name of
-    the input nodes defined in the Torch model. The values are of type `RitualVector`.
+
+    Input is a [RitualVector](../../../utils/codec/vector/#infernet_ml.utils.codec.vector.RitualVector).
 
     Args:
-        input: RitualVector: Input tensor
-        ml_model: Optional[MlModelId | str]: Model to be loaded
-    """
+        input (RitualVector): Input tensor
+        model_id (Optional[MlModelId | str]): Model to be loaded at instantiation
+    """  # noqa: E501
 
     input: RitualVector
-    ml_model: Optional[MlModelId] = None
+    model_id: Optional[MlModelId] = None
 
     def __init__(
         self,
         input: RitualVector | np.ndarray[Any, Any] | torch.Tensor,
-        ml_model: Optional[MlModelId | str] = None,
+        model_id: Optional[MlModelId | str] = None,
         **data: Any,
     ) -> None:
         if isinstance(input, np.ndarray):
             input = RitualVector.from_numpy(input)
         elif isinstance(input, torch.Tensor):
             input = RitualVector.from_tensor(input)
-        if isinstance(ml_model, str):
-            ml_model = MlModelId.from_unique_id(ml_model, ml_type=MLType.ONNX)
-        super().__init__(input=input, ml_model=ml_model, **data)
+        if isinstance(model_id, str):
+            model_id = MlModelId.from_unique_id(model_id, ml_type=MLType.ONNX)
+        super().__init__(input=input, model_id=model_id, **data)
 
 
 class TorchInferenceResult(BaseModel):
@@ -144,29 +144,29 @@ TORCH_MODEL_LRU_CACHE_SIZE = int(os.getenv("TORCH_MODEL_LRU_CACHE_SIZE", 64))
 
 class TorchInferenceWorkflow(BaseInferenceWorkflow):
     """
-    Inference workflow for Torch based models. models are loaded using the default
-    torch pickling by default(i.e. torch.load).
+    Inference workflow for Torch-based models. Models are loaded using the default
+    torch pickling by default (i.e. `torch.load()`).
     """
 
     def __init__(
         self,
-        ml_model: Optional[MlModelId | str] = None,
+        model_id: Optional[MlModelId | str] = None,
         use_jit: bool = False,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         """
         Args:
-            ml_model (Optional[MlModelId | str]): Model to be loaded
+            model_id (Optional[MlModelId | str]): Model to be loaded
             use_jit (bool): Whether to use JIT for loading the model
             *args (Any): Additional arguments
             **kwargs (Any): Additional keyword arguments
         """
         super().__init__(*args, **kwargs)
         self.model: Optional[torch.nn.Module] = None
-        if ml_model is not None:
-            ml_model = MlModelId.from_any(ml_model)
-        self.ml_model: Optional[MlModelId] = ml_model
+        if model_id is not None:
+            model_id = MlModelId.from_any(model_id)
+        self.model_id: Optional[MlModelId] = model_id
         self.use_jit = use_jit
         self.model_manager: ModelManager = ModelManager(
             cache_dir=kwargs.get("cache_dir", None),
@@ -194,15 +194,15 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         is set, otherwise uses `torch.load()`.
 
         Args:
-            model_id: MlModel: Model to be loaded
-            use_jit: bool: Whether to use JIT for loading the model
+            model_id (MlModel): Model to be loaded
+            use_jit (bool): Whether to use JIT for loading the model
 
         Returns:
             torch.nn.Module: Loaded model
         """
 
-        ml_model: ModelArtifact = self.model_manager.download_model(model_id)
-        path = ml_model.get_file(model_id)
+        model_artifact: ModelArtifact = self.model_manager.download_model(model_id)
+        path = model_artifact.get_file(model_id)
         logger.info(f"Loading model from path: {path}")
 
         model = torch.jit.load(path) if use_jit else torch.load(path)  # type: ignore
@@ -213,30 +213,30 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
     def do_setup(self) -> "TorchInferenceWorkflow":
         """
-        If model ID is provided, preloads the model & starts the session. Otherwise,
+        If `model_id` is provided, preloads the model & starts the session. Otherwise,
         does nothing & model is loaded with an inference request.
         """
 
-        if self.ml_model is None:
+        if self.model_id is None:
             logging.info("Model ID not provided, not preloading any models.")
             return self
 
-        self.model = self._load_model(self.ml_model)
+        self.model = self._load_model(self.model_id)
         return self
 
-    def _load_model(self, ml_model: MlModelId) -> torch.nn.Module:
+    def _load_model(self, model_id: MlModelId) -> torch.nn.Module:
         """
         Loads the model from the model ID provided in the input.
         Uses an LRU cache to store the loaded models.
 
         Args:
-            ml_model: MlModel: Model to be loaded
+            model_id (MlModelId): Model to be loaded
 
         Returns:
             torch.nn.Module: Loaded model
         """
         # uses lru_cache
-        return self.load_torch_model(ml_model.unique_id, self.use_jit)
+        return self.load_torch_model(model_id.unique_id, self.use_jit)
 
     def do_run_model(
         self, inference_input: TorchInferenceInput
@@ -245,13 +245,13 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         Runs the model on the input data.
 
         Args:
-            inference_input: TorchInferenceInput: Input data for the inference workflow
+            inference_input (TorchInferenceInput): Input data for the inference workflow
 
         Returns:
             TorchInferenceResult: Output of the model
         """
-        if inference_input.ml_model:
-            model = self._load_model(inference_input.ml_model)
+        if inference_input.model_id:
+            model = self._load_model(inference_input.model_id)
         else:
             model = cast(torch.nn.Module, self.model)
 

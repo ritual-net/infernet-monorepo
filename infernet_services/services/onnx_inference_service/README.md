@@ -222,7 +222,7 @@ class ContainerOutput(TypedDict):
     )
 
     onnx_request = ONNXInferenceRequest(
-        ml_model="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+        model_id="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
         inputs={
             "input": inputs.model_dump()
         }
@@ -253,7 +253,7 @@ class ContainerOutput(TypedDict):
 
     ```json
     {
-        "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+        "model_id": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
         "inputs": {
             "input": {
                 "values":[
@@ -277,7 +277,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["onnx_inference_service"], "data": {"ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx", "inputs": {"input": {"values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1}}}}'
+        -d '{"containers": ["onnx_inference_service"], "data": {"model_id": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx", "inputs": {"input": {"values": [1.0380048, 0.5586108, 1.1037828, 1.712096], "shape": [1,4], "dtype": 1}}}}'
     ```
 
 ### Onchain (web3) Subscription
@@ -304,7 +304,7 @@ inputs = RitualVector(
 )
 
 onnx_request = ONNXInferenceRequest(
-    ml_model="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+    model_id="huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
     inputs={
         "input": inputs.model_dump()
     }
@@ -409,7 +409,7 @@ tx_hash = contract.functions.classifyFlower(input_bytes).transact()
         nonce = nonce,
         private_key = "0x...",
         data = {
-            "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+            "model_id": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
             "inputs": {
                 "input": {
                     "values": [1.0380048, 0.5586108, 1.1037828, 1.712096],
@@ -459,7 +459,7 @@ tx_hash = contract.functions.classifyFlower(input_bytes).transact()
 
     ```json
     {
-        "ml_model": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
+        "model_id": "huggingface/Ritual-Net/iris-classification/v1:iris.onnx",
         "inputs": {
             "input": {
                 "values":[

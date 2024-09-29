@@ -56,7 +56,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     service_config = TorchServiceConfig(**cast(dict[str, Any], app.config))
 
     workflow = TorchInferenceWorkflow(
-        ml_model=service_config.DEFAULT_MODEL_ID,
+        model_id=service_config.DEFAULT_MODEL_ID,
         use_jit=service_config.USE_JIT,
         cache_dir=service_config.CACHE_DIR,
     ).setup()

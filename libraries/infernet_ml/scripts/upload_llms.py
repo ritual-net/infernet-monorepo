@@ -15,32 +15,32 @@ from infernet_ml.utils.specs.ml_type import MLType
 
 
 def attach_manifest_file_to_hf(
-    m_id: MlModelId, metadata: Dict[str, MlModelInfo]
+    model_id: MlModelId, metadata: Dict[str, MlModelInfo]
 ) -> None:
     """
     Attach manifest file to huggingface model. Downloads an existing huggingface repo,
     uploads it again to create a manifest file.
 
     Args:
-        m_id: MlModelId: model id
-        metadata: Dict[str, MlModelInfo]: metadata
+        model_id (MlModelId): model id
+        metadata (Dict[str, MlModelInfo]): metadata
 
     Returns:
         None
     """
-    log.info(f"Uploading model {m_id.unique_id} to huggingface, again!")
+    log.info(f"Uploading model {model_id.unique_id} to huggingface, again!")
     try:
-        ModelManager().download_model(m_id)
+        ModelManager().download_model(model_id)
     except Exception as e:
         log.info(f"exception should be about manifest file not existing {e}")
         pass
 
     ModelManager().upload_model(
-        directory=m_id.repo_id.to_local_dir(),
-        repo_id=m_id.repo_id,
+        directory=model_id.repo_id.to_local_dir(),
+        repo_id=model_id.repo_id,
         metadata=metadata,
     )
-    log.info(f"Model {m_id} uploaded")
+    log.info(f"Model {model_id.unique_id} uploaded")
 
 
 log = logging.getLogger(__name__)

@@ -69,25 +69,25 @@ all_model_args = [
 
 
 @pytest.mark.parametrize(
-    "ml_model, inference_input, assertions",
+    "model_id, inference_input, assertions",
     all_model_args,
 )
 def test_inference_preloaded_models(
-    ml_model: str,
+    model_id: str,
     inference_input: RitualVector,
     assertions: AssertionType,
 ) -> None:
-    wf = TorchInferenceWorkflow(ml_model).setup()
+    wf = TorchInferenceWorkflow(model_id).setup()
     r = wf.inference(TorchInferenceInput(input=inference_input))
     assertions(r)
 
 
 @pytest.mark.parametrize(
-    "ml_model, inference_input, assertions",
+    "model_id, inference_input, assertions",
     all_model_args,
 )
 def test_inference_on_the_fly(
-    ml_model: str,
+    model_id: str,
     inference_input: RitualVector,
     assertions: AssertionType,
 ) -> None:
@@ -95,18 +95,18 @@ def test_inference_on_the_fly(
     r = wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            ml_model=ml_model,
+            model_id=model_id,
         )
     )
     assertions(r)
 
 
 @pytest.mark.parametrize(
-    "ml_model, inference_input, assertions",
+    "model_id, inference_input, assertions",
     all_model_args,
 )
 def test_inference_in_memory_cache(
-    ml_model: str,
+    model_id: str,
     inference_input: RitualVector,
     assertions: AssertionType,
     mocker: MagicMock,
@@ -130,7 +130,7 @@ def test_inference_in_memory_cache(
     wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            ml_model=ml_model,
+            model_id=model_id,
         )
     )
 
@@ -141,7 +141,7 @@ def test_inference_in_memory_cache(
     r = wf.inference(
         TorchInferenceInput(
             input=inference_input,
-            ml_model=ml_model,
+            model_id=model_id,
         )
     )
     assertions(r)
@@ -151,7 +151,7 @@ def test_inference_in_memory_cache(
 
 def test_inference_on_the_fly_should_not_change_default_model() -> None:
     wf = TorchInferenceWorkflow(
-        ml_model=hf_iris,
+        model_id=hf_iris,
     ).setup()
     r = wf.inference(
         TorchInferenceInput(
@@ -162,7 +162,7 @@ def test_inference_on_the_fly_should_not_change_default_model() -> None:
 
     r = wf.inference(
         TorchInferenceInput(
-            input=california_housing_inference_input, ml_model=hf_california_housing
+            input=california_housing_inference_input, model_id=hf_california_housing
         )
     )
     _assert_california_housing_inference_result(r)

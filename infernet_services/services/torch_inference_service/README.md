@@ -231,7 +231,7 @@ class ContainerOutput(TypedDict):
     )
 
     torch_request = TorchInferenceRequest(
-        ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+        model_id="huggingface/Ritual-Net/california-housing:california_housing.torch",
         inputs=inputs.model_dump()
     )
 
@@ -260,7 +260,7 @@ class ContainerOutput(TypedDict):
 
     ```json
     {
-        "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
+        "model_id": "huggingface/Ritual-Net/california-housing:california_housing.torch",
         "input": {
             "values": [
                 8.3252,
@@ -283,7 +283,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["torch_inference_service"], "data": {"ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch", "input": {"values": [8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23], "shape": [1, 8], "dtype": 2}}}'
+        -d '{"containers": ["torch_inference_service"], "data": {"model_id": "huggingface/Ritual-Net/california-housing:california_housing.torch", "input": {"values": [8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23], "shape": [1, 8], "dtype": 2}}}'
     ```
 
 ### Onchain (web3) Subscription
@@ -311,7 +311,7 @@ inputs = RitualVector(
 )
 
 torch_request = TorchInferenceRequest(
-    ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+    model_id="huggingface/Ritual-Net/california-housing:california_housing.torch",
     inputs=inputs.model_dump()
 )
 
@@ -419,7 +419,7 @@ tx_hash = contract.functions.predictHousingPrice(input_bytes).transact()
         nonce=nonce,
         private_key="0x...",
         data={
-            "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
+            "model_id": "huggingface/Ritual-Net/california-housing:california_housing.torch",
             "input": {
                 "values": [8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23],
                 "shape": [1, 8],
@@ -459,7 +459,7 @@ tx_hash = contract.functions.predictHousingPrice(input_bytes).transact()
 
     ```json
     {
-        "ml_model": "huggingface/Ritual-Net/california-housing:california_housing.torch",
+        "model_id": "huggingface/Ritual-Net/california-housing:california_housing.torch",
         "input": {
             "values": [
                 8.3252,

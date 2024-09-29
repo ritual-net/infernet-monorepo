@@ -30,12 +30,12 @@ iris_inputs = {
 }
 
 hf_request = ONNXInferenceRequest(
-    ml_model=hf_model,
+    model_id=hf_model,
     inputs=iris_inputs,
 )
 
 ar_request = ONNXInferenceRequest(
-    ml_model=ar_model,
+    model_id=ar_model,
     inputs=iris_inputs,
 )
 
@@ -85,7 +85,7 @@ def test_request_encoding_decoding() -> None:
     assert recovered.output_arithmetic == ar_request.output_arithmetic
     assert recovered.output_num_decimals == ar_request.output_num_decimals
     assert recovered.inputs == ar_request.inputs
-    assert recovered.ml_model == ar_request.ml_model
+    assert recovered.model_id == ar_request.model_id
 
 
 @pytest.mark.asyncio

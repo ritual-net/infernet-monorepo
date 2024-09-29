@@ -8,27 +8,25 @@ from pydantic import BaseModel
 
 from infernet_ml.utils.codec.vector import ArithmeticType, RitualVector
 from infernet_ml.utils.specs.ml_model_id import MlModelId
-from infernet_ml.workflows.inference.torch_inference_workflow import TorchInferenceInput
+from infernet_ml.workflows.inference.onnx_inference_workflow import ONNXInferenceInput
 
-TORCH_SERVICE_PREFIX = "TORCH"
+ONNX_SERVICE_PREFIX = "ONNX"
 
 
-class TorchServiceConfig(BaseModel):
+class ONNXServiceConfig(BaseModel):
     DEFAULT_MODEL_ID: Optional[str] = None
     CACHE_DIR: Optional[str] = f'{Path("~/.cache/ritual").expanduser().absolute()}'
-    USE_JIT: bool = False
 
-    def to_env_dict(self) -> dict[str, str | bool | None]:
+    def to_env_dict(self) -> dict[str, str | None]:
         return {
-            "TORCH_DEFAULT_MODEL_ID": self.DEFAULT_MODEL_ID,
-            "TORCH_CACHE_DIR": self.CACHE_DIR,
-            "TORCH_USE_JIT": self.USE_JIT,
+            "ONNX_DEFAULT_MODEL_ID": self.DEFAULT_MODEL_ID,
+            "ONNX_CACHE_DIR": self.CACHE_DIR,
         }
 
 
-class TorchInferenceRequest(BaseModel):
+class ONNXInferenceRequest(BaseModel):
     model_id: Optional[str] = None
-    input: RitualVector
+    inputs: dict[str, RitualVector]
     output_arithmetic: Optional[ArithmeticType] = None
     output_num_decimals: Optional[int] = None
 
@@ -39,7 +37,7 @@ class TorchInferenceRequest(BaseModel):
 
         values: List[Any] = [
             MlModelId.from_unique_id(self.model_id).to_web3 if self.model_id else b"",
-            self.input.to_web3(arithmetic, num_decimals),
+            list(self.inputs.values())[0].to_web3(arithmetic, num_decimals),
         ]
 
         if self.output_arithmetic:
@@ -52,7 +50,7 @@ class TorchInferenceRequest(BaseModel):
         return encode(types, values)
 
     @classmethod
-    def from_web3(cls, hex_input: str) -> TorchInferenceRequest:
+    def from_web3(cls, hex_input: str) -> ONNXInferenceRequest:
         (
             model_id,
             vector_hex,
@@ -62,12 +60,12 @@ class TorchInferenceRequest(BaseModel):
         )
         return cls(
             model_id=MlModelId.from_web3(model_id).unique_id if model_id else None,
-            input=RitualVector.from_web3(vector_hex),
+            inputs={"input": RitualVector.from_web3(vector_hex)},
         )
 
     @property
-    def workflow_input(self) -> TorchInferenceInput:
-        return TorchInferenceInput(
+    def workflow_input(self) -> ONNXInferenceInput:
+        return ONNXInferenceInput(
             model_id=self.model_id,
-            input=self.input,
+            inputs=self.inputs,
         )

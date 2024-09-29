@@ -87,6 +87,7 @@ write_wav(
 ```
 
 """  # noqa: E501
+
 from typing import Any, Iterator, Optional, Protocol, cast
 
 import numpy

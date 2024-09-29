@@ -133,11 +133,11 @@ class CachedArtifact(BaseModel):
     and saved to the local cache.
 
     Properties:
-    - type: str: The type of the artifact
-    - path: Path: Path to the manifest file
-    - files: List[Path]: List of paths to the files
-    - manifest: Dict[str, Any]: Manifest data
-    - repo_id: RitualRepoId: ID of the repo
+        type (str): The type of the artifact
+        path (Path): Path to the manifest file
+        files (List[Path]): List of paths to the files
+        manifest (Dict[str, Any]): Manifest data
+        repo_id (RitualRepoId): ID of the repo
     """
 
     type: str
@@ -149,6 +149,7 @@ class CachedArtifact(BaseModel):
     def to_broadcasted_artifact(self) -> BroadcastedArtifact:
         """
         Convert the cached artifact to a broadcasted artifact.
+
         Returns:
             BroadcastedArtifact: Broadcasted artifact
         """
@@ -165,9 +166,9 @@ class BroadcastedArtifact(BaseModel):
     represents a broadcasted artifact.
 
     Properties:
-    - type: str: The type of the artifact
-    - manifest: Dict[str, Any]: Manifest data
-    - repo_id: str: ID of the repo
+        type (str): The type of the artifact
+        manifest (Dict[str, Any]): Manifest data
+        repo_id (str): ID of the repo
     """
 
     type: str

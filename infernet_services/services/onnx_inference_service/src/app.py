@@ -63,7 +63,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     )
 
     workflow = ONNXInferenceWorkflow(
-        model=service_config.DEFAULT_MODEL_ID,
+        model_id=service_config.DEFAULT_MODEL_ID,
         cache_dir=service_config.CACHE_DIR,
     ).setup()
 

@@ -25,11 +25,11 @@ hf_model = hf_model_id("california-housing", "california_housing.torch")
 ar_model = ar_model_id("california-housing", "california_housing.torch")
 
 hf_request = TorchInferenceRequest(
-    ml_model=hf_model,
+    model_id=hf_model,
     input=housing_input,
 )
 
 ar_request = TorchInferenceRequest(
-    ml_model=ar_model,
+    model_id=ar_model,
     input=housing_input,
 )

@@ -21,30 +21,28 @@ from infernet_ml.utils.specs.ml_type import MLType
 
 def null_query_handler(model_id: str) -> dict[str, bool]:
     """
-    null_query_handler: Function to generate a handler for checking if a model
-        is supported by the service. This is used for services that do not have
-        a model query handler.
+    Generates a handler for checking if a model is supported by the service.
+    This is used for services that do not have a model query handler.
 
     Args:
-        model_id: str - The model id to check if it is supported
+        model_id (str): The model id to check if it is supported
 
     Returns:
-        dict[str, bool] - The response indicating if the model is supported
+        dict[str, bool]: The response indicating if the model is supported
     """
     return {"supported": False}
 
 
 def postfix_query_handler(postfix: str) -> Callable[[str], dict[str, bool]]:
     """
-    postfix_query_handler: Function to generate a handler for checking if a model
-        has a specific postfix. The onnx & torch service use this to quickly broadcast
-        if a model is supported by the service.
+    Generates a handler for checking if a model has a specific postfix. The onnx & torch
+    service use this to quickly broadcast if a model is supported by the service.
 
     Args:
-        postfix: str - The postfix to check for in the model files
+        postfix (str): The postfix to check for in the model files
 
     Returns:
-        handler: Callable[[str], dict[str, bool]] - The handler function to check if
+        handler (Callable[[str], dict[str, bool]]): The handler function to check if
             a model is supported by the service.
     """
 
@@ -64,15 +62,14 @@ def ritual_service_specs(
     model_query_handler: Callable[[str], dict[str, bool]],
 ) -> None:
     """
-    ritual_service_specs: Function to generate the service resources endpoint for
-        ritual's services. This endpoint is used to broadcast the capabilities of the
-        service for routers & indexing services.
+    Generates the service resources endpoint forritual's services. This endpoint is used
+    to broadcast the capabilities of the service for routers & indexing services.
 
     Args:
-        app: Quart - The Quart application
-        resource_generator: Callable[[], dict[str, Any]] - The function to generate
+        app (Quart): The Quart application
+        resource_generator (Callable[[], dict[str, Any]]): The function to generate
             the resources of the service
-        model_query_handler: Callable[[str], dict[str, bool]] - The function to
+        model_query_handler (Callable[[str], dict[str, bool]]): The function to
             generate the model query handler
 
     Returns:
@@ -152,9 +149,16 @@ class MLComputeCapability(BaseModel):
         Ritual's services.
 
     Attributes:
-        type: MLType - The type of machine learning model that can be supported
-        task: List[MLTask] - The list of machine learning tasks that can be supported
-        models: Optional[List[ModelId]] - The list of models that can be supported
+        id (Literal[ComputeId.ML]): The type of compute capability
+        type (MLType): The type of machine learning model that can be supported
+        task (List[MLTask]): The list of machine learning tasks that can be supported
+        models (List[BroadcastedArtifact] | List[CSSModel]): The list of models that can
+            be supported
+        cached_models (List[BroadcastedArtifact]): The list of cached models that can
+            be supported
+        inference_engine (Optional[str]): The inference engine that can be supported
+        inference_engine_version (Optional[str]): The inference engine version that can
+            be supported
     """
 
     id: Literal[ComputeId.ML] = ComputeId.ML
@@ -175,10 +179,13 @@ class MLComputeCapability(BaseModel):
         Utility function to generate an ONNX compute capability.
 
         Args:
-            models: Optional[List[BroadcastedArtifact]] - The list of models that can be
+            models (Optional[List[BroadcastedArtifact]]): The list of models that can be
                 supported
-            cached_models: Optional[List[BroadcastedArtifact]] - The list of cached
+            cached_models (Optional[List[BroadcastedArtifact]]): The list of cached
                 models
+
+        Returns:
+            MLComputeCapability: The ONNX compute capability
         """
         models = models or []
         cached_models = cached_models or []
@@ -197,11 +204,11 @@ class MLComputeCapability(BaseModel):
         Utility function to generate a llama.cpp compute capability.
 
         Args:
-            models: Optional[List[CachedArtifact]] - The list of models that can be
+            models (Optional[List[CachedArtifact]]): The list of models that can be
                 supported
 
         Returns:
-            MLComputeCapability - The llama.cpp compute capability
+            MLComputeCapability: The llama.cpp compute capability
         """
         try:
             version = " ".join(
@@ -235,10 +242,13 @@ class MLComputeCapability(BaseModel):
         Utility function to generate a Torch compute capability.
 
         Args:
-            models: Optional[List[BroadcastedArtifact]] - The list of models that can be
+            models (Optional[List[BroadcastedArtifact]]): The list of models that can be
                 supported
-            cached_models: Optional[List[BroadcastedArtifact]] - The list of cached
+            cached_models (Optional[List[BroadcastedArtifact]]): The list of cached
                 models
+
+        Returns:
+            MLComputeCapability: The torch compute capability
         """
         models = models or []
         cached_models = cached_models or []
@@ -256,7 +266,7 @@ class ZKComputeCapability(BaseModel):
         Ritual's services..
 
     Attributes:
-        id: ComputeId - The type of compute capability
+        id (Literal[ComputeId.ZK]): The type of compute capability
     """
 
     id: Literal[ComputeId.ZK] = ComputeId.ZK
@@ -277,10 +287,10 @@ class CPUCore(BaseModel):
     CPUCore: Class representation for the CPU core information
 
     Attributes:
-        id: int - The id of the core, e.g. 0
-        frequency: float - The frequency of the core
-        max_frequency: float - The maximum frequency of the core
-        min_frequency: float - The minimum frequency of the core
+        id (int): The id of the core, e.g. 0
+        frequency (float): The frequency of the core
+        max_frequency (float): The maximum frequency of the core
+        min_frequency (float): The minimum frequency of the core
     """
 
     id: int
@@ -294,12 +304,12 @@ class CPUInfo(BaseModel):
     CPUInfo: Class representation for the CPU information
 
     Attributes:
-        model: str - The model of the CPU, e.g. Intel(R) Core(TM) i7-7700HQ CPU
-        architecture: str - The architecture of the CPU, e.g. x86_64
-        byte_order: str - The byte order of the CPU, e.g. Little Endian
-        vendor_id: str - The vendor id of the CPU, e.g. GenuineIntel
-        num_cores: int - The number of cores in the CPU
-        cores: List[CPUCore] - The list of cores in the CPU
+        model (str): The model of the CPU, e.g. Intel(R) Core(TM) i7-7700HQ CPU
+        architecture (str): The architecture of the CPU, e.g. x86_64
+        byte_order (str): The byte order of the CPU, e.g. Little Endian
+        vendor_id (str): The vendor id of the CPU, e.g. GenuineIntel
+        num_cores (int): The number of cores in the CPU
+        cores (List[CPUCore]): The list of cores in the CPU
     """
 
     model: str
@@ -316,7 +326,7 @@ class CPUInfo(BaseModel):
         Reads the CPU information from a Linux system
 
         Returns:
-            CPUInfo - The CPU information
+            CPUInfo: The CPU information
         """
         os.system("lscpu -J > /tmp/lscpu.json")
         model, num_cores, vendor_id, byte_order, architecture = "", 0, "", "", ""
@@ -365,7 +375,7 @@ class CPUInfo(BaseModel):
         Reads the CPU information from a Darwin system
 
         Returns:
-            CPUInfo - The CPU information
+            CPUInfo: The CPU information
         """
         os.system("sysctl -a > /tmp/sysctl_info")
         model, num_cores, vendor_id, byte_order, architecture = "", 0, "", "", ""
@@ -417,7 +427,7 @@ class CPUInfo(BaseModel):
         reads the CPU information accordingly.
 
         Returns:
-            CPUInfo - The CPU information
+            CPUInfo: The CPU information
         """
         match platform.system().lower():
             case "linux":
@@ -433,8 +443,8 @@ class OSInfo(BaseModel):
     OSInfo: Class representation for the OS information
 
     Attributes:
-        name: str - The name of the OS, e.g. Ubuntu
-        version: str - The version of the OS
+        name (str): The name of the OS, e.g. Ubuntu
+        version (str): The version of the OS
     """
 
     name: str
@@ -446,7 +456,7 @@ class OSInfo(BaseModel):
         Reads the OS information from the system
 
         Returns:
-            OSInfo - The OS information
+            OSInfo: The OS information
         """
         return cls(name=platform.system(), version=platform.version())
 
@@ -456,11 +466,11 @@ class DiskInfo(BaseModel):
     DiskInfo: Class representation for the Disk information
 
     Attributes:
-        filesystem: str - The filesystem of the disk, e.g. ext4
-        mount_point: str - The mount point of the disk, e.g. /
-        size: int - The size of the disk in bytes
-        used: int - The used space on the disk in bytes
-        available: int - The available space on the disk in bytes
+        filesystem (str): The filesystem of the disk, e.g. ext4
+        mount_point (str): The mount point of the disk, e.g. /
+        size (int): The size of the disk in bytes
+        used (int): The used space on the disk in bytes
+        available (int): The available space on the disk in bytes
     """
 
     filesystem: str
@@ -475,7 +485,7 @@ class DiskInfo(BaseModel):
         Reads the disk information from the system
 
         Returns:
-            List[DiskInfo] - The disk information
+            List[DiskInfo]: The disk information
         """
         os.system("df > /tmp/df_info")
         disk_info = []
@@ -513,10 +523,10 @@ class GPUInfo(BaseModel):
     GPUInfo: Class representation for the GPU information
 
     Attributes:
-        name: str - The name of the GPU, e.g. NVIDIA GeForce GTX 1080
-        memory_total: int - The total memory of the GPU in bytes
-        memory_used: int - The used memory of the GPU in bytes
-        cuda_device_id: Optional[int] - The CUDA device id of the GPU
+        name (str): The name of the GPU, e.g. NVIDIA GeForce GTX 1080
+        memory_total (int): The total memory of the GPU in bytes
+        memory_used (int): The used memory of the GPU in bytes
+        cuda_device_id (Optional[int]): The CUDA device id of the GPU
     """
 
     name: str
@@ -554,7 +564,7 @@ class GenericHardwareCapability(BaseModel):
         Reads the generic hardware capability from the system
 
         Returns:
-            GenericHardwareCapability - The generic hardware capability
+            GenericHardwareCapability: The generic hardware capability
         """
         return cls(
             os_info=OSInfo.read_from_system(),
@@ -575,7 +585,7 @@ class GPUHardwareCapability(BaseModel):
         Reads the GPU hardware capability from the system
 
         Returns:
-            Optional[GPUHardwareCapability] - The GPU hardware capability
+            Optional[GPUHardwareCapability]: The GPU hardware capability
         """
         import subprocess
         import xml.etree.ElementTree as ET
@@ -664,10 +674,10 @@ class ServiceResources(BaseModel):
         Ritual's services..
 
     Attributes:
-        service_id: str - The unique identifier for the service
-        hardware_capabilities: List[HardwareCapability] - The list of hardware
+        service_id (str): The unique identifier for the service
+        hardware_capabilities (List[HardwareCapability]): The list of hardware
             capabilities of the service
-        compute_capability: List[ComputeCapability] - The list of compute capabilities
+        compute_capability (List[ComputeCapability]): The list of compute capabilities
             of the service
     """
 
@@ -688,12 +698,12 @@ class ServiceResources(BaseModel):
         system.
 
         Args:
-            service_id: str - The unique identifier for the service
-            compute_capability: List[ComputeCapability] - The list of compute
+            service_id (str): The unique identifier for the service
+            compute_capability (List[ComputeCapability]): The list of compute
                 capabilities of the service
 
         Returns:
-            ServiceResources - The service resources
+            ServiceResources: The service resources
         """
         return cls(
             service_id=service_id,
@@ -708,8 +718,8 @@ class Resource(BaseModel):
         services.
 
     Attributes:
-        capabilities: List[Capability] - The list of capabilities of the service
-        version: str - The version of this specification
+        capabilities (List[Capability]): The list of capabilities of the service
+        version (str): The version of this specification
     """
 
     capabilities: List[ServiceResources]

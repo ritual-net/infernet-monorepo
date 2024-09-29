@@ -1,14 +1,14 @@
 """
 # Huggingface Inference Client Workflow
-This workflow uses Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
-to run all models that are hosted on Huggingface Hub.
+
+A class that uses Huggingface [Inference Client library](https://huggingface.co/docs/huggingface_hub/en/package_reference/inference_client)
+to run inference on any model that is hosted on Huggingface Hub.
 
 ## Supported Tasks
 - `"text_generation"`
 - `"text_classification"`
 - `"token_classification"`
 - `"summarization"`
-
 
 ## Example Classification Inference
 
@@ -20,18 +20,20 @@ from infernet_ml.workflows.inference.hf_inference_client_workflow import (
 
 
 def main():
-    # Initialize the workflow
-    workflow = HFInferenceClientWorkflow().setup()
+    # Instantiate the workflow
+    workflow = HFInferenceClientWorkflow()
+
+    # Setup the workflow
+    workflow.setup()
 
     # Run the inference
-
-    output_data = workflow.inference(
+    result = workflow.inference(
         HFClassificationInferenceInput(
             text="Decentralizing AI using crypto is awesome!",
         )
     )
 
-    print(output_data)
+    print(result)
 
 
 if __name__ == "__main__":
@@ -54,18 +56,20 @@ from infernet_ml.workflows.inference.hf_inference_client_workflow import (
 
 
 def main():
-    # Initialize the workflow
-    workflow = HFInferenceClientWorkflow().setup()
+    # Instantiate the workflow
+    workflow = HFInferenceClientWorkflow()
+
+    # Setup the workflow
+    workflow.setup()
 
     # Run the inference
-
-    output_data = workflow.inference(
+    result = workflow.inference(
         HFTextGenerationInferenceInput(
             prompt="Decentralizing AI using crypto is awesome!",
         )
     )
 
-    print(output_data)
+    print(result["output"])
 
 
 if __name__ == "__main__":
@@ -91,29 +95,31 @@ from infernet_ml.utils.hf_types import (
 
 
 def main():
-    # Initialize the workflow
-    workflow = HFInferenceClientWorkflow().setup()
+    # Instantiate the workflow
+    workflow = HFInferenceClientWorkflow()
 
-    # Run the inference
+    # Setup the workflow
+    workflow.setup()
 
-    min_length_tokens = 28
-    max_length_tokens = 56
+    # Define the inputs
     summarization_config = HFSummarizationConfig(
-        min_length=min_length_tokens,
-        max_length=max_length_tokens,
+        min_length=28,
+        max_length=56,
     )
     input_text = "Artificial Intelligence has the capacity to positively "
-    "impact humanity but the infrastructure in which it is being"
-    "developed is not yet ready for the future. Decentralizing AI using "
-    "crypto is awesome!"
+        "impact humanity but the infrastructure in which it is being"
+        "developed is not yet ready for the future. Decentralizing AI using "
+        "crypto is awesome!"
 
-    input_data = HFSummarizationInferenceInput(
-        text=input_text,
-        parameters=summarization_config,
+    # Run the inference
+    result = workflow.inference(
+        HFSummarizationInferenceInput(
+            text=input_text,
+            parameters=summarization_config,
+        )
     )
-    output_data = workflow.inference(input_data)
 
-    print(output_data)
+    print(result)
 
 
 if __name__ == "__main__":
@@ -133,29 +139,33 @@ from infernet_ml.workflows.inference.hf_inference_client_workflow import HFInfer
 from infernet_ml.utils.hf_types import HFSummarizationInferenceInput, HFTaskId
 
 def main():
-    # Initialize the workflow
-    workflow = HFInferenceClientWorkflow().setup()
+    # Instantiate the workflow
+    workflow = HFInferenceClientWorkflow()
+
+    # Setup the workflow
+    workflow.setup()
 
     # Run the inference
 
-    min_length_tokens = 28
-    max_length_tokens = 56
+    # Define the inputs
     summarization_config = HFSummarizationConfig(
-        min_length=min_length_tokens,
-        max_length=max_length_tokens,
+        min_length=28,
+        max_length=56,
     )
     input_text = "Artificial Intelligence has the capacity to positively "
-    "impact humanity but the infrastructure in which it is being"
-    "developed is not yet ready for the future. Decentralizing AI using "
-    "crypto is awesome!"
+        "impact humanity but the infrastructure in which it is being"
+        "developed is not yet ready for the future. Decentralizing AI using "
+        "crypto is awesome!"
 
-    input_data = HFSummarizationInferenceInput(
-        text=input_text,
-        parameters=summarization_config,
+    # Run the inference
+    result = workflow.inference(
+        HFSummarizationInferenceInput(
+            text=input_text,
+            parameters=summarization_config,
+        )
     )
-    output_data = workflow.inference(input_data)
 
-    print(output_data)
+    print(result)
 
 if name == "__main__":
     main()
@@ -174,8 +184,7 @@ Outputs:
 ```
 
 # Input Formats
-The input format is the `HFInferenceClientInput` pydantic model. This is one of four
-input formats:
+The input format is the `HFInferenceClientInput` pydantic model. This is one of four input formats:
 
 1. [`HFClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFClassificationInferenceInput)
 2. [`HFTokenClassificationInferenceInput`](../../../utils/hf_types#infernet_ml.utils.hf_types.HFTokenClassificationInferenceInput)

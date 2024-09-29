@@ -1,5 +1,8 @@
 """
-Workflow object for requesting LLM inference on TGI-compliant inference servers.
+# TGI Client Inference Workflow
+
+A class that uses the HuggingFace [Text Generation Inference](https://huggingface.co/docs/text-generation-inference/en/index) client
+to run LLM inference on any TGI-compliant inference server.
 
 ## Additional Installations
 
@@ -20,7 +23,7 @@ convenience.
 ## Example Usage
 
 In the example below we use an API key from Hugging Face to access the `Mixtral-8x7B-Instruct-v0.1` model.
-You can obtain an API key by signing up on the [Hugging Face website](https://huggingface.co/).
+You can obtain an API key by signing up on the [HuggingFace website](https://huggingface.co/).
 
 ```python
 import os
@@ -29,19 +32,24 @@ from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TgiInferenceRequest,
 )
 
-
 def main():
     server_url = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+
+    # Instantiate the workflow
     workflow: TGIClientInferenceWorkflow = TGIClientInferenceWorkflow(
         server_url,
         timeout=10,
         headers={"Authorization": f"Bearer {os.environ['HF_TOKEN']}"},
     )
+
+    # Setup the workflow
     workflow.setup()
 
+    # Run the inference
     res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
     print(f"response: {res}")
 
+    # Stream the inference
     collected_res = ""
     for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
         collected_res += r.token.text
@@ -107,7 +115,7 @@ class TgiInferenceRequest(BaseModel):
 
 class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
     """
-    Workflow object for requesting LLM inference on TGI-compliant inference servers.
+    Inference workflow for requesting LLM inference on TGI-compliant inference servers.
     """
 
     def __init__(
@@ -120,7 +128,7 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         **inference_params: dict[str, Any],
     ) -> None:
         """
-        constructor. Any named arguments passed to LLM during inference.
+        Constructor. Any named arguments passed to LLM during inference.
 
         Args:
             server_url (str): url of inference server
@@ -152,9 +160,9 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
 
     def do_preprocessing(self, input_data: TgiInferenceRequest) -> str:
         """
-        Implement any preprocessing of the raw input.
-        For example, you may want to append additional context.
-        By default, returns the value associated with the text key in a dictionary.
+        Implement any preprocessing of the raw input. For example, you may want to
+        append additional context. By default, returns the value associated with the
+        text key in a dictionary.
 
         Args:
             input_data (TgiInferenceRequest): user input
@@ -181,7 +189,8 @@ class TGIClientInferenceWorkflow(BaseInferenceWorkflow):
         return gen_text
 
     def generate_inference(self, preprocessed_data: str) -> str:
-        """use tgi client to generate inference.
+        """Use tgi client to generate inference.
+
         Args:
             preprocessed_data (str): input to tgi
 
