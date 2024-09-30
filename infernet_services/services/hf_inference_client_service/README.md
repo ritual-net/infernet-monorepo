@@ -23,7 +23,7 @@ in `config.json`.
             "allowed_ips": [],
             "command": "--bind=0.0.0.0:3000 --workers=2",
             "env": {
-                "HF_TOKEN": "hf_token_goes_here"
+                "HF_INF_TOKEN": "YOUR_TOKEN_HERE"
             }
         }
     ]
@@ -32,7 +32,7 @@ in `config.json`.
 
 ## Supported Tasks
 
-This workflow supports the following Hugging Face task types
+This workflow supports the following Hugging Face task types:
 
 ```python
 class HFTaskId(IntEnum):
@@ -47,7 +47,10 @@ class HFTaskId(IntEnum):
 
 ## Environment Variables
 
-`HF_TOKEN` - the token to use for authentication with the Hugging Face API
+### HF_INF_TOKEN
+
+- **Description**: The HuggingFace token for authenticated API requests. Not required, but will increase API limits and enable access to private models.
+- **Default**: None
 
 ## Usage
 

@@ -1,5 +1,5 @@
 """
-this module serves as the driver for the tgi inference service.
+This module serves as the driver for the ONNX inference service.
 """
 
 from __future__ import annotations

@@ -120,6 +120,8 @@ jobs:
         env:
           # We need to list the env vars here again for them to get filtered out in logs
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_INF_TOKEN: ${{ secrets.HF_TOKEN }}
+          TGI_INF_TOKEN: ${{ secrets.HF_TOKEN }}
           MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
           GOOSEAI_API_KEY: ${{ secrets.GOOSEAI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

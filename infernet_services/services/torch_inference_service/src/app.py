@@ -1,5 +1,5 @@
 """
-This module serves as the driver for torch infernet_ml inference service.
+This module serves as the driver for Torch inference service.
 """
 
 import json

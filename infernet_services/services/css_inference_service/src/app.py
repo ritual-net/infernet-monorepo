@@ -1,5 +1,5 @@
 """
-this module serves as the driver for the llm inference service.
+This module serves as the driver for the CSS inference service.
 """
 
 import json

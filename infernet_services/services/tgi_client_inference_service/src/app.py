@@ -1,5 +1,5 @@
 """
-this module serves as the driver for the llm inference service.
+This module serves as the driver for the TGI client inference service.
 """
 
 import json
@@ -42,6 +42,7 @@ def create_app() -> Quart:
     LLM_WORKFLOW_CLASS = TGIClientInferenceWorkflow
     LLM_WORKFLOW_POSITIONAL_ARGS = app.config.get("WORKFLOW_POSITIONAL_ARGS", [])
     LLM_WORKFLOW_KW_ARGS = app.config.get("WORKFLOW_KW_ARGS", {})
+    HF_TOKEN = app.config.get("TOKEN", None)
 
     logging.info(
         "workflow_class: %s positional_args: %s kw_args: %s",
@@ -52,18 +53,20 @@ def create_app() -> Quart:
 
     workflow: TGIClientInferenceWorkflow
 
-    # get the HF token from the environment
-    token = os.getenv("HF_TOKEN")
-    token_header = {"Authorization": f"Bearer {token}"} if token else {}
+    # add the token to the headers
+    if HF_TOKEN:
+        token_header = {"Authorization": f"Bearer {HF_TOKEN}"}
+        if "headers" not in LLM_WORKFLOW_KW_ARGS:
+            # no other headers provided
+            LLM_WORKFLOW_KW_ARGS["headers"] = token_header
+        else:
+            # update the headers with the token
+            LLM_WORKFLOW_KW_ARGS["headers"].update(token_header)
 
-    # create workflow instance from class, using specified arguments
+    # get the retry params from the environment
     retry_params = RetryParams(**LLM_WORKFLOW_KW_ARGS.pop("retry_params", {}))
 
-    if "headers" not in LLM_WORKFLOW_KW_ARGS:
-        LLM_WORKFLOW_KW_ARGS["headers"] = token_header
-    else:
-        LLM_WORKFLOW_KW_ARGS["headers"].update(token_header)
-
+    # create workflow instance using specified arguments
     if len(LLM_WORKFLOW_POSITIONAL_ARGS) > 4:
         workflow = TGIClientInferenceWorkflow(
             *LLM_WORKFLOW_POSITIONAL_ARGS,

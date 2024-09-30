@@ -20,13 +20,13 @@ TGI_WITH_PROOFS = "tgi_client_inference_service_with_proofs"
 
 url = "https://api-inference.huggingface.co/models"
 model = "mistralai/Mixtral-8x7B-Instruct-v0.1"
-token = os.environ["HF_TOKEN"]
+token = os.environ["TGI_INF_TOKEN"]
 args = f'["{url}/{model}", 30]'
 kw_args = '{"retry_params": {"tries": 3, "delay": 3, "backoff": 2}, "temperature": 0.5}'
 envs = {
     "TGI_INF_WORKFLOW_POSITIONAL_ARGS": args,
     "TGI_INF_WORKFLOW_KW_ARGS": kw_args,
-    "HF_TOKEN": token,
+    "TGI_INF_TOKEN": token,
 }
 
 services = [

@@ -1,5 +1,5 @@
 """
-HF Inference Service entry point
+This module serves as the driver for HF client inference service.
 """
 
 import json
@@ -28,6 +28,8 @@ from quart import Quart, abort
 from quart import request as req
 from quart.utils import run_sync
 from werkzeug.exceptions import BadRequest, HTTPException
+
+SERVICE_PREFIX = "HF_INF"
 
 
 def decode_web3_hf_input(hex_input: str) -> HFInferenceClientInput:
@@ -125,11 +127,10 @@ def create_app() -> Quart:
         PydValError: thrown if error during input validation
     """
     app: Quart = Quart(__name__)
+    app.config.from_prefixed_env(prefix=SERVICE_PREFIX)
 
-    # Override task and model if config is set
-    workflow = HFInferenceClientWorkflow(
-        token=os.getenv("HF_TOKEN"),
-    )
+    workflow = HFInferenceClientWorkflow(token=app.config.get("TOKEN", None))
+
     # Setup workflow
     logging.info("Setting up Huggingface Inference Workflow")
     workflow.setup()

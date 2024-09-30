@@ -17,7 +17,7 @@ SERVICE_VERSION = "2.0.0"
 HF_WITH_PROOFS = "hf_with_proofs"
 
 env_vars = {
-    "HF_TOKEN": os.environ["HF_TOKEN"],
+    "HF_INF_TOKEN": os.environ["HF_INF_TOKEN"],
 }
 services = [
     ServiceConfig.build(
