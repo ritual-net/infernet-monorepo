@@ -12,7 +12,7 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 SERVICE_NAME = "tgi_client_inference_service"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 SERVICE_DOCKER_IMAGE = (
     f"ritualnetwork/tgi_client_inference_service_internal:{SERVICE_VERSION}"
 )

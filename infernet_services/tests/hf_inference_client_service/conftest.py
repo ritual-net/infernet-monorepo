@@ -13,7 +13,7 @@ load_dotenv()
 log = logging.getLogger(__name__)
 
 SERVICE_NAME = "hf_inference_client_service_internal"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 HF_WITH_PROOFS = "hf_with_proofs"
 
 env_vars = {

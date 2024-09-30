@@ -62,7 +62,7 @@ def ritual_service_specs(
     model_query_handler: Callable[[str], dict[str, bool]],
 ) -> None:
     """
-    Generates the service resources endpoint forritual's services. This endpoint is used
+    Generates the service resources endpoint for Ritual's services. This endpoint is used
     to broadcast the capabilities of the service for routers & indexing services.
 
     Args:

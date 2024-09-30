@@ -12,7 +12,7 @@ from test_library.infernet_fixture import handle_lifecycle
 load_dotenv()
 
 SERVICE_NAME = "css_inference_service_internal"
-SERVICE_VERSION = "1.0.0"
+SERVICE_VERSION = "2.0.0"
 CSS_WITH_PROOFS = "css_with_proofs"
 
 log = logging.getLogger(__name__)

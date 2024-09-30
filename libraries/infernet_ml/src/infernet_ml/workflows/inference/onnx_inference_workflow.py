@@ -6,7 +6,7 @@ A class for loading & running inference on ONNX models.
 Models can be loaded in two ways:
 
 1. Preloading: The model is loaded in the `setup()` method if `model_id` is provided
-    when at class instantiation.
+    at class instantiation.
 2. On-demand: The model is loaded following an inference request. This happens if `model_id` is
     provided with the input (see optional field in the `ONNXInferenceInput` class) and
     is not preloaded or cached.
@@ -106,7 +106,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class ONNXInferenceInput(BaseModel):
     """
-    Input data for ONNX inference workflows. `model_id` is provided, the model is
+    Input data for ONNX inference workflows. If `model_id` is provided, the model is
     loaded. Otherwise, if the class is instantiated with a `model_id`, the model is
     preloaded in the setup method.
 

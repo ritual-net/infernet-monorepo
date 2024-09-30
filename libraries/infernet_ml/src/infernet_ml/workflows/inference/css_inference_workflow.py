@@ -87,8 +87,8 @@ if __name__ == "__main__":
 Running the script above will make a request to the OpenAI's completions API and print
 the response:
 
-```bash
-# Hello! I'm an AI and I don't have feelings, but I'm here to help you. How can I assist you today?
+```
+Hello! I'm an AI and I don't have feelings, but I'm here to help you. How can I assist you today?
 ```
 
 ## Streaming Example

@@ -1,6 +1,6 @@
 DOCKER_ORG := ritualnetwork
 service_name := css_inference_service_internal
-TAG := $(DOCKER_ORG)/$(service_name):1.0.0
+TAG := $(DOCKER_ORG)/$(service_name):2.0.0
 
 build:
 	@docker build -t $(TAG) --build-arg index_url=$(index_url) .
