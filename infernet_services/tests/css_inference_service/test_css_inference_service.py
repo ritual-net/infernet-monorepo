@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+import aiohttp
 import pytest
 from css_inference_service.conftest import CSS_WITH_PROOFS, SERVICE_NAME
 from eth_abi.abi import decode
@@ -10,6 +11,7 @@ from infernet_ml.utils.codec.css import (
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
+from infernet_ml.utils.spec import ServiceResources
 from test_library.web2_utils import (
     get_job,
     request_delegated_subscription,
@@ -219,3 +221,120 @@ async def test_css_service_streaming_inference(
     )
     result = task.decode()
     boolean_like_prompt_assertion(result)
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting() -> None:
+    async with aiohttp.ClientSession() as session:
+        async with session.get("http://localhost:3000/service-resources") as response:
+            assert response.status == 200
+            data = await response.json()
+            resources = ServiceResources(**data)
+            assert resources.service_id == "css-inference-service"
+            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].type == "css"
+            assert resources.hardware_capabilities[0].capability_id == "base"
+            assert resources.hardware_capabilities[0].cpu_info.architecture
+            assert resources.hardware_capabilities[0].cpu_info.byte_order
+            assert resources.hardware_capabilities[0].cpu_info.num_cores
+            assert resources.hardware_capabilities[0].cpu_info.vendor_id
+            assert resources.hardware_capabilities[0].disk_info[0]
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_1() -> None:
+    model_id = "OPENAI/gpt-4"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": True}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_2() -> None:
+    model_id = "PERPLEXITYAI/mixtral-8x7b-instruct"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": True}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_3() -> None:
+    model_id = "GOOSEAI/fairseqNone-3b"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": True}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_nonexistent_model() -> None:
+    model_id = "OPENAI/non-existent-model"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_4() -> None:
+    # Only OPENAI key is set for this service
+    model_id = "OPENAI/gpt-4"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3002/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": True}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_unsupported_model_1() -> None:
+    # Only OPENAI key is set for this service
+    model_id = "PERPLEXITYAI/mixtral-8x7b-instruct"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3002/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_unsupported_model_2() -> None:
+    # Only OPENAI key is set for this service
+    model_id = "GOOSEAI/fairseqNone-3b"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3002/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_nonexistent_model_2() -> None:
+    model_id = "OPENAI/non-existent-model"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3002/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}

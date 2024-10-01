@@ -14,6 +14,7 @@ load_dotenv()
 SERVICE_NAME = "css_inference_service_internal"
 SERVICE_VERSION = "2.0.0"
 CSS_WITH_PROOFS = "css_with_proofs"
+CSS_OPENAI_ONLY = "css_openai_only"
 
 log = logging.getLogger(__name__)
 
@@ -45,6 +46,24 @@ services = [
         env_vars=env_vars,
         port=3001,
         generates_proofs=True,
+    ),
+    ServiceConfig.build(
+        name=CSS_OPENAI_ONLY,
+        image_id=f"ritualnetwork/{SERVICE_NAME}:{SERVICE_VERSION}",
+        env_vars={
+            "OPENAI_API_KEY": os.environ["OPENAI_API_KEY"],
+            "CSS_INF_WORKFLOW_POSITIONAL_ARGS": "[]",
+            "CSS_INF_WORKFLOW_KW_ARGS": json.dumps(
+                {
+                    "retry_params": {
+                        "tries": 3,
+                        "delay": 3,
+                        "backoff": 2,
+                    }
+                }
+            ),
+        },
+        port=3002,
     ),
 ]
 
