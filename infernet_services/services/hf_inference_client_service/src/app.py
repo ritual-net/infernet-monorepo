@@ -161,7 +161,6 @@ def create_app() -> Quart:
                 "text-classification",
                 "summarization",
                 "token-classification",
-                "text-to-image",
             ],
         ),
     )

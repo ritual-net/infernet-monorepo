@@ -20,18 +20,24 @@ from infernet_ml.utils.specs.ml_model_id import MlModelId
 from infernet_ml.utils.specs.ml_type import MLType
 
 
-def null_query_handler(model_id: str) -> dict[str, bool]:
+def null_query_handler() -> Callable[[str], dict[str, bool]]:
     """
     Generates a handler for checking if a model is supported by the service.
-    This is used for services that do not have a model query handler.
+    This handler always returns False, and is used for services that do not
+    advertise their supported model(s).
 
     Args:
-        model_id (str): The model id to check if it is supported
+        model_id (str): The model id to check if it is supported. This is ignored.
 
     Returns:
-        dict[str, bool]: The response indicating if the model is supported
+        handler (Callable[[str], dict[str, bool]]): The handler function to check if
+            a model is supported by the service.
     """
-    return {"supported": False}
+
+    def handler(model_id: str) -> dict[str, bool]:
+        return {"supported": False}
+
+    return handler
 
 
 def postfix_query_handler(postfix: str) -> Callable[[str], dict[str, bool]]:
@@ -155,7 +161,6 @@ class MLTask(StrEnum):
         TextClassification: Text Classification
         TokenClassification: Token Classification
         Summarization: Summarization
-        TextToImage: Text to Image
         ImageClassification: Image Classification
         ImageSegmentation: Image Segmentation
         ObjectDetection: Object Detection
@@ -165,7 +170,6 @@ class MLTask(StrEnum):
     TextClassification = "text_classification"
     TokenClassification = "token_classification"
     Summarization = "summarization"
-    TextToImage = "text_to_image"
     ImageClassification = "image_classification"
     ImageSegmentation = "image_segmentation"
     ObjectDetection = "object_detection"
@@ -317,7 +321,6 @@ class MLComputeCapability(BaseModel):
                 MLTask.TextClassification,
                 MLTask.TokenClassification,
                 MLTask.Summarization,
-                MLTask.TextToImage,
             ],
         )
 

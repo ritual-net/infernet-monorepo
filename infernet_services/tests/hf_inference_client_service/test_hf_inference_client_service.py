@@ -42,7 +42,6 @@ async def test_hf_inference_client_service_text_generation() -> None:
         {
             "task_id": HFTaskId.TEXT_GENERATION,
             "prompt": "What's 2 + 2?",
-            "model": "Qwen/Qwen2.5-72B-Instruct",
         },
     )
     result = await get_job(task)
@@ -57,7 +56,6 @@ async def test_hf_inference_client_service_text_classification() -> None:
         {
             "task_id": HFTaskId.TEXT_CLASSIFICATION,
             "text": "Ritual makes AI x crypto a great combination!",
-            "model": "ProsusAI/finbert",
         },
     )
     result = (await get_job(task)).get("output")

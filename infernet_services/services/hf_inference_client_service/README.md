@@ -122,6 +122,7 @@ class ContainerOutput(TypedDict):
             # HFTaskId.TEXT_GENERATION
             "task_id": 1,
             "prompt": "What is 2+2?",
+            "model": "Qwen/Qwen2.5-72B-Instruct", # optional
         },
     )
 
@@ -143,6 +144,7 @@ class ContainerOutput(TypedDict):
     {
         "task_id": 1,
         "prompt": "What is 2+2?",
+        "model": "Qwen/Qwen2.5-72B-Instruct"
     }
     ```
 
@@ -151,7 +153,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "What is 2+2?"}}'
+        -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "What is 2+2?", "model": "Qwen/Qwen2.5-72B-Instruct"}}'
     ```
 
 ### Onchain (web3) Subscription
