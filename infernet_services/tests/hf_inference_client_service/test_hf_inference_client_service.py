@@ -294,7 +294,7 @@ async def test_resource_broadcasting() -> None:
             assert response.status == 200
             data = await response.json()
             resources = ServiceResources(**data)
-            assert resources.service_id == "hf-client-inference-service"
+            assert resources.service_id == "hf-inference-client-service"
             assert resources.compute_capability[0].id == "ml"
             assert resources.compute_capability[0].type == "hf_inference_client"
             assert resources.hardware_capabilities[0].capability_id == "base"
