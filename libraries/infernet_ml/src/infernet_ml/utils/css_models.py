@@ -1,7 +1,9 @@
+from typing import Any, Dict, List
+
 from infernet_ml.utils.css_mux import CSSProvider
 
 # List of models supported by each provider
-models = {
+models: Dict[CSSProvider, List[Dict[str, Any]]] = {
     CSSProvider.OPENAI: [
         {"id": "OPENAI/gpt-4o", "name": "GPT-4o", "parameters": None},
         {"id": "OPENAI/gpt-4o-mini", "name": "GPT-4o Mini", "parameters": None},

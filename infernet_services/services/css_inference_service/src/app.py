@@ -109,13 +109,13 @@ def create_app() -> Quart:
     # get supported models based on api keys
     providers = sorted(api_keys.keys())
     supported_models: list[str] = [
-        item["id"]
-        for lst, cond in zip(
+        model["id"]
+        for models, supported in zip(
             [models[provider] for provider in providers],
             [api_keys[provider] for provider in providers],
         )
-        if cond
-        for item in lst
+        if supported
+        for model in models
     ]
 
     def resource_generator() -> dict[str, Any]:
