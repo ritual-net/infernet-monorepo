@@ -24,6 +24,7 @@ from infernet_ml.utils.css_mux import (
 )
 from infernet_ml.utils.retry import RetryParams
 from infernet_ml.utils.spec import (
+    CSSModel,
     MLComputeCapability,
     ServiceResources,
     ritual_service_specs,
@@ -105,32 +106,39 @@ def create_app() -> Quart:
     # setup workflow
     workflow.setup()
 
+    # get supported models based on api keys
+    providers = sorted(api_keys.keys())
+    supported_models: list[str] = [
+        item["id"]
+        for lst, cond in zip(
+            [models[provider] for provider in providers],
+            [api_keys[provider] for provider in providers],
+        )
+        if cond
+        for item in lst
+    ]
+
     def resource_generator() -> dict[str, Any]:
         loaded = json.loads(
             ServiceResources.initialize(
                 "css-inference-service",
-                [MLComputeCapability.css_compute()],
+                [
+                    MLComputeCapability.css_compute(
+                        models=[
+                            CSSModel.from_unique_id(model) for model in supported_models
+                        ]
+                    )
+                ],
             ).model_dump_json(serialize_as_any=True)
         )
 
         return cast(dict[str, Any], loaded)
 
     # Defines /service-resources
-    providers = sorted(api_keys.keys())
     ritual_service_specs(
         app,
         resource_generator,
-        simple_query_handler(
-            [
-                item
-                for lst, cond in zip(
-                    [models[provider] for provider in providers],
-                    [api_keys[provider] for provider in providers],
-                )
-                if cond
-                for item in lst
-            ]
-        ),
+        simple_query_handler(supported_models),
     )
 
     @app.route("/")
