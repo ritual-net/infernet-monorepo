@@ -98,7 +98,7 @@ from text_generation.errors import (
 )
 from text_generation.types import StreamResponse  # type: ignore
 
-from infernet_ml.utils.css_utils import DEFAULT_RETRY_PARAMS, RetryParams
+from infernet_ml.utils.retry import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.workflows.exceptions import InfernetMLException
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,

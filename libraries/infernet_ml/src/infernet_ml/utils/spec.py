@@ -10,7 +10,7 @@ from enum import StrEnum
 from typing import Annotated, Any, Callable, List, Literal, Optional, Union
 from xml.etree.ElementTree import Element
 
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi  # type: ignore
 from pydantic import BaseModel, Discriminator, Tag
 from quart import Quart, request
 
@@ -36,6 +36,27 @@ def null_query_handler() -> Callable[[str], dict[str, bool]]:
 
     def handler(model_id: str) -> dict[str, bool]:
         return {"supported": False}
+
+    return handler
+
+
+def simple_query_handler(
+    supported_models: List[str],
+) -> Callable[[str], dict[str, bool]]:
+    """
+    Generates a handler for checking if a model is supported by the service. This
+    handler checks if the model id is in the list of supported models.
+
+    Args:
+        supported_models (List[str]): The list of supported models
+
+    Returns:
+        handler (Callable[[str], dict[str, bool]]): The handler function to check if
+            a model is supported by the service.
+    """
+
+    def handler(model_id: str) -> dict[str, bool]:
+        return {"supported": model_id in supported_models}
 
     return handler
 
@@ -334,6 +355,27 @@ class MLComputeCapability(BaseModel):
         return cls(
             type=MLType.TGI_CLIENT,
             task=[MLTask.TextGeneration],
+        )
+
+    @classmethod
+    def css_compute(
+        cls,
+        models: Optional[List[CSSModel]] = None,
+    ) -> MLComputeCapability:
+        """
+        Utility function to generate a CSS compute capability.
+
+        Args:
+            models (Optional[List[CSSModel]]): The list of models that can be supported
+
+        Returns:
+            MLComputeCapability: The CSS compute capability
+        """
+        models = models or []
+        return cls(
+            type=MLType.CSS,
+            task=[],
+            models=models,
         )
 
 

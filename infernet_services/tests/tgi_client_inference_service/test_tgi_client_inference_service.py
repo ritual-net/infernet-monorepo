@@ -30,7 +30,7 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
     task_id = await request_job(
         TGI_WITH_PROOFS,
         {
-            "text": "Can shrimp actually fry rice fr?",
+            "text": "Is the sky blue during a clear day?",
         },
         requires_proof=True,
     )
@@ -81,7 +81,7 @@ async def test_tgi_client_inference_service_web2() -> None:
     task = await request_job(
         SERVICE_NAME,
         {
-            "text": "Can shrimp actually fry rice fr?",
+            "text": "Is the sky blue during a clear day?",
         },
     )
     result: str = (await get_job(task, timeout=15))["output"]
@@ -94,7 +94,7 @@ async def test_tgi_client_streaming_request() -> None:
     task = await request_streaming_job(
         SERVICE_NAME,
         {
-            "text": "Can shrimp actually fry rice fr?",
+            "text": "Is the sky blue during a clear day?",
         },
     )
     result = task.decode()

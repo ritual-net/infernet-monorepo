@@ -15,13 +15,20 @@ from infernet_ml.utils.codec.css import (
     decode_css_completion_request,
     decode_css_request,
 )
+from infernet_ml.utils.css_models import models
 from infernet_ml.utils.css_mux import (
     ApiKeys,
     CSSCompletionParams,
     CSSProvider,
     CSSRequest,
 )
-from infernet_ml.utils.css_utils import RetryParams
+from infernet_ml.utils.retry import RetryParams
+from infernet_ml.utils.spec import (
+    MLComputeCapability,
+    ServiceResources,
+    ritual_service_specs,
+    simple_query_handler,
+)
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.css_inference_workflow import CSSInferenceWorkflow
 from pydantic import ValidationError as PydValError
@@ -98,6 +105,34 @@ def create_app() -> Quart:
     # setup workflow
     workflow.setup()
 
+    def resource_generator() -> dict[str, Any]:
+        loaded = json.loads(
+            ServiceResources.initialize(
+                "css-inference-service",
+                [MLComputeCapability.css_compute()],
+            ).model_dump_json(serialize_as_any=True)
+        )
+
+        return cast(dict[str, Any], loaded)
+
+    # Defines /service-resources
+    providers = sorted(api_keys.keys())
+    ritual_service_specs(
+        app,
+        resource_generator,
+        simple_query_handler(
+            [
+                item
+                for lst, cond in zip(
+                    [models[provider] for provider in providers],
+                    [api_keys[provider] for provider in providers],
+                )
+                if cond
+                for item in lst
+            ]
+        ),
+    )
+
     @app.route("/")
     async def index() -> dict[str, str]:
         """Default index page
@@ -164,9 +199,9 @@ def create_app() -> Quart:
                         data=hex_input,
                     ):
                         onchain_output = {
-                            "raw_input": hex_input
-                            if isinstance(hex_input, str)
-                            else "",
+                            "raw_input": (
+                                hex_input if isinstance(hex_input, str) else ""
+                            ),
                             "processed_input": "",
                             "raw_output": encode(["string"], [result]).hex(),
                             "processed_output": "",

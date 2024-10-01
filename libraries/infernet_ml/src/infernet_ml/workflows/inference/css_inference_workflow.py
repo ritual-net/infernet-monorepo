@@ -176,7 +176,7 @@ from infernet_ml.utils.css_mux import (
     css_streaming_mux,
     validate,
 )
-from infernet_ml.utils.css_utils import DEFAULT_RETRY_PARAMS, RetryParams
+from infernet_ml.utils.retry import DEFAULT_RETRY_PARAMS, RetryParams
 from infernet_ml.workflows.inference.base_inference_workflow import (
     BaseInferenceWorkflow,
 )

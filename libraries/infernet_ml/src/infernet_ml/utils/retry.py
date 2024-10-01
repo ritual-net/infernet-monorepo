@@ -1,8 +1,7 @@
 from typing import Optional, Type, Union
 
-from pydantic import BaseModel, ConfigDict
-
 from infernet_ml.workflows.exceptions import RetryableException
+from pydantic import BaseModel, ConfigDict
 
 # retry parameters
 DEFAULT_TRIES: int = 3

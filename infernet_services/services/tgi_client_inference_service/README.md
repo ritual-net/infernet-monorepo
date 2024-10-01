@@ -164,7 +164,7 @@ class ContainerOutput(TypedDict):
     job_id = await client.request_job(
         "tgi_client_inference_service",
         {
-            "text": "Can shrimp actually fry rice fr?",
+            "text": "Is the sky blue during a clear day?",
         },
     )
 
@@ -182,7 +182,7 @@ class ContainerOutput(TypedDict):
 
     ```json
     {
-        "text": "Can shrimp actually fry rice fr?"
+        "text": "Is the sky blue during a clear day?"
     }
     ```
 
@@ -191,7 +191,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["tgi_client_inference_service"], "data": {"text": "Can shrimp actually fry rice fr?"}}'
+        -d '{"containers": ["tgi_client_inference_service"], "data": {"text": "Is the sky blue during a clear day?"}}'
     ```
 
 ### Onchain (web3) Subscription
@@ -211,7 +211,7 @@ from eth_abi.abi import encode
 input_bytes = encode(
     ["string"],
     [
-        "Can shrimp actually fry rice fr?"
+        "Is the sky blue during a clear day?"
     ],
 )
 ```
@@ -310,7 +310,7 @@ on port `4000`.
         nonce=nonce,
         private_key="0x...",
         data={
-            "text": "Can shrimp actually fry rice fr?"
+            "text": "Is the sky blue during a clear day?"
         },
     )
     ```
@@ -345,6 +345,6 @@ on port `4000`.
 
     ```json
     {
-        "text": "Can shrimp actually fry rice fr?"
+        "text": "Is the sky blue during a clear day?"
     }
     ```

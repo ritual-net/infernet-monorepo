@@ -10,7 +10,7 @@ from typing import Any, AsyncGenerator, cast
 from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
 from infernet_ml.services.types import InfernetInput, JobLocation
-from infernet_ml.utils.css_utils import RetryParams
+from infernet_ml.utils.retry import RetryParams
 from infernet_ml.utils.spec import (
     MLComputeCapability,
     ServiceResources,
