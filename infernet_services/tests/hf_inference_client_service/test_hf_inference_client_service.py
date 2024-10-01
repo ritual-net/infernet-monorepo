@@ -1,9 +1,11 @@
 import logging
 from typing import Optional
 
+import aiohttp
 import pytest
 from eth_abi.abi import decode, encode
 from infernet_ml.utils.hf_types import HFTaskId
+from infernet_ml.utils.spec import ServiceResources
 from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -40,6 +42,7 @@ async def test_hf_inference_client_service_text_generation() -> None:
         {
             "task_id": HFTaskId.TEXT_GENERATION,
             "prompt": "What's 2 + 2?",
+            "model": "Qwen/Qwen2.5-72B-Instruct",
         },
     )
     result = await get_job(task)
@@ -54,11 +57,27 @@ async def test_hf_inference_client_service_text_classification() -> None:
         {
             "task_id": HFTaskId.TEXT_CLASSIFICATION,
             "text": "Ritual makes AI x crypto a great combination!",
+            "model": "ProsusAI/finbert",
         },
     )
     result = (await get_job(task)).get("output")
     assert result[0].get("label") == "POSITIVE"
     assert result[0].get("score") > 0.8
+
+
+@pytest.mark.asyncio
+async def test_hf_inference_client_service_text_classification_wrong_model() -> None:
+    task = await request_job(
+        SERVICE_NAME,
+        {
+            "task_id": HFTaskId.TEXT_CLASSIFICATION,
+            "text": "Ritual makes AI x crypto a great combination!",
+            "model": "Qwen/Qwen2.5-72B-Instruct",
+        },
+    )
+    result = (await get_job(task)).get("output")
+    assert result[0].get("label") is None
+    assert result[0].get("score") is None
 
 
 @pytest.mark.flaky(retries=3, delay=1)
@@ -266,3 +285,60 @@ async def test_delegated_sub_request_summarization() -> None:
     )
 
     await assert_web3_summarization_output()
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting() -> None:
+    async with aiohttp.ClientSession() as session:
+        async with session.get("http://localhost:3000/service-resources") as response:
+            assert response.status == 200
+            data = await response.json()
+            resources = ServiceResources(**data)
+            assert resources.service_id == "hf-client-inference-service"
+            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].type == "hf_inference_client"
+            assert resources.hardware_capabilities[0].capability_id == "base"
+            assert resources.hardware_capabilities[0].cpu_info.architecture
+            assert resources.hardware_capabilities[0].cpu_info.byte_order
+            assert resources.hardware_capabilities[0].cpu_info.num_cores
+            assert resources.hardware_capabilities[0].cpu_info.vendor_id
+            assert resources.hardware_capabilities[0].disk_info[0]
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model() -> None:
+    # Existing model, supported task (text generation)
+    model_id = "meta-llama/Llama-3.2-1B-Instruct"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": True}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_unsupported_task() -> None:
+    # Existing model, unsupported task (question answering)
+    model_id = "impira/layoutlm-document-qa"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_nonexistent_model() -> None:
+    # Non-existent model
+    model_id = "my/non-existent-model"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}

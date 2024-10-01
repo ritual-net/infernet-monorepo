@@ -10,6 +10,7 @@ from enum import StrEnum
 from typing import Annotated, Any, Callable, List, Literal, Optional, Union
 from xml.etree.ElementTree import Element
 
+from huggingface_hub import HfApi
 from pydantic import BaseModel, Discriminator, Tag
 from quart import Quart, request
 
@@ -51,6 +52,43 @@ def postfix_query_handler(postfix: str) -> Callable[[str], dict[str, bool]]:
         if model.files[0].endswith(postfix):
             return {"supported": True}
         else:
+            return {"supported": False}
+
+    return handler
+
+
+def hf_api_query_handler(
+    any_tags: List[str] = [], all_tags: List[str] = [], token: Optional[str] = None
+) -> Callable[[str], dict[str, bool]]:
+    """
+    Generates a handler for checking if a model is available on HuggingFace. Includes
+    private models if the provided token is valid and has access to them.
+
+    Args:
+        any_tags (List[str]): List of tags to filter the models by. At least one of the
+            tags must be present in the model's tags.
+        all_tags (List[str]): List of tags to filter the models by. All of the tags must
+            be present in the model's tags.
+        token (Optional[str]): HuggingFace API token. Defaults to None.
+
+    Returns:
+        handler (Callable[[str], dict[str, bool]]): The handler function to check if
+            a model is supported by the HF API.
+    """
+
+    def handler(model_id: str) -> dict[str, bool]:
+        try:
+            info = HfApi(token=token).model_info(model_id)
+            supported = True
+            if all_tags:
+                # Check if all tags are present in the model's tags
+                supported = all([tag in info.tags for tag in all_tags])
+            if any_tags:
+                # Check if at least one tag is present in the model's tags
+                supported = supported and any([tag in info.tags for tag in any_tags])
+            return {"supported": supported}
+        except Exception:
+            # model_info will raise an exception if the model is not found
             return {"supported": False}
 
     return handler
@@ -115,6 +153,9 @@ class MLTask(StrEnum):
     Attributes:
         TextGeneration: Text Generation
         TextClassification: Text Classification
+        TokenClassification: Token Classification
+        Summarization: Summarization
+        TextToImage: Text to Image
         ImageClassification: Image Classification
         ImageSegmentation: Image Segmentation
         ObjectDetection: Object Detection
@@ -122,6 +163,9 @@ class MLTask(StrEnum):
 
     TextGeneration = "text_generation"
     TextClassification = "text_classification"
+    TokenClassification = "token_classification"
+    Summarization = "summarization"
+    TextToImage = "text_to_image"
     ImageClassification = "image_classification"
     ImageSegmentation = "image_segmentation"
     ObjectDetection = "object_detection"
@@ -257,6 +301,24 @@ class MLComputeCapability(BaseModel):
             task=[],
             models=models,
             cached_models=cached_models,
+        )
+
+    @classmethod
+    def hf_client_compute(
+        cls,
+    ) -> MLComputeCapability:
+        """
+        Utility function to generate a Huggingface client compute capability.
+        """
+        return cls(
+            type=MLType.HF_INFERENCE_CLIENT,
+            task=[
+                MLTask.TextGeneration,
+                MLTask.TextClassification,
+                MLTask.TokenClassification,
+                MLTask.Summarization,
+                MLTask.TextToImage,
+            ],
         )
 
 

@@ -50,7 +50,7 @@ def main():
 
     # Define the input
     input_data = TorchInferenceInput(
-        ml_model="huggingface/Ritual-Net/california-housing:california_housing.torch",
+        model_id="huggingface/Ritual-Net/california-housing:california_housing.torch",
         input=RitualVector.from_tensor(
             tensor=torch.tensor(
                 [[8.3252, 41.0, 6.984127, 1.02381, 322.0, 2.555556, 37.88, -122.23]],

@@ -38,7 +38,7 @@ humanfriendly==10.0
 hypercorn==0.17.3
 hyperframe==6.0.1
 idna==3.10
-infernet-ml==2.0.0.49
+infernet-ml==2.0.0.51
 itsdangerous==2.2.0
 jinja2==3.1.4
 jsonschema==4.23.0

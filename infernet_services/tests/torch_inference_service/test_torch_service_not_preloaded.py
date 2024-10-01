@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from infernet_ml.services.torch import TorchInferenceRequest
 from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -68,3 +69,11 @@ async def test_delegate_subscription_inference() -> None:
     await assert_generic_callback_consumer_output(
         None, california_housing_web3_assertions
     )
+
+
+def test_request_encoding_decoding() -> None:
+    recovered = TorchInferenceRequest.from_web3(ar_request.to_web3().hex())
+    assert recovered.output_arithmetic == ar_request.output_arithmetic
+    assert recovered.output_num_decimals == ar_request.output_num_decimals
+    assert recovered.input == ar_request.input
+    assert recovered.model_id == ar_request.model_id

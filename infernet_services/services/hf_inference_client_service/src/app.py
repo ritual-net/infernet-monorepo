@@ -19,6 +19,12 @@ from infernet_ml.utils.hf_types import (
     HFTokenClassificationInferenceInput,
     parse_hf_inference_input_from_dict,
 )
+from infernet_ml.utils.spec import (
+    MLComputeCapability,
+    ServiceResources,
+    hf_api_query_handler,
+    ritual_service_specs,
+)
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.hf_inference_client_workflow import (
     HFInferenceClientWorkflow,
@@ -129,11 +135,36 @@ def create_app() -> Quart:
     app: Quart = Quart(__name__)
     app.config.from_prefixed_env(prefix=SERVICE_PREFIX)
 
-    workflow = HFInferenceClientWorkflow(token=app.config.get("TOKEN", None))
-
     # Setup workflow
     logging.info("Setting up Huggingface Inference Workflow")
+    workflow = HFInferenceClientWorkflow(token=app.config.get("TOKEN", None))
     workflow.setup()
+
+    def resource_generator() -> dict[str, Any]:
+        loaded = json.loads(
+            ServiceResources.initialize(
+                "hf-inference-client-service",
+                [MLComputeCapability.hf_client_compute()],
+            ).model_dump_json(serialize_as_any=True)
+        )
+
+        return cast(dict[str, Any], loaded)
+
+    # Defines /service-resources
+    ritual_service_specs(
+        app,
+        resource_generator,
+        hf_api_query_handler(
+            all_tags=["endpoints_compatible"],
+            any_tags=[
+                "text-generation",
+                "text-classification",
+                "summarization",
+                "token-classification",
+                "text-to-image",
+            ],
+        ),
+    )
 
     @app.route("/")
     async def index() -> Dict[str, str]:

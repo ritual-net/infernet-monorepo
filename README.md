@@ -41,6 +41,7 @@ To develop in the monorepo, we suggest you pre-install the following in advance:
 * [Docker](https://docs.docker.com/desktop/)
 * [uv](https://github.com/astral-sh/uv?tab=readme-ov-file#getting-started)
 * [fzf](https://github.com/junegunn/fzf)
+* [rye](https://rye-up.com/)
 
 ### Deployer Key
 
