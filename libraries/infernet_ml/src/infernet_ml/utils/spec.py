@@ -311,7 +311,7 @@ class MLComputeCapability(BaseModel):
         Utility function to generate a Huggingface client compute capability.
         """
         return cls(
-            type=MLType.HF_INFERENCE_CLIENT,
+            type=MLType.HF_CLIENT,
             task=[
                 MLTask.TextGeneration,
                 MLTask.TextClassification,
@@ -319,6 +319,18 @@ class MLComputeCapability(BaseModel):
                 MLTask.Summarization,
                 MLTask.TextToImage,
             ],
+        )
+
+    @classmethod
+    def tgi_client_compute(
+        cls,
+    ) -> MLComputeCapability:
+        """
+        Utility function to generate a TGI client compute capability.
+        """
+        return cls(
+            type=MLType.TGI_CLIENT,
+            task=[MLTask.TextGeneration],
         )
 
 

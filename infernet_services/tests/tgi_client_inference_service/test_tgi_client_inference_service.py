@@ -1,7 +1,9 @@
 import logging
 
+import aiohttp
 import pytest
 from eth_abi.abi import decode, encode
+from infernet_ml.utils.spec import ServiceResources
 from test_library.constants import ANVIL_NODE
 from test_library.log_assertoor import LogAssertoor
 from test_library.test_config import global_config
@@ -114,3 +116,48 @@ async def test_tgi_client_delegated_subscription() -> None:
         assert "4" in result, f"expected 4 to be returned, instead got {result}"
 
     await assert_generic_callback_consumer_output(None, _assertions)
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting() -> None:
+    async with aiohttp.ClientSession() as session:
+        async with session.get("http://localhost:3000/service-resources") as response:
+            assert response.status == 200
+            data = await response.json()
+            resources = ServiceResources(**data)
+            assert resources.service_id == "tgi-client-inference-service"
+            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].type == "tgi_client"
+            assert resources.hardware_capabilities[0].capability_id == "base"
+            assert resources.hardware_capabilities[0].cpu_info.architecture
+            assert resources.hardware_capabilities[0].cpu_info.byte_order
+            assert resources.hardware_capabilities[0].cpu_info.num_cores
+            assert resources.hardware_capabilities[0].cpu_info.vendor_id
+            assert resources.hardware_capabilities[0].disk_info[0]
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_always_returns_false() -> None:
+    # Text generation model
+    model_id = "meta-llama/Llama-3.2-1B-Instruct"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            # We expect "False" for ALL models
+            assert data == {"supported": False}
+
+
+@pytest.mark.asyncio
+async def test_resource_broadcasting_supports_model_always_returns_false_2() -> None:
+    # Non text generation model
+    model_id = "impira/layoutlm-document-qa"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"http://localhost:3000/service-resources?model_id={model_id}"
+        ) as response:
+            assert response.status == 200
+            data = await response.json()
+            assert data == {"supported": False}

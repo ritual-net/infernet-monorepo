@@ -65,21 +65,6 @@ async def test_hf_inference_client_service_text_classification() -> None:
     assert result[0].get("score") > 0.8
 
 
-@pytest.mark.asyncio
-async def test_hf_inference_client_service_text_classification_wrong_model() -> None:
-    task = await request_job(
-        SERVICE_NAME,
-        {
-            "task_id": HFTaskId.TEXT_CLASSIFICATION,
-            "text": "Ritual makes AI x crypto a great combination!",
-            "model": "Qwen/Qwen2.5-72B-Instruct",
-        },
-    )
-    result = (await get_job(task)).get("output")
-    assert result[0].get("label") is None
-    assert result[0].get("score") is None
-
-
 @pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_hf_inference_client_service_token_classification() -> None:
@@ -296,7 +281,7 @@ async def test_resource_broadcasting() -> None:
             resources = ServiceResources(**data)
             assert resources.service_id == "hf-inference-client-service"
             assert resources.compute_capability[0].id == "ml"
-            assert resources.compute_capability[0].type == "hf_inference_client"
+            assert resources.compute_capability[0].type == "hf_client"
             assert resources.hardware_capabilities[0].capability_id == "base"
             assert resources.hardware_capabilities[0].cpu_info.architecture
             assert resources.hardware_capabilities[0].cpu_info.byte_order

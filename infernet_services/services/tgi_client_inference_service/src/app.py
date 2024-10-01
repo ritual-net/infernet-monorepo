@@ -11,6 +11,12 @@ from dotenv import load_dotenv
 from eth_abi.abi import decode, encode
 from infernet_ml.services.types import InfernetInput, JobLocation
 from infernet_ml.utils.css_utils import RetryParams
+from infernet_ml.utils.spec import (
+    MLComputeCapability,
+    ServiceResources,
+    null_query_handler,
+    ritual_service_specs,
+)
 from infernet_ml.workflows.exceptions import ServiceException
 from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
     TGIClientInferenceWorkflow,
@@ -80,6 +86,19 @@ def create_app() -> Quart:
         )
     # setup workflow
     workflow.setup()
+
+    def resource_generator() -> dict[str, Any]:
+        loaded = json.loads(
+            ServiceResources.initialize(
+                "tgi-client-inference-service",
+                [MLComputeCapability.tgi_client_compute()],
+            ).model_dump_json(serialize_as_any=True)
+        )
+
+        return cast(dict[str, Any], loaded)
+
+    # Defines /service-resources
+    ritual_service_specs(app, resource_generator, null_query_handler())
 
     @app.route("/")
     async def index() -> dict[str, str]:
