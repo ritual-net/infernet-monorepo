@@ -38,7 +38,7 @@ in `config.json`.
 
 ## Environment Variables
 
-### HF_INF_TOKEN
+### TGI_INF_TOKEN
 
 - **Description**: The HuggingFace token for authenticated API requests. Not required, but will increase API limits and enable access to private models.
 - **Default**: None
