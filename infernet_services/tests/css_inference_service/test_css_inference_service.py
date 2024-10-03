@@ -29,7 +29,7 @@ from test_library.web3_utils import (
 
 log = logging.getLogger(__name__)
 
-boolean_like_prompt = "Is the sky blue? return yes or no"
+boolean_like_prompt = "Is the sky blue during a clear day? answer yes or no"
 
 
 def boolean_like_prompt_assertion(result: str) -> None:

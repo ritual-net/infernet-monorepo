@@ -21,8 +21,10 @@ from .conftest import HF_WITH_PROOFS, SERVICE_NAME
 log = logging.getLogger(__name__)
 
 
-TEXT_GENERATION_PROMPT = "Question: What's 2 + 2? Answer: "
+TEXT_GENERATION_PROMPT = "Is the sky blue during a clear day? answer yes or no"
+TEXT_GENERATION_ANSWER = "yes"
 TEXT_CLASSIFICATION_PROMPT = "Ritual makes AI x crypto a great combination!"
+TEXT_CLASSIFICATION_ANSWER = "POSITIVE"
 
 
 @pytest.mark.asyncio
@@ -54,7 +56,9 @@ async def test_hf_inference_client_service_text_generation() -> None:
     )
     result = await get_job(task)
     log.info("result: %s", result)
-    assert "4" in result.get("output")
+    output = result.get("output")
+    assert output
+    assert TEXT_GENERATION_ANSWER in cast(str, output).lower()
 
 
 @pytest.mark.asyncio
@@ -67,7 +71,7 @@ async def test_hf_inference_client_service_text_classification() -> None:
         },
     )
     result = (await get_job(task)).get("output")
-    assert result[0].get("label") == "POSITIVE"
+    assert result[0].get("label") == TEXT_CLASSIFICATION_ANSWER
     assert result[0].get("score") > 0.8
 
 
@@ -124,7 +128,8 @@ async def assert_web3_text_generation_output(sub_id: Optional[int] = None) -> No
     def _assertions(input: bytes, output: bytes, proof: bytes) -> None:
         (raw, _) = decode(["bytes", "bytes"], output)
         (out,) = decode(["string"], raw)
-        assert "4" in out
+        assert out
+        assert TEXT_GENERATION_ANSWER in cast(str, out).lower()
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)
 
@@ -148,7 +153,7 @@ async def assert_web3_text_classification_output(
         (raw, _) = decode(["bytes", "bytes"], output)
         (labels, scores) = decode(["string[]", "uint256[]"], raw, strict=False)
         log.info("labels: %s scores %s", labels, scores)
-        assert labels[0] == "POSITIVE"
+        assert labels[0] == TEXT_CLASSIFICATION_ANSWER
         assert (scores[0] / 1e6) > 0.8
 
     await assert_generic_callback_consumer_output(sub_id, _assertions)

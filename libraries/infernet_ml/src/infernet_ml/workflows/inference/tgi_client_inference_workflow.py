@@ -46,12 +46,12 @@ def main():
     workflow.setup()
 
     # Run the inference
-    res = workflow.inference(TgiInferenceRequest(text="What is 2 + 2?"))
+    res = workflow.inference(TgiInferenceRequest(text="Is the sky blue during a clear day?"))
     print(f"response: {res}")
 
     # Stream the inference
     collected_res = ""
-    for r in workflow.stream(TgiInferenceRequest(text="What is 2 + 2?")):
+    for r in workflow.stream(TgiInferenceRequest(text="Is the sky blue during a clear day?")):
         collected_res += r.token.text
     print(f"streaming: {collected_res}")
 
@@ -65,11 +65,11 @@ Outputs:
 ```bash
 response:
 
-The answer is 4.
+Yes, the sky is blue during a clear day.
 
 streaming:
 
-The answer is 4.
+Yes, the sky is blue during a clear day.
 ```
 
 ## More Information

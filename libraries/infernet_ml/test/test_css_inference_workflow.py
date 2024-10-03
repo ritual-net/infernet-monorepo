@@ -52,8 +52,8 @@ def test_should_error_if_no_api_key(provider: CSSProvider) -> None:
         workflow.inference(req)
 
 
-completion_prompt = "what's 2 + 2?"
-expected_response = "4"
+completion_prompt = "Is the sky blue during a clear day? answer yes or no"
+expected_response = "yes"
 
 
 @pytest.mark.parametrize(
@@ -80,9 +80,9 @@ def test_should_pass_api_key_with_request(
     )
     workflow: CSSInferenceWorkflow = CSSInferenceWorkflow({})
     workflow.setup()
-    res: dict[str, Any] = workflow.inference(req)
+    res: str = workflow.inference(req)
     assert len(res), "non empty result"
-    assert response in res, "correct completion"
+    assert response in res.lower(), "correct completion"
 
 
 @pytest.mark.parametrize(
@@ -123,12 +123,12 @@ def test_completion_inferences(
     )
     workflow: CSSInferenceWorkflow = CSSInferenceWorkflow(api_keys)
     workflow.setup()
-    res: dict[str, Any] = workflow.inference(req)
+    res: str = workflow.inference(req)
 
     logging.info(res)
 
     assert len(res), "non empty result"
-    assert expected_substr in res, "correct completion"
+    assert expected_substr in res.lower(), "correct completion"
 
 
 def test_embedding_inference() -> None:

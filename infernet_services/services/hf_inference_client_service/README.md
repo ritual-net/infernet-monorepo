@@ -121,7 +121,7 @@ class ContainerOutput(TypedDict):
         {
             # HFTaskId.TEXT_GENERATION
             "task_id": 1,
-            "prompt": "What is 2+2?",
+            "prompt": "Is the sky ",
             "model": "Qwen/Qwen2.5-72B-Instruct", # optional
         },
     )
@@ -143,7 +143,7 @@ class ContainerOutput(TypedDict):
     ```json
     {
         "task_id": 1,
-        "prompt": "What is 2+2?",
+        "prompt": "Is the sky blue during a clear day?",
         "model": "Qwen/Qwen2.5-72B-Instruct"
     }
     ```
@@ -153,7 +153,7 @@ class ContainerOutput(TypedDict):
     ```bash
     curl -X POST http://127.0.0.1:4000/api/jobs \
         -H "Content-Type: application/json" \
-        -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "What is 2+2?", "model": "Qwen/Qwen2.5-72B-Instruct"}}'
+        -d '{"containers": ["hf_inference_client_service"], "data": {"task_id": 1, "prompt": "Is the sky blue during a clear day?", "model": "Qwen/Qwen2.5-72B-Instruct"}}'
     ```
 
 ### Onchain (web3) Subscription
@@ -176,7 +176,7 @@ from eth_abi.abi import encode
 # The first item is the task id, the second item is the model id, and the third item is a prompt.
 input_bytes = encode(
     ["uint8", "string", "string"],
-    [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
+    [HFTaskId.TEXT_GENERATION, "", "Is the sky blue during a clear day?"],
 )
 ```
 
@@ -227,7 +227,7 @@ contract MyContract {
     function doMath() public returns (bytes32) {
         container.requestCompute(
             "my-container-id",
-            abi.encode(0, "", "What's 2+2?"), // same encoded input as above.
+            abi.encode(0, "", "Is the sky blue during a clear day?"), // same encoded input as above.
             // Here, 0 corresponds to the task id: TEXT_GENERATION
             1,
             address(0), // paymentToken
@@ -274,7 +274,7 @@ contract MyContract {
         private_key="0x...",
         data={
             "task_id": 1,
-            "prompt": "What is 2+2?",
+            "prompt": "Is the sky blue during a clear day?",
         },
     )
     ```
@@ -310,6 +310,6 @@ contract MyContract {
     ```json
     {
     "task_id": 1,
-        "prompt": "What is 2+2?",
+        "prompt": "Is the sky blue during a clear day?",
     }
     ```
