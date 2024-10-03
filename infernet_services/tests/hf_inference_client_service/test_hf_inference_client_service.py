@@ -1,11 +1,15 @@
 import logging
-from typing import Optional
+from typing import Optional, cast
 
 import aiohttp
 import pytest
 from eth_abi.abi import decode, encode
 from infernet_ml.utils.hf_types import HFTaskId
-from infernet_ml.utils.spec import ServiceResources
+from infernet_ml.utils.spec import (
+    ComputeId,
+    GenericHardwareCapability,
+    ServiceResources,
+)
 from test_library.web2_utils import get_job, request_delegated_subscription, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -17,13 +21,17 @@ from .conftest import HF_WITH_PROOFS, SERVICE_NAME
 log = logging.getLogger(__name__)
 
 
+TEXT_GENERATION_PROMPT = "Question: What's 2 + 2? Answer: "
+TEXT_CLASSIFICATION_PROMPT = "Ritual makes AI x crypto a great combination!"
+
+
 @pytest.mark.asyncio
 async def test_hf_inference_client_doesnt_generate_proofs() -> None:
     task_id = await request_job(
         HF_WITH_PROOFS,
         {
             "task_id": HFTaskId.TEXT_GENERATION,
-            "prompt": "What's 2 + 2?",
+            "prompt": TEXT_GENERATION_PROMPT,
         },
         requires_proof=True,
     )
@@ -41,7 +49,7 @@ async def test_hf_inference_client_service_text_generation() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TEXT_GENERATION,
-            "prompt": "What's 2 + 2?",
+            "prompt": TEXT_GENERATION_PROMPT,
         },
     )
     result = await get_job(task)
@@ -55,7 +63,7 @@ async def test_hf_inference_client_service_text_classification() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TEXT_CLASSIFICATION,
-            "text": "Ritual makes AI x crypto a great combination!",
+            "text": TEXT_CLASSIFICATION_PROMPT,
         },
     )
     result = (await get_job(task)).get("output")
@@ -70,7 +78,7 @@ async def test_hf_inference_client_service_token_classification() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TOKEN_CLASSIFICATION,
-            "text": "Ritual makes AI x crypto a great combination!",
+            "text": TEXT_CLASSIFICATION_PROMPT,
         },
     )
     result = (await get_job(task)).get("output")
@@ -127,7 +135,7 @@ async def test_web3_text_generation_no_model_provided() -> None:
         SERVICE_NAME,
         encode(
             ["uint8", "string", "string"],
-            [HFTaskId.TEXT_GENERATION, "", "What's 2 + 2?"],
+            [HFTaskId.TEXT_GENERATION, "", TEXT_GENERATION_PROMPT],
         ),
     )
     await assert_web3_text_generation_output(sub_id)
@@ -155,7 +163,7 @@ async def test_web3_text_classification_no_model_provided() -> None:
             [
                 HFTaskId.TEXT_CLASSIFICATION,
                 "",
-                "Ritual makes AI x crypto a great combination!",
+                TEXT_CLASSIFICATION_PROMPT,
             ],
         ),
     )
@@ -183,7 +191,7 @@ async def test_web3_token_classification_no_model_provided() -> None:
             [
                 HFTaskId.TOKEN_CLASSIFICATION,
                 "",
-                "Ritual makes AI x crypto a great combination!",
+                TEXT_CLASSIFICATION_PROMPT,
             ],
         ),
     )
@@ -218,7 +226,7 @@ async def test_delegated_sub_request_text_generation() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TEXT_GENERATION,
-            "prompt": "What's 2 + 2?",
+            "prompt": TEXT_GENERATION_PROMPT,
         },
     )
 
@@ -231,7 +239,7 @@ async def test_delegated_sub_request_text_classification() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TEXT_CLASSIFICATION,
-            "text": "Ritual makes AI x crypto a great combination!",
+            "text": TEXT_CLASSIFICATION_PROMPT,
         },
     )
     await assert_web3_text_classification_output()
@@ -243,7 +251,7 @@ async def test_delegated_sub_request_token_classification() -> None:
         SERVICE_NAME,
         {
             "task_id": HFTaskId.TOKEN_CLASSIFICATION,
-            "text": "Ritual makes AI x crypto a great combination!",
+            "text": TEXT_CLASSIFICATION_PROMPT,
         },
     )
 
@@ -278,14 +286,18 @@ async def test_resource_broadcasting() -> None:
             data = await response.json()
             resources = ServiceResources(**data)
             assert resources.service_id == "hf-inference-client-service"
-            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].id == ComputeId.ML
             assert resources.compute_capability[0].type == "hf_client"
+
             assert resources.hardware_capabilities[0].capability_id == "base"
-            assert resources.hardware_capabilities[0].cpu_info.architecture
-            assert resources.hardware_capabilities[0].cpu_info.byte_order
-            assert resources.hardware_capabilities[0].cpu_info.num_cores
-            assert resources.hardware_capabilities[0].cpu_info.vendor_id
-            assert resources.hardware_capabilities[0].disk_info[0]
+            capability = cast(
+                GenericHardwareCapability, resources.hardware_capabilities[0]
+            )
+            assert capability.cpu_info.architecture
+            assert capability.cpu_info.byte_order
+            assert capability.cpu_info.num_cores
+            assert capability.cpu_info.vendor_id
+            assert capability.disk_info[0]
 
 
 @pytest.mark.asyncio

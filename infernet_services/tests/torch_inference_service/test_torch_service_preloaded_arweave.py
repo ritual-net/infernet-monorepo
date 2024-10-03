@@ -1,9 +1,14 @@
 import logging
 import os
+from typing import cast
 
 import aiohttp
-from infernet_ml.utils.spec import ServiceResources
 import pytest
+from infernet_ml.utils.spec import (
+    ComputeId,
+    GenericHardwareCapability,
+    ServiceResources,
+)
 from test_library.web2_utils import get_job, request_job
 from test_library.web3_utils import (
     assert_generic_callback_consumer_output,
@@ -52,7 +57,7 @@ async def test_resource_broadcasting() -> None:
             data = await response.json()
             resources = ServiceResources(**data)
             assert resources.service_id == "torch-inference-service"
-            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].id == ComputeId.ML
             assert resources.compute_capability[0].type == "torch"
             cached_models = resources.compute_capability[0].cached_models[0]
             assert (
@@ -63,12 +68,16 @@ async def test_resource_broadcasting() -> None:
             assert manifest.get("artifact_type") == "ModelArtifact"
             assert "california_housing.torch" in manifest.get("files")
             assert "california_housing.torch" in manifest.get("file_hashes").keys()
+
             assert resources.hardware_capabilities[0].capability_id == "base"
-            assert resources.hardware_capabilities[0].cpu_info.architecture
-            assert resources.hardware_capabilities[0].cpu_info.byte_order
-            assert resources.hardware_capabilities[0].cpu_info.num_cores
-            assert resources.hardware_capabilities[0].cpu_info.vendor_id
-            assert resources.hardware_capabilities[0].disk_info[0]
+            capability = cast(
+                GenericHardwareCapability, resources.hardware_capabilities[0]
+            )
+            assert capability.cpu_info.architecture
+            assert capability.cpu_info.byte_order
+            assert capability.cpu_info.num_cores
+            assert capability.cpu_info.vendor_id
+            assert capability.disk_info[0]
 
 
 @pytest.mark.asyncio

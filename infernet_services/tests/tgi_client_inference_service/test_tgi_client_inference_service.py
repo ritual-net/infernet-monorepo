@@ -1,9 +1,14 @@
 import logging
+from typing import cast
 
 import aiohttp
 import pytest
 from eth_abi.abi import decode, encode
-from infernet_ml.utils.spec import ServiceResources
+from infernet_ml.utils.spec import (
+    ComputeId,
+    GenericHardwareCapability,
+    ServiceResources,
+)
 from test_library.constants import ANVIL_NODE
 from test_library.log_assertoor import LogAssertoor
 from test_library.test_config import global_config
@@ -30,7 +35,7 @@ async def test_tgi_client_inference_service_web2_doesnt_provide_proofs() -> None
     task_id = await request_job(
         TGI_WITH_PROOFS,
         {
-            "text": "Is the sky blue during a clear day?",
+            "text": "Is the sky blue during a clear day? return yes or no",
         },
         requires_proof=True,
     )
@@ -81,7 +86,7 @@ async def test_tgi_client_inference_service_web2() -> None:
     task = await request_job(
         SERVICE_NAME,
         {
-            "text": "Is the sky blue during a clear day?",
+            "text": "Is the sky blue during a clear day? return yes or no",
         },
     )
     result: str = (await get_job(task, timeout=15))["output"]
@@ -94,7 +99,7 @@ async def test_tgi_client_streaming_request() -> None:
     task = await request_streaming_job(
         SERVICE_NAME,
         {
-            "text": "Is the sky blue during a clear day?",
+            "text": "Is the sky blue during a clear day? return yes or no",
         },
     )
     result = task.decode()
@@ -126,14 +131,18 @@ async def test_resource_broadcasting() -> None:
             data = await response.json()
             resources = ServiceResources(**data)
             assert resources.service_id == "tgi-client-inference-service"
-            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].id == ComputeId.ML
             assert resources.compute_capability[0].type == "tgi_client"
+
             assert resources.hardware_capabilities[0].capability_id == "base"
-            assert resources.hardware_capabilities[0].cpu_info.architecture
-            assert resources.hardware_capabilities[0].cpu_info.byte_order
-            assert resources.hardware_capabilities[0].cpu_info.num_cores
-            assert resources.hardware_capabilities[0].cpu_info.vendor_id
-            assert resources.hardware_capabilities[0].disk_info[0]
+            capability = cast(
+                GenericHardwareCapability, resources.hardware_capabilities[0]
+            )
+            assert capability.cpu_info.architecture
+            assert capability.cpu_info.byte_order
+            assert capability.cpu_info.num_cores
+            assert capability.cpu_info.vendor_id
+            assert capability.disk_info[0]
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, cast
 
 import aiohttp
 import pytest
@@ -11,7 +11,11 @@ from infernet_ml.utils.codec.css import (
     encode_css_completion_request,
 )
 from infernet_ml.utils.css_mux import ConvoMessage
-from infernet_ml.utils.spec import ServiceResources
+from infernet_ml.utils.spec import (
+    ComputeId,
+    GenericHardwareCapability,
+    ServiceResources,
+)
 from test_library.web2_utils import (
     get_job,
     request_delegated_subscription,
@@ -231,14 +235,18 @@ async def test_resource_broadcasting() -> None:
             data = await response.json()
             resources = ServiceResources(**data)
             assert resources.service_id == "css-inference-service"
-            assert resources.compute_capability[0].id == "ml"
+            assert resources.compute_capability[0].id == ComputeId.ML
             assert resources.compute_capability[0].type == "css"
+
             assert resources.hardware_capabilities[0].capability_id == "base"
-            assert resources.hardware_capabilities[0].cpu_info.architecture
-            assert resources.hardware_capabilities[0].cpu_info.byte_order
-            assert resources.hardware_capabilities[0].cpu_info.num_cores
-            assert resources.hardware_capabilities[0].cpu_info.vendor_id
-            assert resources.hardware_capabilities[0].disk_info[0]
+            capability = cast(
+                GenericHardwareCapability, resources.hardware_capabilities[0]
+            )
+            assert capability.cpu_info.architecture
+            assert capability.cpu_info.byte_order
+            assert capability.cpu_info.num_cores
+            assert capability.cpu_info.vendor_id
+            assert capability.disk_info[0]
 
 
 @pytest.mark.asyncio

@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
+import numpy as np
 from infernet_ml.services.torch import TorchInferenceRequest
 from infernet_ml.utils.codec.vector import DataType, RitualVector
-import numpy as np
 from test_library.artifact_utils import ar_model_id, hf_model_id
 
 SERVICE_NAME = "torch_inference_service"
