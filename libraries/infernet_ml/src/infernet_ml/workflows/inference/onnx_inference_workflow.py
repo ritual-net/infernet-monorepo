@@ -252,14 +252,15 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         self, input_data: ONNXInferenceInput
     ) -> Tuple[InferenceSession, ModelProto, ONNXInferenceInput, float]:
         """
-        Convert the input data to a dictionary of torch tensors.
+        Convert the input data to a format that can be used by the model.
 
         Args:
             input_data (ONNXInferenceInput): Input data for the inference workflow
 
         Returns:
-            Tuple[InferenceSession, Dict[str, torch.Tensor]]: Tuple containing
-            the inference session, input data and the FLOPs of the model
+            Tuple[InferenceSession, ModelProto, ONNXInferenceInput, float]: Tuple
+            containing the inference session, the model proto, the input data and
+            the FLOPs of the model
 
         """
         ort_session = self.ort_session

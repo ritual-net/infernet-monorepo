@@ -96,6 +96,7 @@ def create_app() -> Quart:
         CSSProvider.OPENAI: os.getenv("OPENAI_API_KEY"),
         CSSProvider.PERPLEXITYAI: os.getenv("PERPLEXITYAI_API_KEY"),
     }
+    providers = sorted(api_keys.keys())
 
     _retry_params = os.getenv("RETRY_PARAMS")
     retry_params = RetryParams(**json.loads(_retry_params)) if _retry_params else None
@@ -107,16 +108,12 @@ def create_app() -> Quart:
     workflow.setup()
 
     # get supported models based on api keys
-    providers = sorted(api_keys.keys())
-    supported_models: list[str] = [
-        model["id"]
-        for models, supported in zip(
-            [models[provider] for provider in providers],
-            [api_keys[provider] for provider in providers],
-        )
-        if supported
-        for model in models
-    ]
+    supported_models: list[str] = []
+    for provider in providers:
+        # Check if the provider API key is set
+        if api_keys[provider]:
+            # Add the model IDs to the supported models list
+            supported_models.extend([model["id"] for model in models[provider]])
 
     def resource_generator() -> dict[str, Any]:
         loaded = json.loads(

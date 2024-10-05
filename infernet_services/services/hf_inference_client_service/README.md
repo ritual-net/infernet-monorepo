@@ -121,7 +121,7 @@ class ContainerOutput(TypedDict):
         {
             # HFTaskId.TEXT_GENERATION
             "task_id": 1,
-            "prompt": "Is the sky ",
+            "prompt": "Is the sky blue during a clear day?",
             "model": "Qwen/Qwen2.5-72B-Instruct", # optional
         },
     )
