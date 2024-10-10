@@ -90,7 +90,7 @@ pre-commit-library:
 	uv pip install -r requirements.lock; \
 	cd ../../ && \
 	export PYTHONPATH=libraries/$$library/src:./infernet_services/tests && \
-	pre-commit run --files `git ls-files | grep libraries/$$library`
+	pre-commit run --files `git ls-files | grep "^libraries/$$library/"`
 
 test-library:
 ifdef test_name

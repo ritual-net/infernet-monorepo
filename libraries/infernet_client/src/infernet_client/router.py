@@ -21,7 +21,7 @@ nodes = await client.get_nodes_by_container_ids(
 
 from typing import cast
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 from infernet_ml.utils.spec import ServiceResources
 
 from infernet_client.types import ModelSupport, NetworkContainer
@@ -60,7 +60,7 @@ class RouterClient:
         )
 
         async with ClientSession() as session:
-            async with session.get(url, timeout=3) as response:
+            async with session.get(url, timeout=ClientTimeout(total=3)) as response:
                 response.raise_for_status()
                 return cast(list[str], await response.json())
 
@@ -73,7 +73,7 @@ class RouterClient:
 
         url = f"{self.base_url}/api/v1/containers"
         async with ClientSession() as session:
-            async with session.get(url, timeout=3) as response:
+            async with session.get(url, timeout=ClientTimeout(total=3)) as response:
                 response.raise_for_status()
                 return cast(list[NetworkContainer], await response.json())
 
@@ -91,7 +91,7 @@ class RouterClient:
 
         url = f"{self.base_url}/api/v1/resources"
         async with ClientSession() as session:
-            async with session.get(url, timeout=3) as response:
+            async with session.get(url, timeout=ClientTimeout(total=3)) as response:
                 response.raise_for_status()
                 return cast(
                     dict[str, dict[str, ServiceResources]], await response.json()
@@ -116,6 +116,6 @@ class RouterClient:
 
         url = f"{self.base_url}/api/v1/resources?model_id={model_id}"
         async with ClientSession() as session:
-            async with session.get(url, timeout=3) as response:
+            async with session.get(url, timeout=ClientTimeout(total=3)) as response:
                 response.raise_for_status()
                 return cast(dict[str, dict[str, ModelSupport]], await response.json())

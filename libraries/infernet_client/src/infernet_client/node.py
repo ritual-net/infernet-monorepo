@@ -16,7 +16,7 @@ client.health()
 from asyncio import sleep
 from typing import Any, AsyncGenerator, Optional, Union, cast
 
-from aiohttp import ClientResponseError, ClientSession
+from aiohttp import ClientResponseError, ClientSession, ClientTimeout
 from eth_account import Account
 from eth_typing import ChecksumAddress
 from infernet_ml.utils.spec import ServiceResources
@@ -63,7 +63,9 @@ class NodeClient:
 
         url = f"{self.base_url}/health"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 response.raise_for_status()
                 body = cast(HealthInfo, await response.json())
                 return body["status"] == "healthy"
@@ -87,7 +89,9 @@ class NodeClient:
 
         url = f"{self.base_url}/info"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 response.raise_for_status()
                 return cast(NodeInfo, await response.json())
 
@@ -105,7 +109,9 @@ class NodeClient:
 
         url = f"{self.base_url}/resources"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 response.raise_for_status()
                 return cast(dict[str, ServiceResources], await response.json())
 
@@ -128,7 +134,9 @@ class NodeClient:
 
         url = f"{self.base_url}/resources?model_id={model_id}"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 response.raise_for_status()
                 return cast(dict[str, ModelSupport], await response.json())
 
@@ -155,7 +163,7 @@ class NodeClient:
             async with session.post(
                 url,
                 json=job,
-                timeout=timeout,
+                timeout=ClientTimeout(total=timeout),
             ) as response:
                 body = await response.json()
                 try:
@@ -200,7 +208,7 @@ class NodeClient:
             async with session.post(
                 url,
                 json=jobs,
-                timeout=timeout,
+                timeout=ClientTimeout(total=timeout),
             ) as response:
                 body = await response.json()
                 try:
@@ -280,7 +288,9 @@ class NodeClient:
         if intermediate:
             url += "&intermediate=true"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 body = await response.json()
                 try:
                     response.raise_for_status()
@@ -315,7 +325,9 @@ class NodeClient:
         if pending is not None:
             url += f"?pending={str(pending).lower()}"
         async with ClientSession() as session:
-            async with session.get(url, timeout=timeout) as response:
+            async with session.get(
+                url, timeout=ClientTimeout(total=timeout)
+            ) as response:
                 response.raise_for_status()
                 return cast(list[JobID], await response.json())
 
@@ -343,7 +355,7 @@ class NodeClient:
             async with session.post(
                 url,
                 json=job,
-                timeout=timeout,
+                timeout=ClientTimeout(total=timeout),
             ) as response:
                 if response.status == 200:
                     # The first line of the response is the job ID
@@ -388,7 +400,7 @@ class NodeClient:
                     "status": status,
                     **job,
                 },
-                timeout=timeout,
+                timeout=ClientTimeout(total=timeout),
             ) as response:
                 body = await response.json()
                 try:
@@ -452,7 +464,7 @@ class NodeClient:
                     "subscription": subscription.serialized,
                     "data": data,
                 },
-                timeout=timeout,
+                timeout=ClientTimeout(total=timeout),
             ) as response:
                 body = await response.json()
                 try:
