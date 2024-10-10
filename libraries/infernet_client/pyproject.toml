@@ -1,6 +1,6 @@
 [project]
 name = "infernet-client"
-version = "1.0.3.3"
+version = "1.0.3.4"
 description = "Infernet Node v0.3.0 REST client"
 authors = [
     { name = "Stelios Rousoglou", email = "stelios@ritual.net" }
@@ -8,7 +8,7 @@ authors = [
 dependencies = [
     "aiohttp>=3.9.2,<4.0.0",
     "click>=8.1.7,<9.0.0",
-    "infernet-ml>=2.0.0.56,<3.0.0",
+    "infernet-ml>=2.0.0.57,<3.0.0",
     "web3>=6.11.0,<7.0.0",
 ]
 readme = "README.md"
@@ -24,6 +24,7 @@ development = [
     "pytest-asyncio>=0.21.1",
     "mypy>=1.9.0,<2.0.0",
     "isort>=5.13.2,<6.0.0",
+    "web3>=6.20.3,<7.0.0"
 ]
 
 [build-system]

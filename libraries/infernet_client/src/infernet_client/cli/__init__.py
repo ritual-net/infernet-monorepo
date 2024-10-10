@@ -398,21 +398,7 @@ def create_infernet_wallet(
     private_key: str,
     owner: Optional[str],
 ) -> None:
-    """Create an Infernet Wallet.
-
-    Uses `WalletFactory` to create an Infernet wallet.
-
-    Example:
-        infernet-client create-wallet --rpc-url http://localhost:8545 \
-            --factory 0xF6168876932289D073567f347121A267095f3DD6 \
-            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
-            --owner 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
-        or
-
-        export PRIVATE_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a && \
-            infernet-client create-wallet --rpc-url http://localhost:8545 \
-            --factory 0xF6168876932289D073567f347121A267095f3DD6
-    """  # noqa
+    """Creates an Infernet Wallet."""
 
     async def create_wallet() -> InfernetWallet:
         rpc = RPC(rpc_url)
@@ -452,19 +438,7 @@ def approve_spender(
     token: str,
     amount: str,
 ) -> None:
-    """
-    Approve a spender.
-
-    Example:
-        infernet-client approve --rpc-url http://localhost:8545 \
-            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
-            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
-            --spender 0x13D69Cf7d6CE4218F646B759Dcf334D82c023d8e \
-            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
-            --amount '1 ether'
-
-
-    """  # noqa: E501
+    """Approve a spender."""
 
     async def _approve() -> TxReceipt:
         rpc = RPC(rpc_url)
@@ -505,16 +479,7 @@ def fund_wallet(
     token: str,
     amount: str,
 ) -> None:
-    """
-    Fund a wallet.
-
-    Example:
-        infernet-client fund --rpc-url http://localhost:8545 \
-            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
-            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
-            --amount '1 ether'
-
-    """  # noqa: E501
+    """Fund a wallet."""
 
     async def _fund() -> TxReceipt:
         rpc = RPC(rpc_url)
@@ -590,20 +555,7 @@ def withdraw(
     token: str,
     amount: str,
 ) -> None:
-    """
-    Withdraw tokens.
-
-    Only unlocked tokens can be withdrawn. Only usable by the wallet owner.
-
-    Example:
-        infernet-client withdraw --rpc-url http://localhost:8545 \
-            --private-key 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a \
-            --wallet 0x7749f632935738EA2Dd32EBEcbb8B9145E1efeF6 \
-            --token 0x1FaAEB282469150d52a19B4c2eD1a7f01bdFAb26 \
-            --amount '1 ether'
-
-
-    """  # noqa: E501
+    """Withdraw tokens."""
 
     async def _withdraw() -> TxReceipt:
         rpc = RPC(rpc_url)

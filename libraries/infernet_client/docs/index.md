@@ -9,6 +9,7 @@ Infernet Client is a python library as well as a CLI tool. It allows you to:
    b. Receive payments for fulfilled subscriptions.
 
 ## Installation
+
 You can either install `infernet-client` via [`uv` (Recommended)](https://astral.sh/blog/uv) or via `pip`.
 
 === "uv"
@@ -23,9 +24,43 @@ You can either install `infernet-client` via [`uv` (Recommended)](https://astral
     pip install infernet-client
     ```
 
+## Commands
+
+You can view all commands with `--help`:
+
+```bash
+infernet-client --help
+```
+
+**Expected Output:**
+
+```
+Usage: infernet-client [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  approve        Approve a spender.
+  check-model    Check model support.
+  containers     List containers running in the network
+  create-wallet  Create an Infernet Wallet.
+  find           Find nodes running the given containers
+  fund           Fund a wallet.
+  health         Health check
+  ids            Get job IDs for this client.
+  info           Get node information.
+  job            Request a job.
+  resources      Get container resources.
+  results        Fetch job results.
+  stream         Request a streamed job.
+  sub            Request a delegated subscription.
+  withdraw       Withdraw tokens.
+```
+
 ## Quickstart
 
-With your Infernet Node running, you can interact with it using either the CLI tool or the python library.
+You can interact with your Infernet Node using either the CLI or the Python library.
 
 Here's how you can check the [server's health](https://docs.ritual.net/infernet/node/api#healthinfo):
 
@@ -39,7 +74,9 @@ Here's how you can check the [server's health](https://docs.ritual.net/infernet/
 
     print(is_healthy)
     ```
+
     **Expected Output:**
+
     ```bash
     True
     ```
@@ -51,13 +88,15 @@ Here's how you can check the [server's health](https://docs.ritual.net/infernet/
 
     infernet-client health
     ```
+
     **Expected Output:**
+
     ```bash
     healthy
     ```
 
-## More Options
+## Next Steps
 
-To see all the available commands and options, head over to the [Usage](usage.md) documentation.
+- See examples of the available commands and options in the [Usage](usage.md) section.
 
-Consult [API Reference](reference/infernet_client/client.md) for detailed information on the available methods.
+- Check out the library's [source code](https://github.com/ritual-net/infernet-monorepo-internal/tree/main/libraries/infernet_client).

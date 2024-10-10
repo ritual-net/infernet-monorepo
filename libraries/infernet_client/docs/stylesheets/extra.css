@@ -197,3 +197,17 @@ pre code {
 .md-header__topic {
   font-weight: 600 !important;
 }
+
+summary {
+  cursor: pointer;
+  font-weight: bold;
+  text-align: left !important;
+  margin: 3 !important;
+  padding-left: 15px !important;
+}
+
+summary::before {
+  background: none !important;
+  color: green !important; /* Custom icon color */
+  display: none;
+}
