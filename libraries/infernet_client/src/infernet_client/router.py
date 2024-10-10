@@ -22,8 +22,9 @@ nodes = await client.get_nodes_by_container_ids(
 from typing import cast
 
 from aiohttp import ClientSession
+from infernet_ml.utils.spec import ServiceResources
 
-from infernet_client.types import NetworkContainer
+from infernet_client.types import ModelSupport, NetworkContainer
 
 
 class RouterClient:
@@ -75,3 +76,46 @@ class RouterClient:
             async with session.get(url, timeout=3) as response:
                 response.raise_for_status()
                 return cast(list[NetworkContainer], await response.json())
+
+    async def get_resources(self) -> dict[str, dict[str, ServiceResources]]:
+        """Collect resources available on the network
+
+        Returns:
+            dict[str, int]: A mapping of hostname / IP address to a node's resources,
+                including hardware resources and supported models.
+
+        Raises:
+            aiohttp.ClientResponseError: If the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+        """
+
+        url = f"{self.base_url}/api/v1/resources"
+        async with ClientSession() as session:
+            async with session.get(url, timeout=3) as response:
+                response.raise_for_status()
+                return cast(
+                    dict[str, dict[str, ServiceResources]], await response.json()
+                )
+
+    async def check_model_support(
+        self, model_id: str
+    ) -> dict[str, dict[str, ModelSupport]]:
+        """Check model support on the containers of each node
+
+        Args:
+            model_id (str): The model ID to check support for
+
+        Returns:
+            dict[str, int]: A mapping of hostname / IP address to a model support status
+                for each container on the node
+
+        Raises:
+            aiohttp.ClientResponseError: If the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+        """
+
+        url = f"{self.base_url}/api/v1/resources?model_id={model_id}"
+        async with ClientSession() as session:
+            async with session.get(url, timeout=3) as response:
+                response.raise_for_status()
+                return cast(dict[str, dict[str, ModelSupport]], await response.json())

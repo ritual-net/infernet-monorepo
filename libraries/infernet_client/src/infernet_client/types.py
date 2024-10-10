@@ -167,3 +167,15 @@ class NetworkContainer:
     id: str
     count: int
     description: Optional[str]
+
+
+class ModelSupport(TypedDict):
+    """Model support.
+
+    Attributes:
+        supported: Whether the model is supported.
+        error: A message explaining why the model ID is erroneous.
+    """
+
+    supported: bool
+    error: NotRequired[str]

@@ -35,13 +35,17 @@ infernet-client --help
 #   --help  Show this message and exit.
 
 # Commands:
+#   approve        Approve a spender.
+#   check-model    Check model support.
 #   containers     List containers running in the network
 #   create-wallet  Create an Infernet Wallet.
 #   find           Find nodes running the given containers
+#   fund           Fund a wallet.
 #   health         Health check
 #   ids            Get job IDs for this client.
 #   info           Get node information.
 #   job            Request a job.
+#   resources      Get container resources.
 #   results        Fetch job results.
 #   stream         Request a streamed job.
 #   sub            Request a delegated subscription.
@@ -109,6 +113,138 @@ infernet-client info
 #     "onchain": 1
 #   },
 #   "version": "0.3.0"
+# }
+```
+
+#### Resources
+To get container resources, such as hardware resources and supported model details, you can use `resources`:
+```
+Usage: infernet-client resources [OPTIONS]
+
+  Get container resources.
+
+Options:
+  --url TEXT             URL of the router. Can also set ROUTER_URL
+                         environment variable.  [required]
+  -o, --output FILENAME  Output file to write the result to. Skip or use '-'
+                         for stdout.
+  -n, --node TEXT        Node hostname / IP to check for resources. If not
+                         provided, all nodes are returned.
+```
+
+**Example:**
+```bash
+infernet-client resources --node http://localhost:4000
+# {
+#   "onnx-inference-service": {
+#     "compute_capability": [
+#       {
+#         "cached_models": [],
+#         "id": "ml",
+#         "models": [],
+#         "task": [],
+#         "type": "onnx"
+#       }
+#     ],
+#     "hardware_capabilities": [
+#       {
+#         "capability_id": "base",
+#         "cpu_info": {
+#           "architecture": "aarch64",
+#           "byte_order": "Little Endian",
+#           "cores": [],
+#           "model": "-",
+#           "num_cores": 12,
+#           "vendor_id": "Apple"
+#         },
+#         "disk_info": [
+#           {
+#             "available": 22042652,
+#             "filesystem": "overlay",
+#             "mount_point": "/",
+#             "size": 122713108,
+#             "used": 94404144
+#           },
+#           {
+#             "available": 65536,
+#             "filesystem": "tmpfs",
+#             "mount_point": "/dev",
+#             "size": 65536,
+#             "used": 0
+#           },
+#           {
+#             "available": 65536,
+#             "filesystem": "shm",
+#             "mount_point": "/dev/shm",
+#             "size": 65536,
+#             "used": 0
+#           },
+#           {
+#             "available": 22042652,
+#             "filesystem": "/dev/vda1",
+#             "mount_point": "/etc/hosts",
+#             "size": 122713108,
+#             "used": 94404144
+#           },
+#           {
+#             "available": 4576288,
+#             "filesystem": "tmpfs",
+#             "mount_point": "/sys/firmware",
+#             "size": 4576288,
+#             "used": 0
+#           }
+#         ],
+#         "os_info": {
+#           "name": "Linux",
+#           "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+#         }
+#       }
+#     ],
+#     "service_id": "onnx-inference-service"
+#   }
+# }
+```
+
+#### Model support
+To check model support by container, you can use `check-model`:
+```
+Usage: infernet-client check-model [OPTIONS]
+
+  Check model support.
+
+  If a node is provided, returns support for that node. Otherwise,
+  returns all nodes.
+
+Options:
+  -m, --model-id TEXT    Model ID to check containers for support.  [required]
+  --url TEXT             URL of the router. Can also set ROUTER_URL
+                         environment variable.
+  -o, --output FILENAME  Output file to write the result to. Skip or use '-'
+                         for stdout.
+  -n, --node TEXT        Node host / IP to check for resources, otherwise all
+                         nodes are returned.
+```
+
+**Example:**
+```bash
+infernet-client check-model -m huggingface/Ritual-Net/iris-classification:iris.onnx
+# {
+#   "localhost:4000": {
+#     "css-inference-service": {
+#       "supported": false
+#     },
+#     "torch-inference-service": {
+#       "supported": false
+#     }
+#   },
+#   "localhost:5000": {
+#     "onnx-inference-service": {
+#       "supported": true
+#     },
+#     "torch-inference-service": {
+#       "supported": false
+#     }
+#   }
 # }
 ```
 

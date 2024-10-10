@@ -62,6 +62,63 @@ def info(url: str, output: IO[str]) -> None:
 
 
 @click.option(
+    "-n",
+    "--node",
+    type=str,
+    required=False,
+    help="Node host / IP to check for resources, otherwise all nodes are returned.",
+)
+@output_option
+@router_url_option
+@cli.command(
+    name="resources",
+)
+def resources(url: str, output: IO[str], node: Optional[str]) -> None:
+    """Get container resources.
+
+    If a node is provided, returns resources for that node. Otherwise, returns all nodes.
+    """
+    if node is not None:
+        output_result(asyncio.run(NodeClient(node).get_resources()), output)
+    else:
+        output_result(asyncio.run(RouterClient(url).get_resources()), output)
+
+
+@click.option(
+    "-n",
+    "--node",
+    type=str,
+    required=False,
+    help="Node host / IP to check for resources, otherwise all nodes are returned.",
+)
+@output_option
+@router_url_option
+@click.option(
+    "-m",
+    "--model-id",
+    type=str,
+    required=True,
+    help="Model ID to check containers for support.",
+)
+@cli.command(
+    name="check-model",
+)
+def model_check(model_id: str, url: str, output: IO[str], node: Optional[str]) -> None:
+    """Check model support.
+
+    If a node is provided, returns support for that node. Otherwise, returns all nodes.
+    """
+    if node is not None:
+        output_result(
+            asyncio.run(NodeClient(node).check_model_support(model_id)), output
+        )
+    else:
+        output_result(
+            asyncio.run(RouterClient(url).check_model_support(model_id)), output
+        )
+
+
+@click.option(
     "--retries",
     type=int,
     default=5,
@@ -396,7 +453,7 @@ def approve_spender(
     amount: str,
 ) -> None:
     """
-    Approve a spender to spend a given amount of tokens.
+    Approve a spender.
 
     Example:
         infernet-client approve --rpc-url http://localhost:8545 \
@@ -449,7 +506,7 @@ def fund_wallet(
     amount: str,
 ) -> None:
     """
-    Approve a spender to spend a given amount of tokens.
+    Fund a wallet.
 
     Example:
         infernet-client fund --rpc-url http://localhost:8545 \

@@ -19,6 +19,7 @@ from typing import Any, AsyncGenerator, Optional, Union, cast
 from aiohttp import ClientResponseError, ClientSession
 from eth_account import Account
 from eth_typing import ChecksumAddress
+from infernet_ml.utils.spec import ServiceResources
 
 from .chain.rpc import RPC
 from .chain.subscription import Subscription
@@ -31,6 +32,7 @@ from .types import (
     JobResponse,
     JobResult,
     JobStatus,
+    ModelSupport,
     NodeInfo,
 )
 
@@ -88,6 +90,47 @@ class NodeClient:
             async with session.get(url, timeout=timeout) as response:
                 response.raise_for_status()
                 return cast(NodeInfo, await response.json())
+
+    async def get_resources(self, timeout: int = 1) -> dict[str, ServiceResources]:
+        """Collects container resources on the node
+
+        Returns:
+            dict[str, ServiceResources]: Returns full resources of each container.
+            See infernet-ml.docs.ritual.net/reference/infernet_ml/utils/spec/#infernet_ml.utils.spec.ServiceResources for details.
+
+        Raises:
+            aiohttp.ClientResponseError: If the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+        """  # noqa: E501
+
+        url = f"{self.base_url}/resources"
+        async with ClientSession() as session:
+            async with session.get(url, timeout=timeout) as response:
+                response.raise_for_status()
+                return cast(dict[str, ServiceResources], await response.json())
+
+    async def check_model_support(
+        self, model_id: str, timeout: int = 1
+    ) -> dict[str, ModelSupport]:
+        """Checks model support on each container
+
+        Args:
+            model_id (str): The ID of the model to check support for
+            timeout (int, optional): The timeout for the request. Defaults to 1.
+
+        Returns:
+            dict[str, ModelSupport]: Returns support of the model by container.
+
+        Raises:
+            aiohttp.ClientResponseError: If the request returns an error code
+            aiohttp.TimeoutError: If the request times out
+        """
+
+        url = f"{self.base_url}/resources?model_id={model_id}"
+        async with ClientSession() as session:
+            async with session.get(url, timeout=timeout) as response:
+                response.raise_for_status()
+                return cast(dict[str, ModelSupport], await response.json())
 
     async def request_job(self, job: JobRequest, timeout: int = 5) -> JobID:
         """Requests an asynchronous job

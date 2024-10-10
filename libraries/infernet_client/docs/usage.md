@@ -1,6 +1,10 @@
-## Infernet Node's REST API
+# Infernet Node
 
-Retrieve information about the node. See [NodeInfo](./api#nodeinfo).
+## Metadata
+
+### Info
+
+Retrieve information about the node.
 
 === "Python"
 
@@ -8,7 +12,7 @@ Retrieve information about the node. See [NodeInfo](./api#nodeinfo).
     from infernet_client import NodeClient
 
     client = NodeClient("http://localhost:4000")
-    info = await client.info()
+    info = await client.get_info()
 
     print(info)
     ```
@@ -93,12 +97,213 @@ Retrieve information about the node. See [NodeInfo](./api#nodeinfo).
     }
     ```
 
+### Resources
+
+Retrieve information about the node's resources and supported models.
+
+=== "Python"
+    ```python
+    from infernet_client import NodeClient
+
+    client = NodeClient("http://localhost:4000")
+    resources = await client.get_resources()
+
+    print(resources)
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client resources --node http://localhost:4000
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl http://localhost:4000/resources
+    ```
+
+**Expected Output:**
+```json
+{
+    "onnx-inference-service": {
+        "compute_capability": [
+            {
+                "cached_models": [],
+                "id": "ml",
+                "models": [],
+                "task": [],
+                "type": "onnx"
+            }
+        ],
+        "hardware_capabilities": [
+            {
+                "capability_id": "base",
+                "cpu_info": {
+                    "architecture": "aarch64",
+                    "byte_order": "Little Endian",
+                    "cores": [],
+                    "model": "-",
+                    "num_cores": 12,
+                    "vendor_id": "Apple"
+                },
+                "disk_info": [
+                    {
+                        "available": 22042620,
+                        "filesystem": "overlay",
+                        "mount_point": "/",
+                        "size": 122713108,
+                        "used": 94404176
+                    },
+                    {
+                        "available": 65536,
+                        "filesystem": "tmpfs",
+                        "mount_point": "/dev",
+                        "size": 65536,
+                        "used": 0
+                    },
+                    {
+                        "available": 65536,
+                        "filesystem": "shm",
+                        "mount_point": "/dev/shm",
+                        "size": 65536,
+                        "used": 0
+                    },
+                    {
+                        "available": 22042620,
+                        "filesystem": "/dev/vda1",
+                        "mount_point": "/etc/hosts",
+                        "size": 122713108,
+                        "used": 94404176
+                    },
+                    {
+                        "available": 4576288,
+                        "filesystem": "tmpfs",
+                        "mount_point": "/sys/firmware",
+                        "size": 4576288,
+                        "used": 0
+                    }
+                ],
+                "os_info": {
+                    "name": "Linux",
+                    "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+                }
+            }
+        ],
+        "service_id": "onnx-inference-service"
+    },
+    "torch-inference-service": {
+        "compute_capability": [
+            {
+                "cached_models": [],
+                "id": "ml",
+                "models": [],
+                "task": [],
+                "type": "torch"
+            }
+        ],
+        "hardware_capabilities": [
+            {
+                "capability_id": "base",
+                "cpu_info": {
+                    "architecture": "aarch64",
+                    "byte_order": "Little Endian",
+                    "cores": [],
+                    "model": "-",
+                    "num_cores": 12,
+                    "vendor_id": "Apple"
+                },
+                "disk_info": [
+                    {
+                        "available": 22042620,
+                        "filesystem": "overlay",
+                        "mount_point": "/",
+                        "size": 122713108,
+                        "used": 94404176
+                    },
+                    {
+                        "available": 65536,
+                        "filesystem": "tmpfs",
+                        "mount_point": "/dev",
+                        "size": 65536,
+                        "used": 0
+                    },
+                    {
+                        "available": 65536,
+                        "filesystem": "shm",
+                        "mount_point": "/dev/shm",
+                        "size": 65536,
+                        "used": 0
+                    },
+                    {
+                        "available": 22042620,
+                        "filesystem": "/dev/vda1",
+                        "mount_point": "/etc/hosts",
+                        "size": 122713108,
+                        "used": 94404176
+                    },
+                    {
+                        "available": 4576288,
+                        "filesystem": "tmpfs",
+                        "mount_point": "/sys/firmware",
+                        "size": 4576288,
+                        "used": 0
+                    }
+                ],
+                "os_info": {
+                    "name": "Linux",
+                    "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+                }
+            }
+        ],
+        "service_id": "torch-inference-service"
+    }
+}
+```
+
+### Model Support
+
+Check model support by container.
+
+=== "Python"
+    ```python
+    from infernet_client import NodeClient
+
+    client = NodeClient("http://localhost:4000")
+    support = await client.check_model_support("huggingface/Ritual-Net/iris-classification:iris.onnx")
+
+    print(support)
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client check-model --node http://localhost:4000 -m huggingface/Ritual-Net/iris-classification:iris.onnx
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl http://localhost:4000/resources?model_id=huggingface/Ritual-Net/iris-classification:iris.onnx
+    ```
+
+**Expected Output:**
+```json
+{
+    "onnx-inference-service": {
+        "supported": true
+    },
+    "torch-inference-service": {
+        "supported": false
+    }
+}
+```
+
 ## Jobs
 
 ### Request
 
-Create a new direct compute request. See [JobRequest](./api#jobrequest)
-and [JobResponse](./api#jobresponse).
+Create a new direct compute request.
 
 === "Python"
 
@@ -238,8 +443,6 @@ Create a direct compute request, along with a proof requirement.
 ### Batch Request
 
 Create direct compute requests in batch.
-See [JobRequest](./api#jobrequest), [JobResponse](./api#jobresponse),
-and [ErrorResponse](./api#errorresponse).
 
 === "Python"
 
@@ -308,7 +511,7 @@ and [ErrorResponse](./api#errorresponse).
 
 ### Fetch Results
 
-Fetch direct compute results. See [JobResult](./api#jobresult).
+Fetch direct compute results.
 
 === "Python"
 
@@ -389,7 +592,6 @@ Fetch direct compute results. See [JobResult](./api#jobresult).
 
 To imitate a synchronous direct compute request, you can request a job and _wait until
 results become available_.
-See [JobRequest](./api#jobrequest) and [JobResult](./api#jobresult).
 
 === "Python"
 
@@ -468,7 +670,6 @@ See [JobRequest](./api#jobrequest) and [JobResult](./api#jobresult).
 ### Streaming
 
 Create a new direct compute request that streams back results synchronously.
-See [/api/jobs/stream](./api#post-apijobsstream).
 
 === "Python"
 
@@ -620,77 +821,9 @@ Get IDs of jobs requested by this client (by IP address.)
 ]
 ```
 
-## Delegated Subscription
-
-Creates a new delegated subscription request.
-See [Delegated Subscription](https://docs.ritual.net/infernet/sdk/reference/EIP712Coordinator#createsubscriptiondelegatee)
-and [DelegatedSubscriptionRequest](./api#delegatedsubscriptionrequest).
-
-=== "Python"
-
-    ```python
-    from infernet_client import NodeClient
-    from infernet_client.chain.subscription import Subscription
-
-    client = NodeClient("http://localhost:4000")
-
-    COORDINATOR_ADDRESS = "0x1FbDB2315678afecb369f032d93F642f64140aa3"
-    RCP_URL = "http://some-rpc-url.com"
-    EXPIRY = 1713376164
-    PRIVATE_KEY = "0xb25c7db31feed9122727bf0939dc769a96564b2ae4c4726d035b36ecf1e5b364"
-
-    # Container input data
-    input_data = {
-        "model": "gpt-3.5-turbo-16k",
-        "params": {
-            "endpoint": "completion",
-            "messages": [{"role": "user", "content": "how do I make pizza?"}]
-        }
-    }
-
-    # Subscription parameters
-    subscription = Subscription(
-        owner="0x5FbDB2315678afecb367f032d93F642f64180aa3",
-        active_at=0,
-        period=3,
-        frequency=2,
-        redundancy=2,
-        max_gas_price=1000000000000,
-        max_gas_limit=3000000,
-        container_id="openai-inference",
-        inputs=bytes(),
-    )
-
-    # Create delegated subscription
-    await client.request_delegated_subscription(
-        subscription,
-        RCP_URL,
-        COORDINATOR_ADDRESS,
-        EXPIRY,
-        PRIVATE_KEY,
-        input_data,
-    )
-    ```
-    **Expected Output:**
-    ```bash
-    # No error
-    ```
-
-=== "CLI"
-
-    ```bash
-    infernet-client sub --expiry 1713376164 --address 0x1FbDB2315678afecb369f032d93F642f64140aa3 \
-        --rpc_url http://some-rpc-url.com --key key-file.txt --params params.json --input input.json
-    ```
-    **Expected Output:**
-    ```bash
-    # Success: Subscription created.
-    ```
-
-## Status
+### Status
 
 Manually register job ID and status with the node.
-See [/api/status](./api#put-apistatus).
 
 > **Warning: DO NOT USE THIS IF YOU DON'T KNOW WHAT YOU'RE DOING.**
 
@@ -754,8 +887,459 @@ See [/api/status](./api#put-apistatus).
 # No error
 ```
 
-## Infernet Wallet
+## Delegated Subscription
 
+Creates a new delegated subscription request.
+
+=== "Python"
+
+    ```python
+    from infernet_client import NodeClient
+    from infernet_client.chain.subscription import Subscription
+
+    client = NodeClient("http://localhost:4000")
+
+    COORDINATOR_ADDRESS = "0x1FbDB2315678afecb369f032d93F642f64140aa3"
+    RCP_URL = "http://some-rpc-url.com"
+    EXPIRY = 1713376164
+    PRIVATE_KEY = "0xb25c7db31feed9122727bf0939dc769a96564b2ae4c4726d035b36ecf1e5b364"
+
+    # Container input data
+    input_data = {
+        "model": "gpt-3.5-turbo-16k",
+        "params": {
+            "endpoint": "completion",
+            "messages": [{"role": "user", "content": "how do I make pizza?"}]
+        }
+    }
+
+    # Subscription parameters
+    subscription = Subscription(
+        owner="0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        active_at=0,
+        period=3,
+        frequency=2,
+        redundancy=2,
+        max_gas_price=1000000000000,
+        max_gas_limit=3000000,
+        container_id="openai-inference",
+        inputs=bytes(),
+    )
+
+    # Create delegated subscription
+    await client.request_delegated_subscription(
+        subscription,
+        RCP_URL,
+        COORDINATOR_ADDRESS,
+        EXPIRY,
+        PRIVATE_KEY,
+        input_data,
+    )
+    ```
+    **Expected Output:**
+    ```bash
+    # No error
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client sub --expiry 1713376164 --address 0x1FbDB2315678afecb369f032d93F642f64140aa3 \
+        --rpc_url http://some-rpc-url.com --key key-file.txt --params params.json --input input.json
+    ```
+    **Expected Output:**
+    ```bash
+    # Success: Subscription created.
+    ```
+
+# Infernet Router
+
+By default, the official Ritual router is used. You can instead pass your own router url with every command using `--url`, or you can set it once as an ENV variable:
+```bash
+export SERVER_URL=http://localhost:4000
+```
+
+## Find Containers
+Discover containers currently running across the network.
+
+=== "CLI"
+
+    ```bash
+    infernet-client containers
+    ```
+
+=== "Python"
+
+    ```python
+    from infernet_client import RouterClient
+
+    client = RouterClient()
+    print(client.get_containers())
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl infernet-router.ritual.net/api/v1/containers
+    ```
+
+**Expected Output:**
+
+```bash
+# [
+#   {
+#     "id": "hello-world",
+#     "count": 100,
+#     "description": "Hello World container"
+#   },
+#   {
+#     "id": "ritual-tgi-inference",
+#     "count": 3,
+#     "description": "Serving meta-llama/Llama-2-7b-chat-hf via TGI"
+#   },
+#   ...
+# ]
+```
+
+## Find Nodes
+Discover nodes running one or more specific containers.
+
+=== "CLI"
+
+    ```bash
+    # Single container
+    infernet-client find -c hello-world
+
+    # Specify limit and offset
+    infernet-client find -c hello-world -n 5 --skip 2
+
+    # Multiple containers
+    infernet-client find -c hello-world -c ritual-tgi-inference
+    ```
+
+=== "Python"
+
+    ```python
+    from infernet_client import RouterClient
+
+    client = RouterClient()
+    print(client.get_nodes_by_container_ids(["hello-world"]))
+    print(client.get_nodes_by_container_ids(["hello-world"], 5, 2))
+    print(client.get_nodes_by_container_ids(["hello-world", "ritual-tgi-inference"]))
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl "infernet-router.ritual.net/api/v1/ips?container=hello-world"
+    curl "infernet-router.ritual.net/api/v1/ips?container=hello-world&n=5&offset=2"
+    curl "infernet-router.ritual.net/api/v1/ips?container=hello-world&container=ritual-tgi-inference"
+
+**Expected Output:**
+```bash
+# [
+#   "167.86.78.186:4000",
+#   "84.54.13.11:4000",
+#   "37.27.106.57:4000"
+# ]
+
+# [
+#   "37.27.106.57:4000",
+#   "161.97.157.96:4000",
+#   "176.98.41.25:4000",
+#   "84.46.244.212:4000",
+#   "173.212.203.3:4000"
+# ]
+
+# [
+#   "37.27.106.57:4000",
+#   "161.97.157.96:4000",
+# ]
+
+```
+
+## Node Resources
+
+Retrieve information about the node resources and supported models, for all nodes reachable by this router.
+
+=== "Python"
+
+    ```python
+    from infernet_client import RouterClient
+
+    client = RouterClient("http://localhost:4000")
+    resources = await client.get_resources()
+
+    print(resources)
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client resources http://localhost:4000
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl http://localhost:4000/api/v1/resources
+    ```
+
+**Expected Output:**
+```json
+{
+    "154.122.7.46": {
+        "onnx-inference-service": {
+            "compute_capability": [
+                {
+                    "cached_models": [],
+                    "id": "ml",
+                    "models": [],
+                    "task": [],
+                    "type": "onnx"
+                }
+            ],
+            "hardware_capabilities": [
+                {
+                    "capability_id": "base",
+                    "cpu_info": {
+                        "architecture": "aarch64",
+                        "byte_order": "Little Endian",
+                        "cores": [],
+                        "model": "-",
+                        "num_cores": 12,
+                        "vendor_id": "Apple"
+                    },
+                    "disk_info": [
+                        {
+                            "available": 22042620,
+                            "filesystem": "overlay",
+                            "mount_point": "/",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/dev",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "shm",
+                            "mount_point": "/dev/shm",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 22042620,
+                            "filesystem": "/dev/vda1",
+                            "mount_point": "/etc/hosts",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 4576288,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/sys/firmware",
+                            "size": 4576288,
+                            "used": 0
+                        }
+                    ],
+                    "os_info": {
+                        "name": "Linux",
+                        "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+                    }
+                }
+            ],
+            "service_id": "onnx-inference-service"
+        },
+        "torch-inference-service": {
+            "compute_capability": [
+                {
+                    "cached_models": [],
+                    "id": "ml",
+                    "models": [],
+                    "task": [],
+                    "type": "torch"
+                }
+            ],
+            "hardware_capabilities": [
+                {
+                    "capability_id": "base",
+                    "cpu_info": {
+                        "architecture": "aarch64",
+                        "byte_order": "Little Endian",
+                        "cores": [],
+                        "model": "-",
+                        "num_cores": 12,
+                        "vendor_id": "Apple"
+                    },
+                    "disk_info": [
+                        {
+                            "available": 22042620,
+                            "filesystem": "overlay",
+                            "mount_point": "/",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/dev",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "shm",
+                            "mount_point": "/dev/shm",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 22042620,
+                            "filesystem": "/dev/vda1",
+                            "mount_point": "/etc/hosts",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 4576288,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/sys/firmware",
+                            "size": 4576288,
+                            "used": 0
+                        }
+                    ],
+                    "os_info": {
+                        "name": "Linux",
+                        "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+                    }
+                }
+            ],
+            "service_id": "torch-inference-service"
+        }
+    },
+    "47.42.124.11": {
+        "onnx-inference-service": {
+            "compute_capability": [
+                {
+                    "cached_models": [],
+                    "id": "ml",
+                    "models": [],
+                    "task": [],
+                    "type": "onnx"
+                }
+            ],
+            "hardware_capabilities": [
+                {
+                    "capability_id": "base",
+                    "cpu_info": {
+                        "architecture": "aarch64",
+                        "byte_order": "Little Endian",
+                        "cores": [],
+                        "model": "-",
+                        "num_cores": 12,
+                        "vendor_id": "Apple"
+                    },
+                    "disk_info": [
+                        {
+                            "available": 22042620,
+                            "filesystem": "overlay",
+                            "mount_point": "/",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/dev",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 65536,
+                            "filesystem": "shm",
+                            "mount_point": "/dev/shm",
+                            "size": 65536,
+                            "used": 0
+                        },
+                        {
+                            "available": 22042620,
+                            "filesystem": "/dev/vda1",
+                            "mount_point": "/etc/hosts",
+                            "size": 122713108,
+                            "used": 94404176
+                        },
+                        {
+                            "available": 4576288,
+                            "filesystem": "tmpfs",
+                            "mount_point": "/sys/firmware",
+                            "size": 4576288,
+                            "used": 0
+                        }
+                    ],
+                    "os_info": {
+                        "name": "Linux",
+                        "version": "#1 SMP PREEMPT Wed Oct 25 16:32:24 UTC 2023"
+                    }
+                }
+            ],
+            "service_id": "onnx-inference-service"
+        }
+    }
+}
+```
+
+## Model Support
+
+Check model support by container, for all nodes reachable by this router.
+
+=== "Python"
+
+    ```python
+    from infernet_client import RouterClient
+
+    client = RouterClient("http://localhost:4000")
+    support = await client.check_model_support("huggingface/Ritual-Net/iris-classification:iris.onnx")
+
+    print(support)
+    ```
+
+=== "CLI"
+
+    ```bash
+    infernet-client check-model -m huggingface/Ritual-Net/iris-classification:iris.onnx
+    ```
+
+=== "cURL"
+
+    ```bash
+    curl http://localhost:4000/api/v1/resources?model_id=huggingface/Ritual-Net/iris-classification:iris.onnx
+    ```
+
+**Expected Output:**
+```json
+{
+    "154.122.7.46": {
+        "onnx-inference-service": {
+            "supported": true
+        },
+        "torch-inference-service": {
+            "supported": false
+        }
+    },
+    "47.42.124.11": {
+        "onnx-inference-service": {
+            "supported": true
+        }
+    }
+}
+```
+
+# Infernet Wallet
 
 ### Create Wallet
 

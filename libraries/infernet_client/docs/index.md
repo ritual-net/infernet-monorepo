@@ -2,10 +2,11 @@
 
 Infernet Client is a python library as well as a CLI tool. It allows you to:
 
-1. Interact with the Infernet node's REST API.
-2. Create an Infernet Wallet that can:
-   a. Make a payment for subscriptions, or
-   b. Receive payments for fulfilling the subscriptions.
+1. Interact with the [Infernet Node](https://github.com/ritual-net/infernet-node)'s REST API.
+2. Interact with the [Infernet Router](https://github.com/ritual-net/infernet-router)'s REST API.
+3. Create an Infernet Wallet that can:
+   a. Pay for requested subscriptions
+   b. Receive payments for fulfilled subscriptions.
 
 ## Installation
 You can either install `infernet-client` via [`uv` (Recommended)](https://astral.sh/blog/uv) or via `pip`.
