@@ -223,7 +223,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
 
     def inference(
         self, input_data: ONNXInferenceInput, log_preprocessed_data: bool = True
-    ) -> ONNXInferenceResult:  # type: ignore
+    ) -> ONNXInferenceResult:
         """
         Inference method for the workflow. Overridden to add type hints.
         """
