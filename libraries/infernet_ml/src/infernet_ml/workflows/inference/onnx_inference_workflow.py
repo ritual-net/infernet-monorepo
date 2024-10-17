@@ -88,8 +88,9 @@ from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 
 import onnx
+import torch
 from onnx import ModelProto
-from onnxruntime import InferenceSession  # type: ignore
+from onnxruntime import InferenceSession, SessionOptions # type: ignore
 from pydantic import BaseModel
 
 from infernet_ml.utils.codec.vector import DataType, RitualVector
@@ -203,14 +204,22 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         except Exception as e:
             logger.warning(f"Error calculating FLOPs: {e}")
             flops = 0
-
-        return InferenceSession(path), onnx_model, flops
+        # Checking for CUDA support through torch. get_device and get_available_providers from onnx library are not accurate
+        providers = ['CUDAExecutionProvider'] if torch.cuda.is_available() else ['CPUExecutionProvider']
+        formatted_providers = [provider.replace("ExecutionProvider", "") for provider in providers]
+        print(f"Execution provider: {', '.join(formatted_providers)}") 
+        
+        session_options = SessionOptions()
+        ort_session = InferenceSession(path, session_options, providers)
+        
+        return ort_session, onnx_model, flops
 
     def inference(self, input_data: ONNXInferenceInput) -> ONNXInferenceResult:
         """
         Inference method for the workflow. Overridden to add type hints.
         """
-        return cast(ONNXInferenceResult, super().inference(input_data))
+        # ONNX preprocessed data is too verbose, setting log_preprocessed_data to False
+        return cast(ONNXInferenceResult, super().inference(input_data, False))
 
     def setup(self) -> ONNXInferenceWorkflow:
         """
