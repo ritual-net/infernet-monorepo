@@ -173,8 +173,7 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
             default_ml_type=MLType.TORCH,
         )
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        logger.info("Device(cpu or cuda):")
-        logger.info(self.device)
+        logger.info(f"Device in use: {self.device}")
 
         # This is so that tools like `isort` don't exclude the sk2torch import. This is
         # necessary for scikit-learn models to be present in pytorch's classpath.
