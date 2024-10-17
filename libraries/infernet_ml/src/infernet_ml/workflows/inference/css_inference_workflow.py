@@ -214,7 +214,9 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         """
         return True
 
-    def inference(self, input_data: CSSRequest) -> Any:  # type: ignore
+    def inference(
+        self, input_data: CSSRequest, log_preprocessed_data: bool = True
+    ) -> Any:
         """
         Perform inference on the model.
 
@@ -224,7 +226,7 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         Returns:
             Any: result of inference
         """
-        return super().inference(input_data)
+        return super().inference(input_data, log_preprocessed_data)
 
     def stream(self, input_data: CSSRequest) -> Iterator[str]:
         """

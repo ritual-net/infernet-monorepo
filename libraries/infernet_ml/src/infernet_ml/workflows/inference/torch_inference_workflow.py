@@ -180,13 +180,14 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         logger.debug(sk2torch.__name__)
 
     def inference(
-            self, 
-            input_data: TorchInferenceInput
-    ) -> TorchInferenceResult:  # type: ignore[override]
+        self, input_data: TorchInferenceInput, log_preprocessed_data: bool = True
+    ) -> TorchInferenceResult:
         """
         Inference method for the torch workflow. Overridden to add type hints.
         """
-        return cast(TorchInferenceResult, super().inference(input_data))
+        return cast(
+            TorchInferenceResult, super().inference(input_data, log_preprocessed_data)
+        )
 
     @lru_cache(maxsize=TORCH_MODEL_LRU_CACHE_SIZE)
     def load_torch_model(

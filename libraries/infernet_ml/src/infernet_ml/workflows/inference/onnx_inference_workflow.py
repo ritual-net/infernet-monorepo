@@ -222,7 +222,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         return ort_session, onnx_model, flops
 
     def inference(
-        self, input_data: ONNXInferenceInput
+        self, input_data: ONNXInferenceInput, log_preprocessed_data: bool = True
     ) -> ONNXInferenceResult:  # type: ignore
         """
         Inference method for the workflow. Overridden to add type hints.
