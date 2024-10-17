@@ -214,7 +214,7 @@ class CSSInferenceWorkflow(BaseInferenceWorkflow):
         """
         return True
 
-    def inference(self, input_data: CSSRequest) -> Any: # type: ignore[override]
+    def inference(self, input_data: CSSRequest) -> Any:  # type: ignore[override]
         """
         Perform inference on the model.
 

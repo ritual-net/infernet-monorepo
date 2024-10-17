@@ -47,7 +47,7 @@ hyperframe==6.0.1
 identify==2.6.1
 idna==3.10
 infernet-client==1.0.3.7
-infernet-ml==2.0.0.59
+infernet-ml==2.0.0.76
 iniconfig==2.0.0
 isort==5.13.2
 itsdangerous==2.2.0
@@ -70,7 +70,7 @@ nicelog==0.3
 nodeenv==1.9.1
 numpy==2.1.1
 onnx==1.16.2
-onnxruntime==1.19.2
+onnxruntime-gpu==1.19.2
 packaging==23.2
 pandas==2.2.3
 parsimonious==0.10.0
