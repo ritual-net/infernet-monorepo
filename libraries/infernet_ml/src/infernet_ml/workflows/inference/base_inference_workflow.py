@@ -61,7 +61,8 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
 
         Args:
             input_data (typing.Any): input from user
-            log_preprocessed_data (bool, optional): If True, logs the preprocessed input data before running the inference. Defaults to True.
+            log_preprocessed_data (bool, optional): If True, logs the 
+            preprocessed input data before running the inference. Defaults to True.
 
         Raises:
             ValueError: if setup not called beforehand

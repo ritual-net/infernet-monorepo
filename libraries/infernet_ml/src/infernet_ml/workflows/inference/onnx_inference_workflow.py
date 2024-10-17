@@ -204,7 +204,8 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         except Exception as e:
             logger.warning(f"Error calculating FLOPs: {e}")
             flops = 0
-        # Checking for CUDA support through torch. get_device and get_available_providers from onnx library are not accurate
+        # Checking for CUDA support through torch. 
+        # get_device and get_available_providers from onnx library are not accurate
         providers = (
             ["CUDAExecutionProvider"]
             if torch.cuda.is_available()
@@ -220,7 +221,10 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
 
         return ort_session, onnx_model, flops
 
-    def inference(self, input_data: ONNXInferenceInput) -> ONNXInferenceResult:  # type: ignore[override]
+    def inference(
+            self, 
+            input_data: ONNXInferenceInput
+    ) -> ONNXInferenceResult:  # type: ignore[override]
         """
         Inference method for the workflow. Overridden to add type hints.
         """

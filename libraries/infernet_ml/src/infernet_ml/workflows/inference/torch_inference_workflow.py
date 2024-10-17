@@ -179,7 +179,10 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         # necessary for scikit-learn models to be present in pytorch's classpath.
         logger.debug(sk2torch.__name__)
 
-    def inference(self, input_data: TorchInferenceInput) -> TorchInferenceResult:  # type: ignore[override]
+    def inference(
+            self, 
+            input_data: TorchInferenceInput
+    ) -> TorchInferenceResult:  # type: ignore[override]
         """
         Inference method for the torch workflow. Overridden to add type hints.
         """
