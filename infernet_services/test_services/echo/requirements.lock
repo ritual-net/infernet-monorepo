@@ -30,7 +30,7 @@ gunicorn==21.2.0
 hexbytes==0.3.1
 huggingface-hub==0.25.1
 idna==3.10
-infernet-ml==2.0.0.57
+infernet-ml==2.0.0.76
 itsdangerous==2.2.0
 jinja2==3.1.4
 jsonschema==4.23.0
@@ -71,7 +71,7 @@ tqdm==4.66.5
 types-python-dateutil==2.9.0.20240906
 typing-extensions==4.12.2
 urllib3==2.2.3
-web3==6.20.3
+web3==6.19.0
 websockets==13.1
 werkzeug==3.0.4
 yarl==1.12.1
