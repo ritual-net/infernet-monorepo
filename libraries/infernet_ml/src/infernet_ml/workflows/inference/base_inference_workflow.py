@@ -74,7 +74,7 @@ class BaseInferenceWorkflow(metaclass=abc.ABCMeta):
 
         logging.info("preprocessing input_data %s", input_data)
         preprocessed_data = self.do_preprocessing(input_data)
-        if (log_preprocessed_data):
+        if log_preprocessed_data:
             logging.info("querying model with %s", preprocessed_data)
         model_output = self.do_run_model(preprocessed_data)
 
