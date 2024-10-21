@@ -163,7 +163,7 @@ def test_inference_on_the_fly_should_not_change_default_model() -> None:
     r = wf.inference(
         ONNXInferenceInput(
             inputs={
-                "float_input": RitualVector.from_numpy(
+                "input": RitualVector.from_numpy(
                     np.random.rand(1, 10).astype(np.float32)
                 )
             },
