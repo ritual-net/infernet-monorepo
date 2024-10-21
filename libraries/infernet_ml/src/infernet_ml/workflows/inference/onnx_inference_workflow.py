@@ -204,6 +204,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
         except Exception as e:
             logger.warning(f"Error calculating FLOPs: {e}")
             flops = 0
+
         # Checking for CUDA support through torch.
         # get_device and get_available_providers from onnx library are not accurate
         providers = (
