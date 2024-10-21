@@ -212,10 +212,7 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
             if torch.cuda.is_available()
             else ["CPUExecutionProvider"]
         )
-        formatted_providers = [
-            provider.replace("ExecutionProvider", "") for provider in providers
-        ]
-        print(f"Execution provider: {', '.join(formatted_providers)}")
+        print(f"Execution provider: {providers[0]}")
 
         session_options = SessionOptions()
         ort_session = InferenceSession(path, session_options, providers)
