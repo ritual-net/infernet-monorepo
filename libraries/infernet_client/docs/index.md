@@ -1,26 +1,16 @@
 # Infernet Client
 
-Welcome to the Infernet Client, a lightweight Python library and CLI tool that streamlines interaction with the [Infernet Node](https://github.com/ritual-net/infernet-node) and the [Infernet Router](https://github.com/ritual-net/infernet-router). The Infernet Node provides robust computational capabilities through a well-defined API, while the Router allows for discovering nodes and containers running remotely, across the Infernet network.
+Infernet Client is a python library as well as a CLI tool. It allows you to:
 
-Among other things, this library makes it easy to:
-
-- Request jobs and receive results from Infernet Nodes.
-- Discover nodes and services across the network.
-- Create and manage an Infernet Wallet, required for the [payment system](https://docs.ritual.net/infernet/payments).
-
-## Features
-
-- **Simple**: Streamlined methods for interacting with the Infernet Node and Router APIs.
-- **Asynchronous**: Built-in async capabilities for improved performance.
-- **Typed**: Complete type annotations for better editor support and reduced bugs.
-
-
-## Prerequisites
-
-- [Python >= 3.9](https://www.python.org/downloads/)
+1. Interact with the [Infernet Node](https://github.com/ritual-net/infernet-node)'s REST API.
+2. Interact with the [Infernet Router](https://github.com/ritual-net/infernet-router)'s REST API.
+3. Create an Infernet Wallet that can:
+   a. Pay for requested subscriptions
+   b. Receive payments for fulfilled subscriptions.
 
 ## Installation
-You can either install `infernet-client` via [`uv`](https://astral.sh/blog/uv) (recommended) or via `pip`.
+
+You can either install `infernet-client` via [`uv` (Recommended)](https://astral.sh/blog/uv) or via `pip`.
 
 === "uv"
 
@@ -34,9 +24,43 @@ You can either install `infernet-client` via [`uv`](https://astral.sh/blog/uv) (
     pip install infernet-client
     ```
 
+## Commands
+
+You can view all commands with `--help`:
+
+```bash
+infernet-client --help
+```
+
+**Expected Output:**
+
+```
+Usage: infernet-client [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  approve        Approve a spender.
+  check-model    Check model support.
+  containers     List containers running in the network
+  create-wallet  Create an Infernet Wallet.
+  find           Find nodes running the given containers
+  fund           Fund a wallet.
+  health         Health check
+  ids            Get job IDs for this client.
+  info           Get node information.
+  job            Request a job.
+  resources      Get container resources.
+  results        Fetch job results.
+  stream         Request a streamed job.
+  sub            Request a delegated subscription.
+  withdraw       Withdraw tokens.
+```
+
 ## Quickstart
 
-With your infernet node running, you can interact with it using either the CLI tool or the python library.
+You can interact with your Infernet Node using either the CLI or the Python library.
 
 Here's how you can check the [server's health](https://docs.ritual.net/infernet/node/api#healthinfo):
 
@@ -50,7 +74,9 @@ Here's how you can check the [server's health](https://docs.ritual.net/infernet/
 
     print(is_healthy)
     ```
+
     **Expected Output:**
+
     ```bash
     True
     ```
@@ -62,36 +88,15 @@ Here's how you can check the [server's health](https://docs.ritual.net/infernet/
 
     infernet-client health
     ```
+
     **Expected Output:**
+
     ```bash
     healthy
     ```
 
-## More Options
+## Next Steps
 
-You can view all options with `--help`:
+- See examples of the available commands and options in the [Usage](usage.md) section.
 
-```bash
-infernet-client --help
-# Usage: infernet-client [OPTIONS] COMMAND [ARGS]...
-#
-# Options:
-#   --help  Show this message and exit.
-
-# Commands:
-#   approve        Approve a spender to spend a given amount of tokens.
-#   containers     List containers running in the network
-#   create-wallet  Create an Infernet Wallet.
-#   find           Find nodes running the given containers
-#   fund           Approve a spender to spend a given amount of tokens.
-#   health         Health check
-#   ids            Get job IDs for this client.
-#   info           Get node information.
-#   job            Request a job.
-#   results        Fetch job results.
-#   stream         Request a streamed job.
-#   sub            Request a delegated subscription.
-#   withdraw       Withdraw tokens.
-```
-
-To see documentation for all the available commands and options, head over to [Usage](usage.md).
+- Check out the library's [source code](https://github.com/ritual-net/infernet-monorepo-internal/tree/main/libraries/infernet_client).
