@@ -36,19 +36,23 @@ jobs:
           fi
 
       - uses: webfactory/ssh-agent@v0.9.0
+        if: env.skip_job == 'false'
         with:
           ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
 
       - name: Checkout
+        if: env.skip_job == 'false'
         uses: actions/checkout@v4
 
       # pull submodules manually since some are private
       - run: make get-submodules
 
       - name: Set up Cloud SDK
+        if: env.skip_job == 'false'
         uses: google-github-actions/setup-gcloud@v2
 
       - name: init repo
+        if: env.skip_job == 'false'
         run: |
           echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
           gcloud auth activate-service-account --key-file=secrets-sa-key.json
@@ -57,26 +61,32 @@ jobs:
           CI: true
 
       - name: Set up Python
+        if: env.skip_job == 'false'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install UV
+        if: env.skip_job == 'false'
         run: python -m pip install uv
 
       - name: Create virtual environment
+        if: env.skip_job == 'false'
         run: uv venv
 
       - name: Activate virtual environment
+        if: env.skip_job == 'false'
         run: |
           . .venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Get UV env file
+        if: env.skip_job == 'false'
         run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
 
       # first line is the project's specific dependencies,
       - name: Install dependencies
+        if: env.skip_job == 'false'
         run: |
           uv pip install --extra-index-url `make get-index-url` -r libraries/${{ matrix.library }}/requirements.lock
           uv pip install --extra-index-url `make get-index-url` -r pyproject.toml
@@ -87,11 +97,13 @@ jobs:
 #        uses: lhotari/action-upterm@v1
 
       - name: Run pre-commit hooks
+        if: env.skip_job == 'false'
         env:
           CI: true
         run: make pre-commit-library library=${{ matrix.library }}
 
       - name: Run tests
+        if: env.skip_job == 'false'
         env:
           # We need to list the env vars here again for them to get filtered out in logs
           PYTHONPATH: libraries/${{ matrix.library }}/src
