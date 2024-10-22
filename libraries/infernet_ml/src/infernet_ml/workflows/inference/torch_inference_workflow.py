@@ -172,16 +172,22 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
             cache_dir=kwargs.get("cache_dir", None),
             default_ml_type=MLType.TORCH,
         )
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(f"Device in use: {self.device}")
 
         # This is so that tools like `isort` don't exclude the sk2torch import. This is
         # necessary for scikit-learn models to be present in pytorch's classpath.
         logger.debug(sk2torch.__name__)
 
-    def inference(self, input_data: TorchInferenceInput) -> TorchInferenceResult:
+    def inference(
+        self, input_data: TorchInferenceInput, log_preprocessed_data: bool = True
+    ) -> TorchInferenceResult:
         """
         Inference method for the torch workflow. Overridden to add type hints.
         """
-        return cast(TorchInferenceResult, super().inference(input_data))
+        return cast(
+            TorchInferenceResult, super().inference(input_data, log_preprocessed_data)
+        )
 
     @lru_cache(maxsize=TORCH_MODEL_LRU_CACHE_SIZE)
     def load_torch_model(
@@ -209,6 +215,7 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
 
         # turn on inference mode
         model.eval()
+        model = model.to(self.device)
         return cast(torch.nn.Module, model)
 
     def do_setup(self) -> "TorchInferenceWorkflow":
@@ -255,7 +262,8 @@ class TorchInferenceWorkflow(BaseInferenceWorkflow):
         else:
             model = cast(torch.nn.Module, self.model)
 
-        model_result = model(inference_input.input.tensor)
+        input_tensor = inference_input.input.tensor.to(self.device)
+        model_result = model(input_tensor)
 
         return TorchInferenceResult(output=RitualVector.from_tensor(model_result))
 

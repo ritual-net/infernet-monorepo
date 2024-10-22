@@ -295,7 +295,9 @@ class HFInferenceClientWorkflow(BaseInferenceWorkflow):
     def do_stream(self, preprocessed_input: Any) -> Iterator[Any]:
         raise NotImplementedError
 
-    def inference(self, input_data: HFInferenceClientInput) -> HFInferenceClientOutput:
+    def inference(
+        self, input_data: HFInferenceClientInput, log_preprocessed_data: bool = True
+    ) -> HFInferenceClientOutput:
         """
         Overriding the inference method to add typing annotations
 
