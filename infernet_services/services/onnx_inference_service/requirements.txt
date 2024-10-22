@@ -1,5 +1,5 @@
 click>=8.1.7,<9.0.0
 eth-abi>=5.1.0,<6.0.0
 quart>=0.19.4,<1.0.0
-infernet-ml>=2.0.0.59,<3.0.0
-infernet-ml[onnx_inference]>=2.0.0.59,<3.0.0
+infernet-ml>=2.0.0.76,<3.0.0
+infernet-ml[onnx_inference]>=2.0.0.76,<3.0.0
