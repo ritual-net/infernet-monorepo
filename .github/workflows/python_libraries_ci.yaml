@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - 'libraries/**'
-      - '.github/workflows/python_projects_ci.yaml'
+      - '.github/workflows/python_libraries_ci.yaml'
 
 jobs:
   monorepo_ci:
