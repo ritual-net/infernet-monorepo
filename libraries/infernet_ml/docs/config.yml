@@ -5,3 +5,4 @@ nav:
   - Quickstart: quickstart.md
   - Architecture: architecture.md
   - Managing Models: models.md
+  - Working With Vectors: vectors.md
