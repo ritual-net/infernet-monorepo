@@ -95,7 +95,7 @@ weights = decoded_vector.numpy  # Convert back to NumPy array
 
 ## Best Practices
 
-1. **Choose the Right Arithmetic**: 
+1. **Choose the Right Arithmetic**:
    - Use fixed-point arithmetic when working with smart contracts that expect decimal scaling
    - Use IEEE754 when precise floating-point representation is needed
 
