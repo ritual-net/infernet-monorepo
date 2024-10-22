@@ -6,7 +6,7 @@ EZKL proofs as well as the onnx workflow in the infernet-ml library.
 
 import logging
 import os
-from typing import Any, Tuple
+from typing import Any, Tuple, cast
 
 import numpy as np
 import onnx
@@ -72,7 +72,7 @@ def train_and_export_model(
     # Initialize the model, loss function, and optimizer
     model: Any = LinearRegressionModel(n_features)
     loss_fn = nn.MSELoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01)  # type: ignore
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
 
     # Training loop
     n_epochs = 10
@@ -108,8 +108,8 @@ def train_and_export_model(
     # Export the model to ONNX format
     os.makedirs(models_dir, exist_ok=True)
     onnx_file_path = os.path.join(models_dir, f"{model_name}.onnx")
-    dummy_input = torch.from_numpy(
-        X_test[:1]
+    dummy_input: Tuple[Any] = cast(
+        Any, torch.from_numpy(X_test[:1])
     )  # Correct: Use a single sample with shape (1, n_features)
     torch.onnx.export(
         model,
