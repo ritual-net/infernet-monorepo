@@ -8,7 +8,6 @@ import numpy as np
 from eth_abi.abi import decode, encode
 from pydantic import BaseModel
 
-from infernet_ml.resource.repo_id import RitualRepoId
 from infernet_ml.utils.codec.vector import RitualVector
 
 FloatNumpy = np.ndarray[Tuple[int, ...], np.dtype[Any]]

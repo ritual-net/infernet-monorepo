@@ -70,7 +70,8 @@ class InfernetInput(BaseModel):
             AssertionError: If the source is not offchain.
         """
         assert self.source == JobLocation.OFFCHAIN
-        return cast(dict[str, Any], self.data['data'])
+        r = cast(dict[str, Any], self.data)["data"]
+        return cast(dict[str, Any], r)
 
     @model_validator(mode="after")
     def check_data_correct(self) -> "InfernetInput":
