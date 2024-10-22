@@ -118,5 +118,5 @@ jobs:
         run: make test-library library=${{ matrix.library }}
 
       - name: Cleanup Secrets
-        run: rm secrets-sa-key.json
+        run: rm secrets-sa-key.json || true
         if: always()
