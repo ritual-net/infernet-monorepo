@@ -21,7 +21,7 @@ jobs:
       - name: Check for library changes
         id: check_changes
         run: |
-          if ! git diff --name-only HEAD^ HEAD | grep "^libraries/${{ matrix.library }}/"; then 
+          if ! git diff --name-only main HEAD | grep "^libraries/${{ matrix.library }}/"; then 
             echo "No changes in libraries/${{ matrix.library }}/"; 
             echo "skip_job=true" >> $GITHUB_ENV; 
           else 
