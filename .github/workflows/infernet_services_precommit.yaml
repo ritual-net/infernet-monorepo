@@ -1,0 +1,71 @@
+# pre-commit workflow
+#
+# Ensures the codebase passes the pre-commit stack.
+
+name: Infernet Services Pre-commits, Style, and Linting
+
+on:
+  pull_request:
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_precommit.yaml'
+
+jobs:
+  infernet_services_python_precommits:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: init repo
+      run: |
+        echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+        gcloud auth activate-service-account --key-file=secrets-sa-key.json
+        make init-repo
+      env:
+        CI: true
+
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.SSH_GH_ACTIONS }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install UV
+      run: python -m pip install uv
+
+    # Can't install from uv with the --system flag much like what we do in our
+    # dockerfiles, because we'd have to run it as root.
+    - name: Create virtual environment
+      run: uv venv -p 3.11
+
+    - name: Activate virtual environment
+      run: |
+        . .venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
+
+    - name: Get UV env file
+      run: make generate-uv-env-file export_prefix="" && cat uv.env >> $GITHUB_ENV
+
+#    - name: Setup upterm session
+#      uses: lhotari/action-upterm@v1
+
+    - name: Install dependencies
+      run: |
+        uv pip install --extra-index-url `make get-index-url` -r infernet_services/requirements-precommit.lock
+        uv pip install --extra-index-url `make get-index-url` -r pyproject.toml
+
+    - name: Run pre-commit hooks
+      env:
+        CI: true
+      run: make pre-commit-services
+
+    - name: Cleanup Secrets
+      run: rm secrets-sa-key.json
+      if: always()
