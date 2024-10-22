@@ -1,6 +1,6 @@
 services:
   node:
-    image: ritualnetwork/infernet-node-internal:${INFERNET_NODE_TAG}
+    image: ritualnetwork/infernet-node:${INFERNET_NODE_TAG}
     environment:
       INFERNET_NODE_TAG: 1.3.1  # Default value
     ports:
