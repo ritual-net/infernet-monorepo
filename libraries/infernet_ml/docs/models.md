@@ -18,7 +18,7 @@ Install `infernet-ml` from your terminal:
 
 ## Repository Id's
 
-Ritual's artifacts are stored in repositories. These repositories are identified by a unique id. 
+Ritual's artifacts are stored in repositories. These repositories are identified by a unique id.
 The id is a string that is formatted as follows: `storage/username/repo-name`.
 
 For example, the following are valid repository id's:
@@ -56,7 +56,7 @@ uploading and downloading of models to various data sources.
 
 ### Arweave Upload
 
-Put your model & relevant files in a directory and run the following code. You'll have 
+Put your model & relevant files in a directory and run the following code. You'll have
 to pass in the `directory` of the model, the `repo_id` of the model, and the `metadata`.
 
 ``` python
@@ -77,8 +77,8 @@ ModelManager.upload_model(
 
 ```
 
-The `metadata` parameter is a dictionary that will be stored with the model. 
-The `wallet_path` parameter is the path to your Arweave wallet. This wallet will be used to pay for 
+The `metadata` parameter is a dictionary that will be stored with the model.
+The `wallet_path` parameter is the path to your Arweave wallet. This wallet will be used to pay for
 the transaction fees associated with uploading the model.
 
 ### Huggingface Upload
