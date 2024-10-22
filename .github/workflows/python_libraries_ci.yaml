@@ -45,7 +45,9 @@ jobs:
         uses: actions/checkout@v4
 
       # pull submodules manually since some are private
-      - run: make get-submodules
+      - name: Get submodules
+        if: env.skip_job == 'false'
+        run: make get-submodules
 
       - name: Set up Cloud SDK
         if: env.skip_job == 'false'
