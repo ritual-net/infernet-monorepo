@@ -93,3 +93,11 @@ infernet_services/deploy/config.json
 # temp directories
 tmp
 temp
+
+large.txt
+llama
+proof.bin
+proving_key.*
+verifying_key.*
+sync_upstream
+

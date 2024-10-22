@@ -4,3 +4,4 @@ site_description: Infernet ML Documentation
 nav:
   - Quickstart: quickstart.md
   - Architecture: architecture.md
+  - Managing Models: models.md

@@ -12,7 +12,6 @@ Currently, the repository structure is as follows (not all files / directories a
   * `services/`: Source code for containers.
     * `css_inference_service/`
     * `ezkl_proof_service/`
-    * `css_inference_service/`
     * `hf_inference_client_service/`
     * `onnx_inference_service/`
     * `tgi_client_inference_service/`
@@ -56,13 +55,17 @@ _Only applies to the Ritual team._
 To test [libraries](#python-libraries) and [services](#services), you will need a `.env` file with secrets.
 
 First, authenticate with the `gcloud` CLI. Run
+
 ```bash copy
 gcloud auth login
 ```
+
 and follow the steps in your browser. Then, initialize the repository:
+
 ```bash copy
 make init-repo
 ```
+
 If successful, you should now see the `.env` file in the top-level directory of this repository.
 
 ## Python Libraries

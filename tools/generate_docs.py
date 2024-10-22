@@ -135,8 +135,8 @@ def generate_docs(
 
     def write_nav_entries(nav_entries: Dict[str, str]) -> list[Dict[str, Any]]:
         """
-        Recursively builds a nested list representing the navigation structure for MkDocs,
-        with the entries sorted alphabetically by key.
+        Recursively builds a nested list representing the navigation structure for
+        MkDocs, with the entries sorted alphabetically by key.
 
         Args:
             nav_entries (dict): A dictionary representing the navigation structure.

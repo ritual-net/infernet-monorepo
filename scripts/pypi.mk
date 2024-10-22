@@ -27,6 +27,7 @@ build-library:
 
 build-pyo3-library:
 	if ! command -v maturin; then \
+		source .venv/bin/activate; \
 		uv pip install maturin; \
 	fi; \
 	rm `find dist | grep $(library)` || true; \
@@ -55,9 +56,20 @@ if [ -z "$(library)" ]; then \
 	library=`ls libraries | grep -v pycache | fzf`; \
 else \
 	library=`ls libraries | grep -v pycache | grep $(library) | head -n 1`; \
+fi; \
+if [ -z "$$library" ]; then \
+	echo "No library selected, exiting"; \
+	exit 1; \
 fi;
 endef
 export get_library
+
+# utility to create, install & activate an environment
+setup-env:
+	@eval "$$get_library"; \
+	uv venv -p 3.11 && source .venv/bin/activate && \
+	uv pip install -r libraries/$$library/requirements.lock && \
+	uv pip install -r pyproject.toml
 
 bump-lib-version:
 	@eval "$$get_library"; \

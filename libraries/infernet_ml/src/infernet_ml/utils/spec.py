@@ -7,7 +7,7 @@ import platform
 import shlex
 import subprocess
 from enum import StrEnum
-from typing import Annotated, Any, Callable, List, Literal, Optional, Union
+from typing import Annotated, Any, Callable, List, Literal, Optional, Union, cast
 from xml.etree.ElementTree import Element
 
 from huggingface_hub import HfApi  # type: ignore
@@ -290,8 +290,7 @@ class MLComputeCapability(BaseModel):
             )
         except subprocess.CalledProcessError as e:
             version = e.output.decode("utf-8")
-        _models: List[CachedArtifact] = models or []
-        __models = [m.to_broadcasted_artifact() for m in _models]
+        __models = cast(List[BroadcastedArtifact], models or [])
         return cls(
             type=MLType.LLAMA_CPP,
             task=[MLTask.TextGeneration],

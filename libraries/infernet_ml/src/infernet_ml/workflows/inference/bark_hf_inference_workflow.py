@@ -175,7 +175,7 @@ class BarkHFInferenceWorkflow(TTSInferenceWorkflow):
         voice_preset = input_data.voice_preset or self.default_voice_preset
         return self.processor(text, voice_preset=voice_preset).to(self.device)
 
-    def inference(self, input_data: BarkWorkflowInput, log_preprocessed_data: bool = True) -> AudioInferenceResult:  # type: ignore #noqa: E501
+    def inference(self, input_data: BarkWorkflowInput) -> AudioInferenceResult:  # type: ignore #noqa: E501
         """
         Override super class inference method to be annotated with the correct types.
 
@@ -185,9 +185,7 @@ class BarkHFInferenceWorkflow(TTSInferenceWorkflow):
         Returns:
             AudioInferenceResult: audio array
         """
-        return cast(
-            AudioInferenceResult, super().inference(input_data, log_preprocessed_data)
-        )
+        return cast(AudioInferenceResult, super().inference(input_data))
 
     def do_run_model(self, preprocessed_data: BatchEncoding) -> torch.Tensor:
         """

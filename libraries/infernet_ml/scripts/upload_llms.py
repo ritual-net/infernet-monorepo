@@ -60,6 +60,7 @@ if __name__ == "__main__":
     https://huggingface.co/Ritual-Net/Meta-Llama-3-8B-Instruct
     https://huggingface.co/Ritual-Net/gemma-1.1-7b-it
     https://huggingface.co/Ritual-Net/Meta-Llama-3.1-8B-Instruct_Q4_KM
+
     https://huggingface.co/Ritual-Net/Phi-3-medium-4k-instruct_Q4_KM
     https://huggingface.co/Ritual-Net/Phi-3-mini-4k-instruct_Q4_KM
     https://huggingface.co/Ritual-Net/Phi-3-medium-128k-instruct_Q4_KM
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     https://huggingface.co/Ritual-Net/Meta-Llama-3-8B-Instruct/blob/main/ritual_manifest.json
     https://huggingface.co/Ritual-Net/gemma-1.1-7b-it/blob/main/ritual_manifest.json
     https://huggingface.co/Ritual-Net/Meta-Llama-3.1-8B-Instruct_Q4_KM/blob/main/ritual_manifest.json
+
     https://huggingface.co/Ritual-Net/Phi-3-medium-4k-instruct_Q4_KM/blob/main/ritual_manifest.json
     https://huggingface.co/Ritual-Net/Phi-3-mini-4k-instruct_Q4_KM/blob/main/ritual_manifest.json
     https://huggingface.co/Ritual-Net/Phi-3-medium-128k-instruct_Q4_KM/blob/main/ritual_manifest.json

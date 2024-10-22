@@ -2,30 +2,36 @@
 
 # if the .venv directory exists, use the python binary from there
 # otherwise use the system python
+
 SHELL := /bin/bash
 PYTHON := $(if $(wildcard ./.venv/),./.venv/bin/python,python)
 
 generate-library-docs:
-	$(PYTHON) tools/generate_docs.py $(library)
+	@eval "$$get_library"; \
+	$(PYTHON) tools/generate_docs.py $$library
 
 generate-services-docs:
 	PYTHONPATH=tools $(PYTHON) tools/generate_services_docs.py
 
 serve-library-docs:
-	cd libraries/$(library) && PYTHONPATH=src mkdocs serve
+	@eval "$$get_library"; \
+	$(MAKE) clean-library-docs generate-library-docs build-library-docs library=$$library; \
+	cd libraries/$$library && PYTHONPATH=src mkdocs serve
 
 serve-services-docs:
 	cd infernet_services && mkdocs serve
 
 build-library-docs:
-	cd libraries/$(library) && PYTHONPATH=src mkdocs build
+	@eval "$$get_library"; \
+	cd libraries/$$library && PYTHONPATH=src mkdocs build
 
 build-services-docs:
 	cd infernet_services && PYTHONPATH=src mkdocs build
 
 clean-library-docs:
-	rm -rf libraries/$(library)/site
-	rm -rf libraries/$(library)/docs/reference
+	@eval "$$get_library"; \
+	rm -rf libraries/$$library/site; \
+	rm -rf libraries/$$library/docs/reference
 
 clean-services-docs:
 	rm -rf infernet_services/site
@@ -34,9 +40,10 @@ clean-services-docs:
 prod :=
 
 deploy-library-docs: clean-library-docs
-	rm -rf .vercel || true
-	$(MAKE) generate-library-docs build-library-docs
-	$(PYTHON) tools/deploy_docs.py $(library) $(prod)
+	@eval "$$get_library"; \
+	rm -rf .vercel || true; \
+	$(MAKE) generate-library-docs build-library-docs library=$$library; \
+	$(PYTHON) tools/deploy_docs.py $$library $(prod)
 
 deploy-services-docs: clean-services-docs
 	rm -rf .vercel || true
