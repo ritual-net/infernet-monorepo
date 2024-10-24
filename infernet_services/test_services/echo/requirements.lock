@@ -28,7 +28,7 @@ frozenlist==1.4.1
 fsspec==2024.9.0
 gunicorn==21.2.0
 hexbytes==0.3.1
-huggingface-hub==0.25.1
+huggingface-hub==0.25.2
 idna==3.10
 infernet-ml==2.0.0.78
 itsdangerous==2.2.0
