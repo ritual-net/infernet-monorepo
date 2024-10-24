@@ -9,7 +9,7 @@ authors = [
 dependencies = [
     "python-dotenv>=1.0.0,<2.0.0",
     "pydantic>=2.5.3,<3.0.0",
-    "huggingface-hub==0.25.2",
+    "huggingface-hub==0.25.1",
     "click>=8.1.7,<9.0.0",
     "ritual-arweave>=0.1.0,<1.0.0",
     "web3>=6.19.0,<7.0.0"
@@ -78,7 +78,7 @@ css_inference = [
 
 # huggingface_hub inference service
 hf_inference = [
-    "huggingface-hub==0.25.2",
+    "huggingface-hub==0.25.1",
     "transformers>=4.38,<5.0.0",
 ]
 
@@ -97,7 +97,7 @@ diffusion_inference = [
 hf_diffusion_inference = [
     "diffusers>=0.26,<0.27.0",
     "Pillow>=10.2.0,<11.0.0",
-    "huggingface-hub==0.25.2",
+    "huggingface-hub==0.25.1",
     "transformers>=4.38,<5.0.0",
 ]
 
