@@ -45,25 +45,6 @@ pre-commit-service:
 	uv pip install mypy isort pre-commit; \
 	pre-commit run --files `git ls-files`
 
-update-service-lockfile:
-	@requirements_path=`find $(service_dir) -maxdepth 4 | grep "requirements.*.txt" | fzf`; \
-	if [ -z "$$requirements_path" ]; then \
-		echo "No requirements file selected"; \
-		exit 1; \
-	fi; \
-	requirements_path=`echo $$requirements_path | xargs realpath`; \
-	rm -rf temp_lock; \
-	mkdir -p temp_lock; \
-	cp $$requirements_path temp_lock/; \
-	lockfile_path=`echo $$requirements_path | sed 's/.txt/.lock/'`; \
-	$(MAKE) generate-uv-env-file && source uv.env && \
-	cd temp_lock; \
-	uv venv -p 3.11 && source .venv/bin/activate; \
-	uv pip install -r $$requirements_path; \
-	uv pip freeze | grep -v "file://" > "$$lockfile_path"; \
-	rm -rf ../temp_lock; \
-	echo "✅ Updated lockfile at $$lockfile_path"
-
 publish-service:
 	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
 
@@ -137,7 +118,14 @@ filter ?= ""
 
 test-service: stop-node
 	@eval "$$find_service"; \
+	source .env; \
 	kill $(lsof -i :3000 | tail -n 1  | awk '{print $2}') || true; \
+	$(MAKE) generate-uv-env-file && source uv.env && \
+	cd infernet_services && \
+	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
+	source .venv/bin/activate && \
+	uv pip install -r requirements-e2e-tests.lock; \
+	cd .. && \
 	pytest -vvv -s $(toplevel_dir)/tests/$$service
 
 dev: build-service stop-node deploy-node
