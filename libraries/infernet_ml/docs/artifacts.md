@@ -1,21 +1,21 @@
 # Artifact Management
 
-Infernet ML 2.0 introduces a new utility class, [`RitualArtifactManager`](), a utility 
-class that provides nice abstractions for managing artifacts across the Ritual 
-ecosystem. 
-Depending on the type of computation, various artifacts might be needed. In the context 
-of AI/ML this could mean the machine learning models. In the context of ZKPs this 
-could mean the circuit files. This class provides a way to easily manage these 
+Infernet ML 2.0 introduces a new utility class,
+[`RitualArtifactManager`](../reference/infernet_ml/resource/artifact_manager/?h=ritualartifa#infernet_ml.resource.artifact_manager.RitualArtifactManager).
+It provides nice abstractions for managing artifacts across the Ritual ecosystem.
+Depending on the type of computation, various artifacts might be needed. In the context
+of AI/ML this could mean the machine learning models. In the context of ZKPs this
+could mean the circuit files. This class provides a way to easily manage these
 artifacts.
 
-This documentation will go over how to define a new artifact class, and use it with the 
-Artifact Manager. Inside Infernet ML, the [`EZKLArtifact`]() is one such artifact class
+This documentation will go over how to define a new artifact class, and use it with the
+Artifact Manager. Inside Infernet ML, the [`EZKLArtifact`](..reference/infernet_ml/zk/ezkl/ezkl_artifact/?h=ezklartifa#infernet_ml.zk.ezkl.ezkl_artifact.EZKLArtifact) is one such artifact class
 that is used to manage the ZKP circuit files.
 
 ## Usage
 
-To define a new artifact type all you need to do is create a new 
-[Pydantic](https://docs.pydantic.dev/latest/) model. The Artifact Manager will handle 
+To define a new artifact type all you need to do is create a new
+[Pydantic](https://docs.pydantic.dev/latest/) model. The Artifact Manager will handle
 the uploading/downloading of the artifact to/from different storage layers.
 
 ### Pydantic Model's Structure
@@ -54,8 +54,8 @@ my_artifact_manager = RitualArtifactManager(
 
 ### Uploading to a Storage Layer
 
-With your instance of Artifact `RitualArtifactManager`, you can now easily 
-upload/download your artifacts to Arweave or Huggingface: 
+With your instance of Artifact [`RitualArtifactManager`](../reference/infernet_ml/resource/artifact_manager/?h=ritualartifa#infernet_ml.resource.artifact_manager.RitualArtifactManager)
+, you can now easily upload/download your artifacts to Arweave or Huggingface:
 
 *HuggingFace & Arweave:*
 
@@ -76,10 +76,11 @@ my_artifact.to_arweave(
 *Using `RitualRepoId:`*
 
 More generally, you use the `to_repo()` method to upload to any storage layer. You
-will have to pass in a [Generic Repo Id]().
+will have to pass in a [Generic Repo Id](../models/#repository-ids).
 
-*Note:* Both `RitualArtifactManager` and `ModelManager` use the same notion of 
-[repository ids]().
+*Note:* Both [`RitualArtifactManager`](../reference/infernet_ml/resource/artifact_manager/?h=ritualartifa#infernet_ml.resource.artifact_manager.RitualArtifactManager)
+and [`ModelManager`](../reference/infernet_ml/utils/model_manager/?h=modelmana#infernet_ml.utils.model_manager.ModelManager) use the same notion of
+[repository ids](../models/#repository-ids).
 
 ```python
 # Upload artifact to any storage layer
@@ -120,5 +121,4 @@ manager = RitualArtifactManager[EZKLArtifact].from_repo(
 )
 ```
 
-Check out [RitualArtifactManager]() for more options & configurations. 
-
+Check out [RitualArtifactManager](../reference/infernet_ml/resource/artifact_manager/?h=ritualartifa#infernet_ml.resource.artifact_manager.RitualArtifactManager) for more options & configurations.

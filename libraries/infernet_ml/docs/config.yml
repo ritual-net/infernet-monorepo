@@ -4,7 +4,7 @@ site_description: Infernet ML Documentation
 nav:
   - Quickstart: quickstart.md
   - Architecture: architecture.md
-  - Managing Artifacts: artifacts.md
-  - EZKL Artifacts: ezkl_artifacts.md
-  - Managing Models: models.md
+  - Model Upload & Download: models.md
   - Working With Vectors: vectors.md
+  - Managing Artifacts: artifacts.md
+  - EZKL: ezkl_artifacts.md
