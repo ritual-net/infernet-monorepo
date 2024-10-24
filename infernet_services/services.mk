@@ -7,7 +7,7 @@ define find_service
 if [ -z "$(service)" ]; then \
 	service=`ls $(service_dir) | fzf`; \
 else \
-	service=$(service); \
+	service=`ls $(service_dir) | grep -i $(service)`; \
 fi;
 endef
 
