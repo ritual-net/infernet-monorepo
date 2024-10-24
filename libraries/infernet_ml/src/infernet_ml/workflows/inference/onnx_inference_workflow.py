@@ -90,7 +90,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 import onnx
 import torch
 from onnx import ModelProto
-from onnxruntime import InferenceSession, SessionOptions  # type: ignore
+from onnxruntime import InferenceSession, SessionOptions, get_available_providers  # type: ignore
 from pydantic import BaseModel
 
 from infernet_ml.utils.codec.vector import DataType, RitualVector
@@ -205,13 +205,13 @@ class ONNXInferenceWorkflow(BaseInferenceWorkflow):
             logger.warning(f"Error calculating FLOPs: {e}")
             flops = 0
 
-        # Checking for CUDA support through torch.
+        available_providers = get_available_providers()
+        # Extra checking for CUDA support through torch.
         # get_device and get_available_providers from onnx library are not accurate
-        providers = (
-            ["CUDAExecutionProvider"]
-            if torch.cuda.is_available()
-            else ["CPUExecutionProvider"]
-        )
+        if torch.cuda.is_available() and "CUDAExecutionProvider" in available_providers:
+            providers = ["CUDAExecutionProvider"]
+        else:
+            providers = ["CPUExecutionProvider"]
         print(f"Execution provider: {providers[0]}")
 
         session_options = SessionOptions()
