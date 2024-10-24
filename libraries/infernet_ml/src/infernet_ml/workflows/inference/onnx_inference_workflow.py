@@ -87,10 +87,14 @@ import os
 from functools import lru_cache
 from typing import Any, Dict, Iterator, List, Optional, Tuple, cast
 
-import onnx
 import torch
+import onnx
 from onnx import ModelProto
-from onnxruntime import InferenceSession, SessionOptions, get_available_providers  # type: ignore
+from onnxruntime import (
+    InferenceSession,
+    SessionOptions,
+    get_available_providers
+)  # type: ignore
 from pydantic import BaseModel
 
 from infernet_ml.utils.codec.vector import DataType, RitualVector
