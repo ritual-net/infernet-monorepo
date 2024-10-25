@@ -107,15 +107,15 @@ jobs:
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:1.0.0"
 
-#      - name: Build the container
-#        if: env.skip_job == 'false'
-#        env:
-#          service: ${{ matrix.service }}
-#          CI: true
-#        run: |
-#          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
-#          make build-service
-#          useful for faster iteration time when debugging
+      - name: Build the container
+        if: env.skip_job == 'false'
+        env:
+          service: ${{ matrix.service }}
+          CI: true
+        run: |
+          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
+          make build-service
+          useful for faster iteration time when debugging
 
       - name: Install UV
         if: env.skip_job == 'false'
@@ -125,10 +125,10 @@ jobs:
 #        if: env.skip_job == 'false'
 #        run: make pre-commit-service service=${{ matrix.service }}
 
-#       useful for debugging CI
-      - name: Setup upterm session
-        if: matrix.service == 'css_inference_service'
-        uses: lhotari/action-upterm@v1
+##       useful for debugging CI
+#      - name: Setup upterm session
+#        if: matrix.service == 'css_inference_service'
+#        uses: lhotari/action-upterm@v1
 
       - name: Run tests
         if: env.skip_job == 'false'
