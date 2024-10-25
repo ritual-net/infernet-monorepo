@@ -92,8 +92,8 @@ referencing==0.35.1
 regex==2024.9.11
 requests==2.32.3
 retry2==0.9.5
-ritual-arweave==0.1.0.2
-ritual-pyarweave==0.1.0.4
+ritual-arweave==0.1.1
+ritual-pyarweave==0.1.2
 rlp==4.0.1
 rpds-py==0.20.0
 rsa==4.9

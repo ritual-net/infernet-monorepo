@@ -104,6 +104,7 @@ endif
 	@eval "$$get_library"; \
 	source .env; \
 	cd libraries/$$library; \
+	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
 	source .venv/bin/activate && \
 	is_pyo3=`grep "pyo3" pyproject.toml`; \
 	if [ -n "$$is_pyo3" ]; then \

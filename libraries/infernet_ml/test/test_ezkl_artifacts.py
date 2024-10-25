@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 from huggingface_hub import HfApi  # type: ignore
 from test_library.artifact_utils import hf_id, hf_ritual_repo_id
 
@@ -15,6 +16,8 @@ from infernet_ml.zk.ezkl.ezkl_artifact import (
     generate_ezkl_artifacts,
 )
 from infernet_ml.zk.ezkl.ezkl_utils import generate_proof, verify_proof
+
+load_dotenv()
 
 
 @pytest.mark.asyncio
