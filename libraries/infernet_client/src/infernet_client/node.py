@@ -3,13 +3,18 @@ Node's REST API.
 
 ### Example Usage
 
-You can initialize Node Client & use it like so:
+You can use the Node client as follows:
+
 ``` python
 from infernet_client import NodeClient
 
 client = NodeClient("http://localhost:8000")
+
+# Check the node's health
 client.health()
-# True
+
+# Get information about the node
+client.get_info()
 ```
 """
 

@@ -1,4 +1,6 @@
-# Infernet Node
+# Usage
+
+## Infernet Node
 
 You can pass the node url with every command using `--url`, or you can set it once as an ENV variable:
 
@@ -6,9 +8,11 @@ You can pass the node url with every command using `--url`, or you can set it on
 export SERVER_URL=http://localhost:4000
 ```
 
-## Metadata
+---
 
-### Health
+### Metadata
+
+#### Health
 
 Check the health of the node.
 
@@ -76,7 +80,7 @@ Check the health of the node.
     }
     ```
 
-### Info
+#### Info
 
 Retrieve information about the node.
 
@@ -198,7 +202,7 @@ Retrieve information about the node.
     }
     ```
 
-### Resources
+#### Resources
 
 Retrieve information about a node's container resources and supported models.
 
@@ -390,7 +394,7 @@ Retrieve information about a node's container resources and supported models.
 }
 ```
 
-### Model Support
+#### Model Support
 
 Check model support by container.
 
@@ -456,9 +460,11 @@ Check model support by container.
 }
 ```
 
-## Jobs
+---
 
-### Request
+### Jobs
+
+#### Request
 
 Create a new direct compute request.
 
@@ -563,7 +569,7 @@ Create a new direct compute request.
     }
     ```
 
-### Request w/ proof
+#### Request w/ proof
 
 Create a direct compute request, along with a proof requirement.
 
@@ -668,7 +674,7 @@ Create a direct compute request, along with a proof requirement.
     }
     ```
 
-### Batch Request
+#### Batch Request
 
 Create direct compute requests in batch.
 
@@ -739,7 +745,7 @@ Create direct compute requests in batch.
     ]
     ```
 
-### Fetch Results
+#### Fetch Results
 
 Fetch direct compute results.
 
@@ -842,7 +848,7 @@ Fetch direct compute results.
 ]
 ```
 
-### Sync Request
+#### Sync Request
 
 To imitate a synchronous direct compute request, you can request a job and _wait until
 results become available_.
@@ -955,7 +961,7 @@ results become available_.
     }
     ```
 
-### Streaming
+#### Streaming
 
 Create a new direct compute request that streams back results synchronously.
 
@@ -1064,7 +1070,7 @@ Create a new direct compute request that streams back results synchronously.
     Deep learning is used in a variety of applications, including image and speech recognition, natural language processing, and autonomous driving. It has been particularly successful in image and speech recognition tasks, where it has achieved state-of-the-art performance in a number of benchmarks.
     ```
 
-### Get IDs
+#### Get IDs
 
 Get IDs of jobs requested by this client (by IP address.)
 
@@ -1160,7 +1166,7 @@ Get IDs of jobs requested by this client (by IP address.)
 ]
 ```
 
-### Status
+#### Status
 
 Manually register job ID and status with the node.
 
@@ -1230,7 +1236,9 @@ Manually register job ID and status with the node.
 # No error
 ```
 
-## Delegated Subscription
+---
+
+### Delegated Subscription
 
 Creates a new delegated subscription request.
 
@@ -1330,6 +1338,8 @@ Creates a new delegated subscription request.
     ```bash
     # No error
     ```
+
+---
 
 ## Infernet Router
 
@@ -1792,6 +1802,7 @@ Check model support by container, for all nodes reachable by this router.
     ```
 
 **Expected Output:**
+
 ```json
 {
     "154.122.7.46": {
@@ -1809,6 +1820,8 @@ Check model support by container, for all nodes reachable by this router.
     }
 }
 ```
+
+---
 
 ## Infernet Wallet
 

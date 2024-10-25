@@ -1,9 +1,10 @@
-"""Module container the RouterClient class, which is a client for the Infernet
-router's REST API.
+"""Module containing the RouterClient class, which is a client for the Infernet
+Router's REST API.
 
 ### Example Usage
 
-You can initialize Router Client & use it like so:
+You can use the Router client as follows:
+
 ``` python
 from infernet_client import RouterClient
 
