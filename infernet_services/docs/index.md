@@ -21,3 +21,4 @@ The following workflows are currently supported as Infernet services:
 | [ONNX](reference/onnx_inference_service)             | Open Neural Network Exchange               | No                 |
 | [TGI Client](reference/tgi_client_inference_service) | Text Generation Inference Client           | Yes                |
 | [Torch](reference/torch_inference_service)           | PyTorch Inference                          | No                 |
+| [EZKL](reference/ezkl_proof_service)                 | EZKL Proof Generation                      | No                 |

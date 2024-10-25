@@ -52,7 +52,7 @@ in `config.json`.
 
 ## Artifacts
 
-Refer to the [EZKL artifact generation]() documentation for a tutorial on how to create your own ezkl artifacts.
+Refer to the [EZKL artifact generation](https://infernet-ml.docs.ritual.net/ezkl/) documentation for a tutorial on how to create your own ezkl artifacts.
 
 ## Usage
 
