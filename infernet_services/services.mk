@@ -13,6 +13,9 @@ endef
 
 export find_service
 
+build-echo:
+	$(MAKE) build-service service_dir=infernet_services/test_services service=echo
+
 build-service:
 	@eval "$$find_service"; \
 	if [ -n "$(reuse_index)" ]; then \
@@ -127,6 +130,14 @@ test-service: stop-node
 	uv pip install -r requirements-e2e-tests.lock; \
 	cd .. && \
 	pytest -vvv -s $(toplevel_dir)/tests/$$service
+
+test-infernet-node: stop-node
+	cd infernet_services && \
+	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
+	source .venv/bin/activate && \
+	uv pip install -r requirements-e2e-tests.lock; \
+	cd .. && \
+	pytest -vvv -s infernet_services/tests/infernet_node
 
 dev: build-service stop-node deploy-node
 	sleep 5
