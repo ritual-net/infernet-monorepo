@@ -132,6 +132,7 @@ test-service: stop-node
 	pytest -vvv -s $(toplevel_dir)/tests/$$service
 
 test-infernet-node: stop-node
+	$(MAKE) generate-uv-env-file && source uv.env && \
 	cd infernet_services && \
 	if [ -n "$(restart_env)" ] || [ ! -d .venv ]; then uv venv -p 3.11; fi; \
 	source .venv/bin/activate && \
