@@ -103,7 +103,7 @@ long_text = """
 
 
 @pytest.mark.asyncio
-@pytest.mark.flaky(retries=3, delay=1)
+@pytest.mark.flaky(retries=5, delay=2)
 async def test_hf_inference_client_service_summarization() -> None:
     min_length_tokens = 28
     max_length_tokens = 56
