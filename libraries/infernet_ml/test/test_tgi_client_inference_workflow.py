@@ -13,11 +13,11 @@ from infernet_ml.workflows.inference.tgi_client_inference_workflow import (
 )
 
 server_url = (
-    "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+    "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-1B-Instruct"
 )
 
-PROMPT = "Is the sky blue during a clear day? answer yes or no"
-ANSWER = "yes"
+PROMPT = "Who's the founder of apple"
+ANSWER = "steve"
 
 
 @pytest.fixture
