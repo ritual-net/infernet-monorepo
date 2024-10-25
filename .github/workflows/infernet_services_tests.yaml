@@ -127,7 +127,7 @@ jobs:
 
 #       useful for debugging CI
       - name: Setup upterm session
-        if: matrix.library == 'ritual_arweave'
+        if: matrix.service == 'css_inference_service'
         uses: lhotari/action-upterm@v1
 
       - name: Run tests
