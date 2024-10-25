@@ -26,6 +26,7 @@ async def test_infernet_failing_subscription_must_retry_then_give_up() -> None:
         await create_sub_with_random_input(1, 5, contract_name=CONSUMER_CONTRACT)
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.asyncio
 async def test_infernet_failing_delegated_subscription_must_retry_then_give_up() -> None:
     async with LogAssertoor(

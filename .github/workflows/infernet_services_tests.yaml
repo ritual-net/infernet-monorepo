@@ -121,9 +121,11 @@ jobs:
         if: env.skip_job == 'false'
         run: python -m pip install uv
 
-#      - name: Run pre-commits
-#        if: env.skip_job == 'false'
-#        run: make pre-commit-service service=${{ matrix.service }}
+      - name: Run pre-commits
+        if: env.skip_job == 'false'
+        env:
+          restart_env: true
+        run: make pre-commit-service service=${{ matrix.service }}
 
 ##       useful for debugging CI
 #      - name: Setup upterm session
