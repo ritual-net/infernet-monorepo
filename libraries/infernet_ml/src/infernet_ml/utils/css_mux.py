@@ -7,7 +7,7 @@ Currently, 3 APIs are supported: OPENAI, PERPLEXITYAI, and GOOSEAI.
 
 import json
 import logging
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Union, cast
 
 import requests
@@ -47,13 +47,13 @@ class CSSEmbeddingParams(BaseModel):
     input: str
 
 
-class Provider(Enum):
+class CSSProvider(StrEnum):
     OPENAI = "OPENAI"
     PERPLEXITYAI = "PERPLEXITYAI"
     GOOSEAI = "GOOSEAI"
 
 
-ApiKeys = Dict[Provider, Optional[str]]
+ApiKeys = Dict[CSSProvider, Optional[str]]
 
 
 class CSSRequest(BaseModel):
@@ -74,7 +74,7 @@ class CSSRequest(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
     # provider and endpoint to query
-    provider: Provider
+    provider: CSSProvider
     endpoint: str
 
     # name of model to use. Valid values depends on the the CSS model provider
@@ -182,8 +182,8 @@ def extract_completions_gooseai(result: Dict[str, Any]) -> str:
     return cast(str, result["choices"][0]["text"])
 
 
-PROVIDERS: dict[Provider, Any] = {
-    Provider.OPENAI: {
+PROVIDERS: dict[CSSProvider, Any] = {
+    CSSProvider.OPENAI: {
         "input_func": open_ai_request_generator,
         "endpoints": {
             "completions": {
@@ -196,7 +196,7 @@ PROVIDERS: dict[Provider, Any] = {
             },
         },
     },
-    Provider.PERPLEXITYAI: {
+    CSSProvider.PERPLEXITYAI: {
         "input_func": perplexity_ai_request_generator,
         "endpoints": {
             "completions": {
@@ -205,7 +205,7 @@ PROVIDERS: dict[Provider, Any] = {
             }
         },
     },
-    Provider.GOOSEAI: {
+    CSSProvider.GOOSEAI: {
         "input_func": goose_ai_request_generator,
         "endpoints": {
             "completions": {
@@ -282,11 +282,11 @@ def css_mux(req: CSSRequest) -> str:
 
     if result.status_code != 200:
         match req.provider:
-            case Provider.OPENAI | Provider.GOOSEAI:
+            case CSSProvider.OPENAI | CSSProvider.GOOSEAI:
                 # https://help.openai.com/en/articles/6891839-api-error-code-guidance
                 if result.status_code == 429 or result.status_code == 500:
                     raise RetryableException(result.text)
-            case Provider.PERPLEXITYAI:
+            case CSSProvider.PERPLEXITYAI:
                 if result.status_code == 429:
                     raise RetryableException(result.text)
             case _:
@@ -298,12 +298,12 @@ def css_mux(req: CSSRequest) -> str:
     return cast(str, post_proc(response))
 
 
-streaming_post_processing: Dict[Provider, Callable[[Any], str]] = {
-    Provider.OPENAI: lambda result: result["choices"][0]["delta"].get("content", ""),
-    Provider.PERPLEXITYAI: lambda result: result["choices"][0]["delta"].get(
+streaming_post_processing: Dict[CSSProvider, Callable[[Any], str]] = {
+    CSSProvider.OPENAI: lambda result: result["choices"][0]["delta"].get("content", ""),
+    CSSProvider.PERPLEXITYAI: lambda result: result["choices"][0]["delta"].get(
         "content", ""
     ),
-    Provider.GOOSEAI: lambda result: result["choices"][0]["text"],
+    CSSProvider.GOOSEAI: lambda result: result["choices"][0]["text"],
 }
 
 

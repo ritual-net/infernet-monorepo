@@ -8,8 +8,6 @@ on:
   schedule:
     - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
   pull_request:
-  repository_dispatch:
-    types: [run-e2e-node-tests-event]
   workflow_dispatch:
     inputs:
       docker-tag:

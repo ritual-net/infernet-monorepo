@@ -1,6 +1,6 @@
 # model files
-**/*.onnx
 **/*.torch
+**/iris.onnx
 
 docs/reference
 
