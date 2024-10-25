@@ -113,10 +113,10 @@ jobs:
           service: ${{ matrix.service }}
           CI: true
         run: |
-# useful for faster iteration time when debugging
-#          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
           make build-service
           useful for faster iteration time when debugging
+      # useful for faster iteration time when debugging
+      #          docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
 
       - name: Install UV
         if: env.skip_job == 'false'
