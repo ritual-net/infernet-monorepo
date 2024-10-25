@@ -5,24 +5,20 @@ This service serves proofs via the EZKL proving library.
 import json
 import logging
 import os
-import tempfile
+from pathlib import Path
 from typing import Any, Optional, cast
 
-import ezkl  # type: ignore
+from infernet_ml.resource.artifact_manager import RitualArtifactManager
+from infernet_ml.services.ezkl import EZKLGenerateProofRequest
 from infernet_ml.services.types import InfernetInput, JobLocation
-from infernet_ml.utils.codec.ezkl_codec import (
-    encode_onchain_payload,
-    extract_processed_input_output,
-    extract_proof_request,
-    extract_visibilities,
-)
-from infernet_ml.utils.ezkl_models import EZKLProofRequest, EZKLProvingArtifactsConfig
-from infernet_ml.utils.ezkl_utils import load_proving_artifacts
-from infernet_ml.utils.model_loader import ModelSource
+from infernet_ml.utils.codec.ezkl_codec import extract_proof_request
+from infernet_ml.zk.ezkl.ezkl_artifact import EZKLArtifact
+from infernet_ml.zk.ezkl.ezkl_utils import generate_proof_from_repo_id
+from infernet_ml.zk.ezkl.types import EZKLServiceConfig, WitnessInputData
 from pydantic import ValidationError
-from quart import Quart, abort
+from quart import Quart
 from quart import request as req
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 logger = logging.getLogger(__file__)
 
@@ -47,30 +43,49 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         # load the instance config, if it exists, when not testing
         app.config.from_prefixed_env(prefix=SERVICE_PREFIX)
     else:
-        logger.warning(f"using test config {test_config}")
+        logger.warning(f"using test config {test_config.keys()}")
         # load the test config if passed in
         app.config.update(test_config)
 
-    pac = EZKLProvingArtifactsConfig(**cast(dict[str, Any], app.config))
+    service_config = EZKLServiceConfig(**cast(dict[str, Any], app.config))
 
-    (
-        compiled_model_path,
-        settings_path,
-        pk_path,
-        vk_path,
-        srs_path,
-    ) = load_proving_artifacts(pac)
-
-    logging.info(
-        "resolved file paths: %s, %s, %s, %s, %s",
-        compiled_model_path,
-        settings_path,
-        pk_path,
-        vk_path,
-        srs_path,
+    logger.info(
+        "Service config loaded, hf_token: %s",
+        "exists" if service_config.HF_TOKEN else "None",
     )
 
-    DEBUG = app.debug
+    async def generate_proof_impl_infernet_endpoint() -> dict[str, Any]:
+        logger.info("received generate proof request")
+
+        data = await req.get_json()
+        logger.debug(f"received request data: {data}")
+
+        try:
+            infernet_input = InfernetInput(**data)
+            proof_request: EZKLGenerateProofRequest = extract_proof_request(
+                infernet_input
+            )
+            # parse witness data
+        except ValidationError as e:
+            raise BadRequest(f"error validating input: {e}")
+
+        proof = await generate_proof_from_repo_id(
+            repo_id=proof_request.repo_id,
+            input_vector=proof_request.witness_data.input_data.numpy,
+            hf_token=service_config.HF_TOKEN,
+        )
+
+        match infernet_input.destination:
+            case JobLocation.OFFCHAIN:
+                res = proof.model_dump()
+                for k in list(res.keys()):
+                    if isinstance(res[k], bytes):
+                        res[k] = res[k].hex()
+                    if isinstance(res[k], Path):
+                        del res[k]
+                return res
+            case _:
+                raise BadRequest(f"Invalid destination: {infernet_input.destination}")
 
     @app.route("/")
     async def index() -> dict[str, str]:
@@ -81,89 +96,8 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
         return {"message": "EZKL Proof Service"}
 
     @app.route("/service_output", methods=["POST"])
-    async def service_output() -> dict[str, Optional[str]]:
-        logger.info("received request")
-        # input should look like {"input_data": [...], "output_data": [...]}
-        data = await req.get_json()
-        logger.debug("received data: %s", data)
-        try:
-            infernet_input = InfernetInput(**data)
-            proof_request: EZKLProofRequest = extract_proof_request(infernet_input)
-            # parse witness data
-            witness_data = proof_request.witness_data
-
-        except ValidationError as e:
-            abort(400, f"error validating input: {e}")
-
-        with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=DEBUG) as tf:
-            # get data_path from file
-            json.dump(witness_data.model_dump(), tf)
-            tf.flush()
-            data_path = tf.name
-            logger.debug(f"witness data: {witness_data}")
-
-            with open(settings_path, "r") as sp:
-                settings = json.load(sp)
-                input_v, output_v, param_v = extract_visibilities(settings)
-
-                logging.info(
-                    "input_visibility: %s output_visibility: %s param_visibility: %s",  # noqa: E501
-                    input_v,
-                    output_v,
-                    param_v,
-                )
-
-                with tempfile.NamedTemporaryFile(
-                    "w+", suffix=".json", delete=DEBUG
-                ) as wf:
-                    wf_path = wf.name
-                    witness = await ezkl.gen_witness(
-                        data=data_path,
-                        model=compiled_model_path,
-                        output=wf_path,
-                        vk_path=vk_path,
-                        srs_path=srs_path,
-                    )
-
-                    logger.debug(f"witness = {witness}")
-
-                    with open(wf_path, "r", encoding="utf-8") as wp:
-                        res = json.load(wp)
-                        logging.debug("witness circuit results: %s", res)
-                        ip, op = extract_processed_input_output(input_v, output_v, res)
-
-                    with tempfile.NamedTemporaryFile(
-                        "w+", suffix=".pf", delete=DEBUG
-                    ) as pf:
-                        proof_generated = ezkl.prove(
-                            witness=wf_path,
-                            model=compiled_model_path,
-                            pk_path=pk_path,
-                            proof_path=pf.name,
-                            srs_path=srs_path,
-                            proof_type="single",
-                        )
-
-                        assert proof_generated, "unable to generate proof"
-
-                        verify_success = ezkl.verify(
-                            proof_path=pf.name,
-                            settings_path=settings_path,
-                            vk_path=vk_path,
-                            srs_path=srs_path,
-                        )
-
-                        assert verify_success, "unable to verify generated proof"
-
-                        if infernet_input.destination == JobLocation.OFFCHAIN:
-                            return cast(dict[str, str | None], json.load(open(pf.name)))
-
-                        elif infernet_input.destination == JobLocation.ONCHAIN:
-                            return encode_onchain_payload(
-                                ip, op, pf.name, proof_request
-                            )
-
-        abort(400)
+    async def service_output_endpoint() -> dict[str, Optional[str]]:
+        return await generate_proof_impl_infernet_endpoint()
 
     @app.errorhandler(HTTPException)
     def handle_exception(e: Any) -> Any:
@@ -188,11 +122,38 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
 
 
 if __name__ == "__main__":
-    match os.getenv("RUNTIME"):
-        case "docker":
-            app = create_app()
-            app.run(host="0.0.0.0", port=3000)
-        case _:
-            # we are testing, assume local model source
-            app = create_app({"MODEL_SOURCE": ModelSource.LOCAL})
-            app.run(port=3000, debug=True)
+    app = create_app()
+    if os.getenv("RUNTIME") == "docker":
+        app.run(host="0.0.0.0", port=3000)
+    else:
+        # we are testing, assume local model source
+        from infernet_ml.utils.onnx_utils import generate_dummy_input
+        from test_library.artifact_utils import hf_ritual_repo_id
+
+        repo_id = hf_ritual_repo_id("ezkl_linreg_10_features")
+        manager: RitualArtifactManager[EZKLArtifact] = RitualArtifactManager[
+            EZKLArtifact
+        ].from_repo(EZKLArtifact, repo_id)
+        artifact = manager.artifact
+        dummy_input_ = generate_dummy_input(artifact.onnx_path)
+        dummy_input = list(dummy_input_.values())[0]
+
+        proof_req = EZKLGenerateProofRequest(
+            repo_id=repo_id,
+            witness_data=WitnessInputData.from_numpy(input_vector=dummy_input),
+        )
+
+        service_req = InfernetInput(
+            source=JobLocation.OFFCHAIN,
+            destination=JobLocation.OFFCHAIN,
+            data=proof_req.model_dump(),
+        )
+
+        logger.info(
+            f"""
+        Sample POST request to this service
+        curl -X POST http://localhost:3000/service_output -H "Content-Type: application/json" -d '{json.dumps(service_req.model_dump())}'
+                """  # noqa E501
+        )
+
+    app.run(port=3000, debug=True)

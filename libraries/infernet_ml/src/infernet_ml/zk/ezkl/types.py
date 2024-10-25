@@ -121,29 +121,18 @@ class EZKLServiceConfig(BaseModel):
     provided, those are loaded & used as the default artifact.
 
     Attributes:
-        REPO_ID: Ritual RepoId, in the format of `storage/owner/name`. Defaults to None.
         ARTIFACT_DIRECTORY: Defaults to `/artifacts`. Directory where the artifacts are
             stored.
-        PROVING_KEY_PATH: Defaults to `None`. The path to proving key to use for
-            generating proofs, if not provided, with each proof request a new zk setup
-            will be performed.
         HF_TOKEN: Defaults to `None`. The token to use for downloading artifacts from
             the huggingface, for private repositories.
     """
 
-    REPO_ID: Optional[str] = None
     ARTIFACT_DIRECTORY: Optional[str] = f"{HOMEDIR}/.cache/ritual"
-    PROVING_KEY_PATH: Optional[str] = None
     HF_TOKEN: Optional[str] = None
 
     class Config:
         # to make config hashable
         frozen = True
-
-    @property
-    def repo_id(self) -> RitualRepoId:
-        assert self.REPO_ID is not None, "REPO_ID is not set"
-        return RitualRepoId.from_unique_id(self.REPO_ID)
 
 
 ONNXInput = Dict[str, np.ndarray[Any, Any]]
