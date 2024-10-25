@@ -92,7 +92,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union, cas
 
 from huggingface_hub import CommitInfo, HfApi, snapshot_download  # type: ignore
 from pydantic import BaseModel
-from ritual_arweave.repo_manager import RepoManager, UploadArweaveRepoResult
+from ritual_arweave.repo_manager import RepoManager
 
 from infernet_ml.resource.repo_id import RitualRepoId
 from infernet_ml.resource.types import StorageId
@@ -104,6 +104,7 @@ HFUploadType = Union[CommitInfo, str, Future[CommitInfo], Future[str]]
 DEFAULT_ARTIFACT_DIRECTORY = Path("~/.cache/ritual").expanduser()
 MANIFEST_FILENAME = "ritual_manifest.json"
 
+UploadArweaveRepoResult = Any
 ArtifactUploadType = Optional[UploadArweaveRepoResult | HFUploadType]
 
 log = logging.getLogger(__name__)

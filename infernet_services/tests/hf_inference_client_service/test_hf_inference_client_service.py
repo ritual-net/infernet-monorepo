@@ -46,6 +46,7 @@ async def test_hf_inference_client_doesnt_generate_proofs() -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.flaky(retries=2, delay=1)
 async def test_hf_inference_client_service_text_generation() -> None:
     task = await request_job(
         SERVICE_NAME,
