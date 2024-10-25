@@ -39,6 +39,16 @@ jobs:
             exit 0
           fi
 
+      # needed for ritual_arweave
+      - name: Setup bun & install lsof
+        if: matrix.library == 'ritual_arweave'
+        uses: oven-sh/setup-bun@v1
+
+      # needed for ritual_arweave
+      - name: Install arlocal
+        if: matrix.library == 'ritual_arweave'
+        run: sudo $(which bun) i -g arlocal
+
       - uses: webfactory/ssh-agent@v0.9.0
         if: env.skip_job == 'false'
         with:
