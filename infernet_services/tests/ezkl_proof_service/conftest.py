@@ -22,7 +22,10 @@ services = [
     ServiceConfig.build(
         SERVICE_NAME,
         image_id=f"ritualnetwork/{SERVICE_NAME}_internal:{VERSION}",
-        env_vars={},
+        env_vars={
+            "EZKL_PROOF_HF_TOKEN": os.environ["HF_TOKEN"],
+            "HF_TOKEN": os.environ["HF_TOKEN"]
+        },
     ),
 ]
 

@@ -55,7 +55,7 @@ def create_app(test_config: Optional[dict[str, Any]] = None) -> Quart:
     )
 
     async def generate_proof_impl_infernet_endpoint() -> dict[str, Any]:
-        logger.info("received generate proof request")
+        logger.info("received generate proof request hello")
 
         data = await req.get_json()
         logger.debug(f"received request data: {data}")
