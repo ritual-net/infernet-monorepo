@@ -41,7 +41,7 @@ class MyZkMlArtifact(BaseModel):
     version: str
     num_params: str
 
-my_artifact_manager = RitualArtifactManager(
+my_artifact = RitualArtifactManager(
     artifact=MyZkMlArtifact(
         circuit_file=Path("path/to/circuit_file"),
         model_file=Path("path/to/model_file"),
