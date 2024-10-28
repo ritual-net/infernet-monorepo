@@ -1,0 +1,5 @@
+site_name: Infernet CLI
+site_description: Infernet CLI Documentation
+
+nav:
+- Usage: usage.md

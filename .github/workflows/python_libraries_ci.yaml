@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        library: [ "infernet_client", "infernet_ml", "ritual_arweave" ]
+        library: [ "infernet_cli", "infernet_client", "infernet_ml", "ritual_arweave" ]
         python-version: [ "3.10", "3.11" ]
       fail-fast: false
 

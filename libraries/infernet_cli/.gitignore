@@ -1,0 +1,7 @@
+**/deploy/**
+**/backup/**
+
+# docs reference
+docs/reference/
+
+mkdocs.yml

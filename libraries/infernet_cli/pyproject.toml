@@ -1,0 +1,47 @@
+[project]
+name = "infernet-cli"
+version = "1.0.0"
+description = "Infernet Node CLI"
+authors = [
+    { name = "Stelios Rousoglou", email = "stelios@ritual.net" }
+]
+dependencies = [
+    "click>=8.1.7,<9.0.0",
+    "requests>=2.31.0,<3.0.0",
+    "typing-extensions>=4.12.0,<5.0.0"
+]
+readme = "README.md"
+requires-python = ">= 3.9"
+
+[project.scripts]
+"infernet-cli" = "infernet_cli:main"
+
+[project.optional-dependencies]
+development = [
+    "isort>=5.13.2,<6.0.0",
+    "mypy>=1.9.0,<2.0.0",
+    "pre-commit>=3.7.0,<4.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "pytest-asyncio>=0.21.1",
+    "types-requests>=2.31.0.20240406,<3.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/infernet_cli"]
+
+[tool.mypy]
+exclude = ['**/venv', '**/.venv']
+
+[tool.isort]
+profile = "black"
