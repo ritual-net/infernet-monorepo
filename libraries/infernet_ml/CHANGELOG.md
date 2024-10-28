@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file.
 - New `RitualArtifactManager` class for managing artifacts in a standardized way across
   different storage backends.
 
+### Changed
+Changed the input interfaces for the following workflows to use `RitualVector`.
+- `TorchInferenceWorkflow`
+- `ONNXInferenceWorkflow`
+
 ## [1.0.0] - 2024-06-06
 
 ### Added
