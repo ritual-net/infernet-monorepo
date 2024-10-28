@@ -1,0 +1,153 @@
+# pre-commit workflow
+#
+# Ensures the codebase passes the pre-commit stack.
+
+name: Infernet Services Tests
+
+on:
+  schedule:
+    - cron: '0 0 * * 2-6' # every day at midnight, Tue-Sat
+  pull_request:
+    paths:
+      - 'infernet_services/**'
+      - '.github/workflows/infernet_services_tests.yaml'
+  workflow_dispatch:
+    inputs:
+      docker-tag:
+        description: 'Infernet Node Docker tag'
+        required: true
+        type: string
+        default: 'latest'
+
+jobs:
+  build-docker-and-run-e2e-tests:
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        service: [
+          "hf_inference_client_service",
+          "tgi_client_inference_service",
+          "css_inference_service",
+          "onnx_inference_service",
+          "torch_inference_service",
+          "ezkl_proof_service"
+        ]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for service changes
+        id: check_changes
+        run: |
+          git fetch origin main
+          if ! git diff --name-only origin/main HEAD | grep "^infernet_services/services/${{ matrix.service }}/"; then 
+            echo "No changes in service /${{ matrix.service }}/"; 
+            echo "skip_job=true" >> $GITHUB_ENV; 
+          else 
+            echo "skip_job=false" >> $GITHUB_ENV;
+          fi
+
+      - uses: webfactory/ssh-agent@v0.9.0
+        if: env.skip_job == 'false'
+        with:
+          ssh-private-key: ${{ secrets.SSH_GH_ACTIONS }}
+
+      # pull submodules manually since some are private
+      - name: pull submodules
+        if: env.skip_job == 'false'
+        run: |
+          git submodule sync --recursive
+          git -c protocol.version=2 submodule update --init --force --recursive
+
+      - name: Set up Cloud SDK
+        if: env.skip_job == 'false'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: init repo
+        if: env.skip_job == 'false'
+        run: |
+          echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
+          gcloud auth activate-service-account --key-file=secrets-sa-key.json
+          make init-repo
+
+      - name: Set up Python
+        if: env.skip_job == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install Foundry
+        if: env.skip_job == 'false'
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Login to Docker Hub
+        if: env.skip_job == 'false'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        if: env.skip_job == 'false'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Print Docker Tag
+        if: env.skip_job == 'false'
+        run: |
+          echo "Docker tag: ${{ github.event.inputs.docker-tag }}"
+
+      - name: Pull service images
+        if: env.skip_job == 'false'
+        env:
+          # use default Docker tag if it's not specified
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.4.0' }}
+        run: |
+          docker compose -f infernet_services/deploy/docker-compose.yaml pull
+          docker pull "ritualnetwork/infernet-anvil:1.0.0"
+
+      - name: Build the container
+        if: env.skip_job == 'false'
+        env:
+          service: ${{ matrix.service }}
+          CI: true
+        run: |
+          make build-service
+      #   useful for faster iteration time when debugging
+      #   docker pull ritualnetwork/${{ matrix.service }}_internal:1.0.0
+
+      - name: Install UV
+        if: env.skip_job == 'false'
+        run: python -m pip install uv
+
+      - name: Run pre-commits
+        if: env.skip_job == 'false'
+        env:
+          restart_env: true
+        run: make pre-commit-service service=${{ matrix.service }}
+
+##       useful for debugging CI
+#      - name: Setup upterm session
+#        if: matrix.service == 'css_inference_service'
+#        uses: lhotari/action-upterm@v1
+
+      - name: Run tests
+        if: env.skip_job == 'false'
+        env:
+          # We need to list the env vars here again for them to get filtered out in logs
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_INF_TOKEN: ${{ secrets.HF_TOKEN }}
+          TGI_INF_TOKEN: ${{ secrets.HF_TOKEN }}
+          MODEL_OWNER: ${{ secrets.MODEL_OWNER }}
+          GOOSEAI_API_KEY: ${{ secrets.GOOSEAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
+          service: ${{ matrix.service }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.4.0' }}
+          restart_env: true
+        run: make test-service
+
+      - name: Cleanup Secrets
+        run: rm secrets-sa-key.json || true
+        if: always()
