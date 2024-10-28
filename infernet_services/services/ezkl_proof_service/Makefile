@@ -1,6 +1,6 @@
 DOCKER_ORG := ritualnetwork
 BASE_NAME := ezkl_proof_base
-service_name := ezkl_proof_service_internal
+service_name := ezkl_proof_service
 
 TAG := $(DOCKER_ORG)/$(service_name):1.0.0
 BASE_TAG := $(DOCKER_ORG)/$(BASE_NAME):1.0.0
