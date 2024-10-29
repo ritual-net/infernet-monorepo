@@ -4,7 +4,7 @@
 sender := 0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a
 rpc_url := http://localhost:8545
 state_file := infernet_deployed.json
-# anvil's second default addres
+# anvil's second default address
 node_address := 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
 
 # deploying the contract
@@ -37,7 +37,7 @@ generate-state-file:
 	$(MAKE) deploy-infernet
 	$(MAKE) stop-anvil
 
-tag := test
+tag := 1.1.0
 img_name := ritualnetwork/infernet-anvil:$(tag)
 
 build: generate-state-file
