@@ -105,7 +105,7 @@ jobs:
           INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.3.1' }}
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
-          docker pull "ritualnetwork/infernet-anvil:1.1.0"
+          docker pull "ritualnetwork/infernet-anvil:test"
 
       - name: Build the container
         if: env.skip_job == 'false'
