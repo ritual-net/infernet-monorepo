@@ -70,7 +70,7 @@ jobs:
         run: |
           echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
           gcloud auth activate-service-account --key-file=secrets-sa-key.json
-          make init-repo
+          make init-repo GCP_PROJECT=${{ secrets.GCP_PROJECT }}
 
       - name: Set up Python
         if: env.skip_job == 'false'
