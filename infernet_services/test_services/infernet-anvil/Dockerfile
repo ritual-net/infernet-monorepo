@@ -1,4 +1,4 @@
-FROM ghcr.io/foundry-rs/foundry:nightly-25598999a2b33ac6ccfa35c347f3c98aba8e0061@sha256:5932c7005b4b4e5442587ba891b8a156f37585f2bef72ea13e246533516dc8cf
+FROM ghcr.io/foundry-rs/foundry:latest
 
 WORKDIR /app
 
