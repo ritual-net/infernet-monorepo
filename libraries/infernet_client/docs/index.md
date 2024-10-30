@@ -6,7 +6,7 @@ Infernet Client is a python library as well as a CLI tool. It allows you to:
 2. Interact with the [Infernet Router](https://github.com/ritual-net/infernet-router)'s REST API.
 3. Create an Infernet Wallet that can:
 
-      a. Pay for requested subscriptions
+      a. Pay for requested subscriptions.
 
       b. Receive payments for fulfilled subscriptions.
 
