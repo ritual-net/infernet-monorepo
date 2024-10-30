@@ -1,5 +1,5 @@
 DOCKER_ORG := ritualnetwork
-service_name := torch_inference_service_internal
+service_name := torch_inference_service
 TAG := $(DOCKER_ORG)/$(service_name):2.0.0
 
 build:

@@ -70,7 +70,7 @@ jobs:
         run: |
           echo '${{ secrets.SECRETS_SA }}' > secrets-sa-key.json
           gcloud auth activate-service-account --key-file=secrets-sa-key.json
-          make init-repo
+          make init-repo GCP_PROJECT=${{ secrets.GCP_PROJECT }}
 
       - name: Set up Python
         if: env.skip_job == 'false'
@@ -102,7 +102,7 @@ jobs:
         if: env.skip_job == 'false'
         env:
           # use default Docker tag if it's not specified
-          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.3.1' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.4.0' }}
         run: |
           docker compose -f infernet_services/deploy/docker-compose.yaml pull
           docker pull "ritualnetwork/infernet-anvil:1.1.0"
@@ -144,7 +144,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PERPLEXITYAI_API_KEY: ${{ secrets.PERPLEXITYAI_API_KEY }}
           service: ${{ matrix.service }}
-          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.3.1' }}
+          INFERNET_NODE_TAG: ${{ github.event.inputs.docker-tag || '1.4.0' }}
           restart_env: true
         run: make test-service
 

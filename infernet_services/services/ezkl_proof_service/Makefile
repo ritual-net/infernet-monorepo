@@ -1,6 +1,6 @@
 DOCKER_ORG := ritualnetwork
 BASE_NAME := ezkl_proof_base
-service_name := ezkl_proof_service_internal
+service_name := ezkl_proof_service
 
 TAG := $(DOCKER_ORG)/$(service_name):1.0.0
 BASE_TAG := $(DOCKER_ORG)/$(BASE_NAME):1.0.0
@@ -26,4 +26,4 @@ push:
 # docker buildx create --name mybuilder --bootstrap --use
 # refer to https://docs.docker.com/build/building/multi-platform/#building-multi-platform-images for more info
 build-multiplatform:
-	docker buildx build --platform linux/amd64,linux/arm64 --build-arg index_url=$(index_url) -t $(TAG) --push .
+	docker buildx build --platform linux/amd64 --build-arg index_url=$(index_url) -t $(TAG) --push .

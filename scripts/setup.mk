@@ -8,7 +8,7 @@ ifeq ("$(wildcard pypi-deployer-key.json)","")
 $(warning "⚠️WARNING: no pypi-deployer-key.json file found, some of these commands may fail⚠️")
 endif
 
-GCP_PROJECT := private-pypi-418615
+GCP_PROJECT ?= my-project
 
 init-repo:
 	@echo "🚀 initializing repo";

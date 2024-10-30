@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 - ##### The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ##### This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2024-08-17
+## [2.0.0] - 2024-10-28
 - Added `RitualVector` class for unified handling of vectors across various
   libraries as well as encoding/decoding to/from solidity bytes. With support for both
   fixed-point floating point arithmetic as well as IEEE-754 floating point arithmetic.
@@ -17,6 +17,11 @@ All notable changes to this project will be documented in this file.
   through a `REST` endpoint.
 - New `RitualArtifactManager` class for managing artifacts in a standardized way across
   different storage backends.
+
+### Changed
+Changed the input interfaces for the following workflows to use `RitualVector`.
+- `TorchInferenceWorkflow`
+- `ONNXInferenceWorkflow`
 
 ## [1.0.0] - 2024-06-06
 

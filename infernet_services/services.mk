@@ -49,7 +49,8 @@ pre-commit-service:
 	pre-commit run --files `git ls-files`
 
 publish-service:
-	$(MAKE) build-multiplatform -C $(service_dir)/$(service) index_url=$(index_url)
+	@eval "$$find_service"; \
+	$(MAKE) build-multiplatform -C $(service_dir)/$$service
 
 run:
 	$(MAKE) run -C $(service_dir)/$(service)
