@@ -11,7 +11,7 @@ ENV PYTHONPATH src
 RUN apt-get update && apt-get install -y curl
 
 # install uv
-RUN curl -LsSf https://astral.sh/uv/0.2.33/install.sh | sh
+RUN curl -LsSf https://astral.sh/uv/0.4.28/install.sh | sh
 COPY requirements.lock .
 
 ARG index_url

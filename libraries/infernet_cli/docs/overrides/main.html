@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {% set title = config.site_name %}
+  {% if page and page.meta and page.meta.title %}
+  {% set title = title ~ " - " ~ page.meta.title %}
+  {% elif page and page.title and not page.is_homepage %}
+  {% set title = title ~ " - " ~ page.title | striptags %}
+  {% endif %}
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="{{ title }}"/>
+  <meta property="og:description" content="{{ config.site_description }}"/>
+  <meta property="og:url" content="https://infernet-cli.docs.ritual.net"/>
+  <meta property="og:image" content="https://infernet-cli.docs.ritual.net/assets/meta.png"/>
+
+  <meta property="twitter:card" content="summary_large_image"/>
+  <meta property="twitter:url" content="https://infernet-cli.docs.ritual.net"/>
+  <meta property="twitter:title" content="Infernet CLI"/>
+  <meta property="twitter:description" content="Configuration and deploy of Infernet Nodes"/>
+  <meta property="twitter:image" content="https://infernet-cli.docs.ritual.net/assets/meta.png"/>
+
+  <meta property="og:image:type" content="image/png"/>
+  <meta property="og:image:width" content="2400"/>
+  <meta property="og:image:height" content="1350"/>
+{% endblock %}
